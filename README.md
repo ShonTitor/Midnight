@@ -43,13 +43,14 @@ star a = 'z';
 ### Compuestos
 
 - `Constellation` : Cadena de caracteres.
-- Apuntadores `~` : Apuntador a un espacio de memoria en el heap.
+- Apuntadores `~` : Apuntador a un espacio de memoria en el heap. <- (sujeto a cambios)
 - `Cluster` : Arreglo de tamaño fijo.
 - `Quasar` : Lista implementada con TBD.
-- `Nebula` : Tabla de hash (cadenas de caracteres para las clavas) implementada con TBD.
+- `Nebula` : Tabla de hash (cadenas de caracteres para las claves) implementada con TBD.
 - `Galaxy` : Registros.
 - `UFO` : Registros variantes.
 - `Comet` : Función, "método" o procedimiento.
+Estras:
 - `Satellite` : Iterador.
 
 ```
