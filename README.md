@@ -57,7 +57,7 @@ star a = 'z';
 - Apuntadores `~` : Apuntador a un espacio de memoria en el heap.
 - `Cluster` : Arreglo de tamaño fijo.
 - `Quasar` : Lista implementada con TBD.
-- `Nebula` : Tabla de hash (cadenas de caracteres para las clavas) implementada con TBD.
+- `Nebula` : Tabla de hash (cadenas de caracteres para las claves) implementada con TBD.
 - `Galaxy` : Registros.
 - `UFO` : Registros variantes.
 - `Comet` : Función, "método" o procedimiento.
