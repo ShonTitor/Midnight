@@ -148,7 +148,24 @@ UFO numero x = 2.72;
 ## Control de flujo
 
 ### Selección
-
+Utiliza los esquemas `if`-`else if`-`else` y `switch`-`case` típicos. Además se incluye `unless` que es equivalente a un "if not".
+```
+[
+`moon` m = full;
+if (m) {
+    print("perro");
+}
+else if (1==1) {
+    print("gato");
+}
+else {
+    print("vaca");
+}
+unless (m) {
+    print("sapo");
+}
+]
+```
 
 ### Repetición Indeterminada
 `orbit while` itera hasta que se deje de cumplir una condición (que el tipo de una expresión `moon` pase a ser `new`) mientras que `orbit until` itera hasta que se cumpla la condición dada. `orbit(;;;)` es análogo a un for tipo C.
@@ -184,7 +201,7 @@ orbit i around L {
 ```
 
 ### break y continue
-Estando dentro de un ciclo (o dentro de varios ciclos anidados) se puede utilizar la instrucción especial `break n`, donde n es un `planet` > 0, para detener los n ciclo anidados más internos y continuar la ejecución afuera del más externo de los ciclos detenidos. Si se omite `n` se tratará como `break 1`. 
+Estando dentro de un ciclo (o dentro de varios ciclos anidados) se puede utilizar la instrucción especial `break n`, donde n es un `planet` > 0, para detener los n ciclo anidados más internos y continuar la ejecución afuera del más externo de los ciclos detenidos. Si se omite `n` se tratará como `break 1`. `continue` es similar pero en lugar de terminar el ciclo completo, termina solo la iteración actual.
 ```
 [
 [[planet]Cluster]Cluster M = ((1,2,3),(4,5,6),(7,8,9));
