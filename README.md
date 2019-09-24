@@ -216,3 +216,35 @@ orbit i around range(3) {
 }
 ]
 ```
+
+### Subrutinas
+Midnight tiene subrutinas (`Comet`) de segunda clase, lo que quiere decir que se pueden guardar en una variable y pasar como parámetro pero no retornarlas en una función. Un procedimiento es una función que retorna `blackhole`.
+
+### Iteradores
+Similares a las subrutinas pero utilizan la palabra clave `yield` en lugar de return. Esto permite que el iterador "recuerde" en que línea se quedó y continúe desde ahí cuando se llame otra vez.
+
+## Operadores
+`==`: igualdad.
+`!=`: desigualdad.
+`=`: asignación.
+
+### Operadores aritméticos
+`+`: adición.
+`-`: substrancción.
+`*`: producto.
+`^`: potencia.
+`/`: división.
+`//`: división entera.
+`%`: restp de la división entera.
+`+=`, `-=`, `*=`, `^=`, `/=`, `//=`, `%=`: aplicar y asignar. Ejemplo: `i += 1` es lo mismo que `i = i+1`.
+`>`: mayor que.
+`<`: menor que.
+`>=`: mayor o igual.
+`<=`: menor o igual.
+
+### Operadores lógicos
+`&&`: and con cortocircuito.
+`&`: and sin cortocircuito.
+`||`: or con cortocircuito.
+`|`: or sin cortocircuito.
+`¬`: negación.
