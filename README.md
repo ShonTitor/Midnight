@@ -46,11 +46,11 @@ star a = 'z';
 - Apuntadores `~` : Apuntador a un espacio de memoria en el heap.
 - `Cluster` : Arreglo de tamaño fijo.
 - `Quasar` : Lista implementada con TBD.
-- `Nebula` : Tabla de hash (cadenas de caracteres para las claves) implementada con TBD.
+- `Nebula` : Tabla de hash (cadenas de caracteres para las clavas) implementada con TBD.
 - `Galaxy` : Registros.
 - `UFO` : Registros variantes.
 - `Comet` : Función, "método" o procedimiento.
-- `Orbiter` : Iterador.
+- `Satellite` : Iterador.
 
 ```
 [
@@ -135,8 +135,39 @@ firulais.raza = "dálmata"
 ]
 ```
 
+### UFO
+Un `UFO` es un registro variante que crea una disyunción de tipos.
+```
+[
+UFO numero { int ; float }
+UFO numero n = 5;
+UFO numero x = 2.72;
+]
+```
+
 ## Control de flujo
 
 ### Selección
 
-### Repetición
+
+### Repetición Indeterminada
+`orbit while` itera hasta que se deje de cumplir una condición (que el tipo de una expresión `moon` pase a ser `new`) mientras que `orbit until` itera hasta que se cumpla la condición dada. `orbit(;;;)` es análogo a un for tipo C.
+```
+[
+planet i = 0;
+orbit while (i < 6) {
+    print(i);
+    i++
+}
+
+planet j = 0;
+orbit until (j >= 6) {
+    print(j);
+    j++
+}
+
+orbit(int k=0 ; k < 6 ; k++) {
+    print(k)
+}
+]
+```
