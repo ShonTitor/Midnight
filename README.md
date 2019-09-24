@@ -17,9 +17,20 @@ int n = 5;
 print(n)
 ]
 ```
+Dentro de un programa se pueden tener bloques delimitados por `{}`
+```
+[
+{
+    print("Este es un bloque);
+}
+
+{
+    print("Este es otro bloque);
+}
+]
+```
 
 ## Tipos
-
 Hay tipos escalares y compuestos. Las variables pueden ser declaradas en cualquier parte del código siempre que no hayan sido declaradas previamente dentro del mismo alcance. Todos los tipos escalares tienen un valor por defecto. Las palabras clave para tipos simple se escriben en minúscula mientras que las de tipos compuestos van con la primera letra mayúscula.
 
 ### Escalares
@@ -59,6 +70,17 @@ Constellation s = "osa mayor";
 [star]Cluster A = ('a','b','c','d');
 [planet]Quasar L = [1,2,3,4,5];
 [planet]Nebula = {"Juan" : 25, "María" : 31, "Wilkerman" : 27}
+]
+```
+
+### Print y Read
+Las funciones `print` y `read` escriben y leen de la consola respecticamente. `read` lee únicamente el tipo `Constellation` pero posteriormente puede castearse a otros tipos.
+```
+[
+print("Introduzca un número");
+Constellation input = read();
+planet n = (planet) n;
+print(2^n)
 ]
 ```
 
@@ -219,9 +241,53 @@ orbit i around range(3) {
 
 ### Subrutinas
 Midnight tiene subrutinas (`Comet`) de segunda clase, lo que quiere decir que se pueden guardar en una variable y pasar como parámetro pero no retornarlas en una función. Un procedimiento es una función que retorna `blackhole`.
+```
+[
+Comet halley(planet n) -> blackhole {
+    print("Este es un procedimiento");
+    print(n);
+}
+
+Comet twice(planet n) -> planet {
+    print("Esta es una Función");
+    return 2*n;
+}
+
+(planet -> planet)Comet f = twice;
+planet z = planet(2);
+]
+```
 
 ### Iteradores
-Similares a las subrutinas pero utilizan la palabra clave `yield` en lugar de return. Esto permite que el iterador "recuerde" en que línea se quedó y continúe desde ahí cuando se llame otra vez.
+Los  `Satellite` son similares a las subrutinas pero utilizan la palabra clave `yield` en lugar de return. Esto permite que el iterador "recuerde" en que línea se quedó y continúe desde ahí cuando se llame otra vez. No admiten recursión ni directa ni indirecta.
+```
+[
+Satellite Primos() -> planet {
+    [planet]Quasar L = [];
+    planet p = 2;
+    orbit while(full) {
+        moon esprimo = full;
+        orbit q around L {
+            if p%q == 0 {
+                esprimo = new;
+                break;
+            }
+        }
+        if esprimo {
+            yield p;
+            L.add(p);
+        }
+        p++;
+    }
+}
+
+[planet]Satelline generador_primos = Primos();
+print("esto no va a parar jaja salu2");
+orbit p around generador_primos {
+    print(p);
+}
+]
+```
 
 ## Operadores
 `==`: igualdad.  
@@ -235,7 +301,7 @@ Similares a las subrutinas pero utilizan la palabra clave `yield` en lugar de re
 `^`: potencia.  
 `/`: división.  
 `//`: división entera.  
-`%`: restp de la división entera.  
+`%`: resto de la división entera.  
 `+=`, `-=`, `*=`, `^=`, `/=`, `//=`, `%=`: aplicar y asignar. Ejemplo: `i += 1` es lo mismo que `i = i+1`.  
 `>`: mayor que.  
 `<`: menor que.  
@@ -248,3 +314,8 @@ Similares a las subrutinas pero utilizan la palabra clave `yield` en lugar de re
 `||`: or con cortocircuito.  
 `|`: or sin cortocircuito.  
 `¬`: negación.  
+
+## Extras
+Estas son ideas de características para añadirle al lenguaje si da tiempo:  
+- Quitar las restricciones de los iteradores.
+- Funciones de primera clase.
