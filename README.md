@@ -10,7 +10,7 @@ El programa más simple (vacío) que se puede escribir es:
 ```
 []
 ```
-Dentro, se pueden escribir instrucciones. El signo de secuenciación (Colocar una instrucción para que se ejecute a continuación de otra) es `;`.
+Dentro, se pueden escribir instrucciones. El signo de secuaciación (Colocar una instrucción para que se ejecute a continuación de otra) es `;`.
 ```
 [
 int n = 5;
@@ -43,14 +43,13 @@ star a = 'z';
 ### Compuestos
 
 - `Constellation` : Cadena de caracteres.
-- Apuntadores `~` : Apuntador a un espacio de memoria en el heap. <- (sujeto a cambios)
+- Apuntadores `~` : Apuntador a un espacio de memoria en el heap.
 - `Cluster` : Arreglo de tamaño fijo.
 - `Quasar` : Lista implementada con TBD.
-- `Nebula` : Tabla de hash (cadenas de caracteres para las claves) implementada con TBD.
+- `Nebula` : Tabla de hash (cadenas de caracteres para las clavas) implementada con TBD.
 - `Galaxy` : Registros.
 - `UFO` : Registros variantes.
 - `Comet` : Función, "método" o procedimiento.
-### Extras:
 - `Satellite` : Iterador.
 
 ```
@@ -169,6 +168,34 @@ orbit until (j >= 6) {
 
 orbit(int k=0 ; k < 6 ; k++) {
     print(k)
+}
+]
+```
+
+### Repetición Determinada
+La notación para la repetición determinada es`orbit i around X` donde i es la variable de la repetición y X un `Cluster`, `Quasar`, `Constellation` o `Satellite` sobre el cual se desea iterar (para constellation estaríamos iterando sobre los `star` que lo conforman). Esta es también la notación que se usa para definir un `Quasar` por comprensión.
+```
+[
+[cloud]Quasar L = [0.1, 0.15, 0.2, 0.25, 0.3]
+orbit i around L {
+    print(i);
+}
+]
+```
+
+### break y continue
+Estando dentro de un ciclo (o dentro de varios ciclos anidados) se puede utilizar la instrucción especial `break n`, donde n es un `planet` > 0, para detener los n ciclo anidados más internos y continuar la ejecución afuera del más externo de los ciclos detenidos. Si se omite `n` se tratará como `break 1`. 
+```
+[
+[[planet]Cluster]Cluster M = ((1,2,3),(4,5,6),(7,8,9));
+orbit i around range(3) {
+    orbit j around range(3) {
+        if M[i][j] == 7 {
+            print(i);
+            print(j);
+            break 2
+        }
+    }
 }
 ]
 ```
