@@ -89,7 +89,7 @@ Los `Cluster` pueden definirse por extensión (colocando cada elemento) o inicia
 ```
 [
 [planet]Cluster A = (0,1,2,3,4);
-[planet]Cluster B = Array(5) of int;
+[planet]Cluster B = Cluster(5) of int;
 orbit i around range(0,5) {
   B[i] = i;
 }
@@ -161,7 +161,7 @@ firulais.raza = "dálmata"
 Un `UFO` es un registro variante que crea una disyunción de tipos.
 ```
 [
-UFO numero { int ; float }
+UFO numero { planet ; cloud }
 UFO numero n = 5;
 UFO numero x = 2.72;
 ]
