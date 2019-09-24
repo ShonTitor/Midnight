@@ -50,7 +50,7 @@ star a = 'z';
 - `Galaxy` : Registros.
 - `UFO` : Registros variantes.
 - `Comet` : Función, "método" o procedimiento.
-Estras:
+### Extras:
 - `Satellite` : Iterador.
 
 ```
