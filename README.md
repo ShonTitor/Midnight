@@ -55,27 +55,52 @@ star a = 'z';
 ```
 [
 Constellation s = "osa mayor";
-~planet x = bigbang(sizeof(planet));
+~planet x = bigbang(scaleof(planet));
 [star]Cluster A = ('a','b','c','d');
 [planet]Quasar L = [1,2,3,4,5];
 [planet]Nebula = {"Juan" : 25, "María" : 31, "Wilkerman" : 27}
 ]
 ```
 
-### Clusters
-Los clusters pueden definirse por extensión (colocando cada elemento) o inicializarse con un entero que de su tamaño (en cuyo caso tiene el valor por defecto en todas las posiciones.
+### Cluster
+Los `Cluster` pueden definirse por extensión (colocando cada elemento) o inicializarse con un entero que de su tamaño (en cuyo caso tiene el valor por defecto en todas las posiciones.
 ```
 [
 [planet]Cluster A = (0,1,2,3,4);
 [planet]Cluster B = Array(5) of int;
-for i in range(0,5) {
+orbit i in range(0,5) {
   B[i] = i;
 }
 ]
 ```
 
-### Listas
-Las listas se pueden definir por extensión o por comprensión
+### Quasar
+Los `Quasar` (listas) se pueden definir por extensión o por comprensión. Se les puede insertar un elemento utilizando `.add(x,n)` donde x es el elemento a insertar y n la posición para insertarlo en la lista. `.pop(x,n)` es análogo para eliminar (y la expresión se evalúa al elemento removido). Para acceder al elemento `i` del `Quasar` `Q` se utiliza `Q[i]` (igual que un arreglo).
+```
+[
+[planet]Quasar A = [0,1,2,3,4];
+[planet]Quasar B = [2*i orbit i in range(4)];
+B.add(4)
+]
+```
+
+### Nebula
+`Nebula`es una tabla de hash o diccionario. Las claves son de tipo `Constellation` y se les puede insertar elementos. La sintaxis para las operaciones de insertar, eliminar y acceder son análogas a las de `Quasar` pero utilizando claves de tipo `Constellation` en lugar de índices de tipo `planet`.
+```
+[
+[planet]Nebula N = {"perro" : 33, "gato" : 55};
+N["vaca"] = 77
+]
+```
+
+### Slices
+Tanto `Quasar` como `Cluster` admiten slices. La notación es `[inicio..fin]` donde `inicio` y `fin` son índices y `fin` no está incluído, es decir el intervalo `[inicio,fin)`. Si es de la forma `[..fin]` entonces se empieza desde el índice 0 (el primero). Si es de la forma `[inicio..]` entonces se empieza desde el índice 0 (el primero).
+```
+[
+[planet]Quasar A = [51,0,1,2,3,4,79];
+[planet]Quasar B = A[1..6]
+]
+```
 
 ## Control de flujo
 
