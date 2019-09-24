@@ -224,27 +224,27 @@ Midnight tiene subrutinas (`Comet`) de segunda clase, lo que quiere decir que se
 Similares a las subrutinas pero utilizan la palabra clave `yield` en lugar de return. Esto permite que el iterador "recuerde" en que línea se quedó y continúe desde ahí cuando se llame otra vez.
 
 ## Operadores
-`==`: igualdad.
-`!=`: desigualdad.
-`=`: asignación.
+`==`: igualdad.  
+`!=`: desigualdad.  
+`=`: asignación.  
 
 ### Operadores aritméticos
-`+`: adición.
-`-`: substrancción.
-`*`: producto.
-`^`: potencia.
-`/`: división.
-`//`: división entera.
-`%`: restp de la división entera.
-`+=`, `-=`, `*=`, `^=`, `/=`, `//=`, `%=`: aplicar y asignar. Ejemplo: `i += 1` es lo mismo que `i = i+1`.
-`>`: mayor que.
-`<`: menor que.
-`>=`: mayor o igual.
-`<=`: menor o igual.
+`+`: adición.  
+`-`: substrancción.  
+`*`: producto.  
+`^`: potencia.  
+`/`: división.  
+`//`: división entera.  
+`%`: restp de la división entera.  
+`+=`, `-=`, `*=`, `^=`, `/=`, `//=`, `%=`: aplicar y asignar. Ejemplo: `i += 1` es lo mismo que `i = i+1`.  
+`>`: mayor que.  
+`<`: menor que.  
+`>=`: mayor o igual.  
+`<=`: menor o igual.  
 
 ### Operadores lógicos
-`&&`: and con cortocircuito.
-`&`: and sin cortocircuito.
-`||`: or con cortocircuito.
-`|`: or sin cortocircuito.
-`¬`: negación.
+`&&`: and con cortocircuito.  
+`&`: and sin cortocircuito.  
+`||`: or con cortocircuito.  
+`|`: or sin cortocircuito.  
+`¬`: negación.  
