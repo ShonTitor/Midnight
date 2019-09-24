@@ -28,8 +28,8 @@ Hay tipos escalares y compuestos. Las variables pueden ser declaradas en cualqui
 - `planet` : Número entero de 32 bits en complemento a 2. Default: `0`.
 - `cloud`: Número de punto flotante con precisión simple. Default: `0.0`.
 - `star` : Caracter ASCII de 1 byte. Default: `'A'`.
-- `` : el tipo tipo.
-- `blackhole` : Tipo con valor único análogo al () de haskell.
+- `blackhole` : Tipo con valor único `blackhole`.
+- `cosmos` : el tipo tipo.
 
 ```
 [
@@ -49,13 +49,13 @@ star a = 'z';
 - `Nebula` : Tabla de hash (cadenas de caracteres para las clavas) implementada con TBD.
 - `Galaxy` : Registros.
 - `UFO` : Registros variantes.
-- `Comet` : Función, método o procedimiento.
+- `Comet` : Función, "método" o procedimiento.
 - `Orbiter` : Iterador.
 
 ```
 [
 Constellation s = "osa mayor";
-~planet x = bigbang(scaleof(planet));
+~planet x = bigbang(scale(planet));
 [star]Cluster A = ('a','b','c','d');
 [planet]Quasar L = [1,2,3,4,5];
 [planet]Nebula = {"Juan" : 25, "María" : 31, "Wilkerman" : 27}
@@ -68,7 +68,7 @@ Los `Cluster` pueden definirse por extensión (colocando cada elemento) o inicia
 [
 [planet]Cluster A = (0,1,2,3,4);
 [planet]Cluster B = Array(5) of int;
-orbit i in range(0,5) {
+orbit i around range(0,5) {
   B[i] = i;
 }
 ]
@@ -79,7 +79,7 @@ Los `Quasar` (listas) se pueden definir por extensión o por comprensión. Se le
 ```
 [
 [planet]Quasar A = [0,1,2,3,4];
-[planet]Quasar B = [2*i orbit i in range(4)];
+[planet]Quasar B = [2*i with orbit i around range(4)];
 B.add(4)
 ]
 ```
@@ -99,6 +99,39 @@ Tanto `Quasar` como `Cluster` admiten slices. La notación es `[inicio..fin]` do
 [
 [planet]Quasar A = [51,0,1,2,3,4,79];
 [planet]Quasar B = A[1..6]
+]
+```
+
+### Scale
+Los tipos`Quasar`, `Cluster`, `Nebula`, `Constellation` admiten el uso de la función `scale()` que da la longitud (o cantidad de elementos que contiene). El tipo `cosmos` también la admite pero en lugar de retornar la longitud, retorna la cantidad de memoria que ocupa ese tipo.
+```
+[
+[planet]Quasar A = [0,1,2,3,4];
+planet x = scale(A)
+]
+```
+
+### Apuntadores
+El signo `~` se coloca antes de un tipo para indicar que es un apuntador a ese tipo. Por ejemplo, una variable de tipo `~planet` es un apuntador a una de tipo `planet`. La función `bigbang` permite reservar memoria en el heap. `~` también sirve para desreferenciar.
+```
+[
+~planet z = bigbang(scale(planet));
+planet x = ~z;
+]
+```
+
+### Galaxy
+Un `Galaxy` es un registro que agrupa varios tipos en uno.
+```
+[
+Galaxy Perro{
+    Constellation nombre;
+    planet edad;
+    Constellation raza
+} firulais;
+firulais.nombre = "Firulais";
+firulais.edad = 9;
+firulais.raza = "dálmata"
 ]
 ```
 
