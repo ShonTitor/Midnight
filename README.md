@@ -10,7 +10,7 @@ El programa más simple (vacío) que se puede escribir es:
 ```
 []
 ```
-Dentro, se pueden escribir instrucciones. El signo de secuaciación (Colocar una instrucción para que se ejecute a continuación de otra) es `;`.
+Dentro, se pueden escribir instrucciones. El signo de secuenciación (Colocar una instrucción para que se ejecute a continuación de otra) es `;`.
 ```
 [
 int n = 5;
