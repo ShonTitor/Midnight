@@ -13,7 +13,7 @@ El programa más simple (vacío) que se puede escribir es:
 Dentro, se pueden escribir instrucciones. El signo de secuaciación (Colocar una instrucción para que se ejecute a continuación de otra) es `;`.
 ```
 [
-int n = 5;
+planet n = 5;
 print(n)
 ]
 ```
@@ -89,7 +89,7 @@ Los `Cluster` pueden definirse por extensión (colocando cada elemento) o inicia
 ```
 [
 [planet]Cluster A = (0,1,2,3,4);
-[planet]Cluster B = Cluster(5) of int;
+[planet]Cluster B = Cluster(5) of planet;
 orbit i around range(0,5) {
   B[i] = i;
 }
@@ -205,7 +205,7 @@ orbit until (j >= 6) {
     j++
 }
 
-orbit(int k=0 ; k < 6 ; k++) {
+orbit(planet k=0 ; k < 6 ; k++) {
     print(k)
 }
 ]
