@@ -254,7 +254,7 @@ Comet twice(planet n) -> planet {
 }
 
 (planet -> planet)Comet f = twice;
-planet z = planet(2);
+planet z = f(2);
 ]
 ```
 
