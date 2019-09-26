@@ -96,13 +96,12 @@ EndofSpace
 ```
 
 ### Quasar
-Los `Quasar` (listas) se pueden definir por extensión o por comprensión. Se les puede insertar un elemento utilizando `.add(x,n)` donde x es el elemento a insertar y n la posición para insertarlo en la lista. `.pop(x,n)` es análogo para eliminar (y la expresión se evalúa al elemento removido). Para acceder al elemento `i` del `Quasar` `Q` se utiliza `Q[i]` (igual que un arreglo).
+Los `Quasar` (listas) se pueden definir por extensión. Se les puede insertar un elemento utilizando `.add(x,n)` donde x es el elemento a insertar y n la posición para insertarlo en la lista, podemos utilizar `.add(x)` para agregar el elemento al final de la lista. `.pop(x,n)`|`.pop(x)` es análogo para eliminar (y la expresión se evalúa al elemento removido). Para acceder al elemento `i` del `Quasar` `Q` se utiliza `Q[i]` (igual que un arreglo).
 ```
 Space
 
 [planet]Quasar A = [0,1,2,3,4];
-[planet]Quasar B = [2*i with orbit i around range(4)];
-B.add(4)
+A.add(5)
 
 EndofSpace
 ```
@@ -320,3 +319,4 @@ EndofSpace
 Estas son ideas de características para añadirle al lenguaje si da tiempo:  
 - Quitar las restricciones de los iteradores.
 - Funciones de primera clase.
+- Listas por comprensióm.
