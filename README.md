@@ -187,10 +187,10 @@ EndofSpace
 ## Control de flujo
 
 ### Selección
-Utiliza los esquemas `if`-`else if`-`else` y `switch`-`case` típicos. Además se incluye `unless` que es equivalente a un "if not".
+Utiliza los esquemas `if`-`else if`-`else` típicos. Además se incluye `unless` que es equivalente a un "if not".
 ```
 Space
-`moon` m = full;
+moon m = full;
 if (m) {
     print("perro");
 }
