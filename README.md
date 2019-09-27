@@ -70,6 +70,16 @@ Constellation s = "osa mayor";
 
 EndofSpace
 ```
+### Funciones de Conversión
+
+Se pueden generar funciones para convertir algunos tipos a otros: como por ejemplo terraform(n) donde n es una Contellation y retorna un Planet con el contenido de Constellation:
+
+```
+Space
+Constellation s = "1";
+Planet n = 1;
+print(n+terraform(s));
+```
 
 ### Print y Read
 Las funciones `print` y `read` escriben y leen de la consola respecticamente. `read` lee únicamente el tipo `Constellation` pero posteriormente puede castearse a otros tipos.
@@ -167,7 +177,8 @@ Space
 UFO numero { 
     planet int; 
     cloud float
-} n;
+};
+UFO numero n;
 n.int = 42;
 n.float = 2.72
 EndofSpace
@@ -330,4 +341,5 @@ EndofSpace
 Estas son ideas de características para añadirle al lenguaje si da tiempo:  
 - Quitar las restricciones de los iteradores.
 - Funciones de primera clase.
+- Polimosfismo parametrico.
 - Listas por comprensióm.
