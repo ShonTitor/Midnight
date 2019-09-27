@@ -63,7 +63,7 @@ EndofSpace
 Space
 
 Constellation s = "osa mayor";
-~planet x = bigbang(scale(planet));
+~planet x = bigbang(planet);
 [star]Cluster A = ('a','b','c','d');
 [planet]Quasar L = [1,2,3,4,5];
 [planet]Nebula = {"Juan" : 25, "María" : 31, "Wilkerman" : 27}
