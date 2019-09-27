@@ -11,7 +11,7 @@ El programa más simple (vacío) que se puede escribir es:
 Space
 EndofSpace
 ```
-Dentro, se pueden escribir instrucciones. El signo de secuaciación (Colocar una instrucción para que se ejecute a continuación de otra) es `;`. La última instrucción admite ser escrita sin ´;´.
+Dentro, se pueden escribir instrucciones. El signo de secuaciación (Colocar una instrucción para que se ejecute a continuación de otra) es `;`. La última instrucción admite ser escrita con o sin ´;´.
 ```
 Space
 
@@ -21,6 +21,9 @@ print(n)
 EndofSpace
 ```
 
+## Identificadores
+No puede ser una palabra reservada. Debe empezar con una letra ya sea mayúscula o minúscula seguida por cualquier cantidad de caracteres alfanuméricos o `_`.
+
 ## Tipos
 Hay tipos escalares y compuestos. Las variables pueden ser declaradas en cualquier parte del código siempre que no hayan sido declaradas previamente dentro del mismo alcance. Todos los tipos escalares tienen un valor por defecto. Las palabras clave para tipos simple se escriben en minúscula mientras que las de tipos compuestos van con la primera letra mayúscula.
 
@@ -29,7 +32,7 @@ Hay tipos escalares y compuestos. Las variables pueden ser declaradas en cualqui
 - `moon` : Tiene 2 valores posibles: `new` o `full` (no, las otras fases no las tomamos en cuenta) representados por 0 y 1 respectivamente. Default: `new`.
 - `planet` : Número entero de 32 bits en complemento a 2. Default: `0`.
 - `cloud`: Número de punto flotante con precisión simple. Default: `0.0`.
-- `star` : Caracter ASCII de 1 byte. Default: `'A'`.
+- `star` : Caracter ASCII de 1 byte. Default: `'A'`. Admite los caracteres especiales `\n` `\t` `\\` `\"` `\'`.
 - `blackhole` : Tipo con valor único `blackhole`.
 - `cosmos` : el tipo tipo.
 
@@ -161,9 +164,12 @@ EndofSpace
 Un `UFO` es un registro variante que crea una disyunción de tipos.
 ```
 Space
-UFO numero { planet ; cloud }
-UFO numero n = 5;
-UFO numero x = 2.72;
+UFO numero { 
+    planet int; 
+    cloud float
+} n;
+n.int = 42;
+n.float = 2.72
 EndofSpace
 ```
 
@@ -240,7 +246,7 @@ EndofSpace
 ```
 
 ### Subrutinas
-Midnight tiene subrutinas (`Comet`) de segunda clase, lo que quiere decir que se pueden guardar en una variable y pasar como parámetro pero no retornarlas en una función. Un procedimiento es una función que retorna `blackhole`.
+Midnight tiene subrutinas (`Comet`) de segunda clase, lo que quiere decir que se pueden guardar en una variable y pasar como parámetro pero no retornarlas en una función. Un procedimiento es una función que retorna `blackhole`. Para indicar que se quiere pasar en parámetro por referencia en lugar de por valor se debe poner un `@`.
 ```
 Space
 Comet halley(planet n) -> blackhole {
@@ -253,9 +259,13 @@ Comet twice(planet n) -> planet {
     return 2*n;
 }
 
-(planet -> planet)Comet f = twice;
+(planet -> planet) Comet f = twice;
 planet z = f(2);
 EndofSpace
+
+Comet double(planet @n) -> blackhole {
+    n *= 2
+}
 ```
 
 ### Iteradores
@@ -268,12 +278,12 @@ Satellite Primos() -> planet {
     orbit while(full) {
         moon esprimo = full;
         orbit q around L {
-            if p%q == 0 {
+            if (p%q == 0) {
                 esprimo = new;
                 break;
             }
         }
-        if esprimo {
+        if (esprimo) {
             yield p;
             L.add(p);
         }
@@ -291,7 +301,7 @@ EndofSpace
 
 ## Operadores
 `==`: igualdad.  
-`!=`: desigualdad.  
+`¬=`: desigualdad.  
 `=`: asignación.  
 
 ### Operadores aritméticos
@@ -306,7 +316,8 @@ EndofSpace
 `>`: mayor que.  
 `<`: menor que.  
 `>=`: mayor o igual.  
-`<=`: menor o igual.  
+`<=`: menor o igual.
+`i++`: postincremento (equivalente a `i = i+1`).
 
 ### Operadores lógicos
 `&&`: and con cortocircuito.  
