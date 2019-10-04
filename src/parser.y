@@ -91,13 +91,59 @@ import Lexer
       int             { TkInt $$ }
 %%
 
-S     : space Seq end {"aqui debe ir el arbol jaja salu2"}
+S     : space end       { Root Empty }
+      | space Seq end   { Root $2 }
 
-Seq   : {"cosas"}
+Seq   : Instr           { One $1 }
+      | Instr ';'       { One $1 }
+      | Instr ';' Seq   { Many $1 $3 }
 
+Instr : id              { Perro (fst $1) }
+      | Declar          { $1 }
+
+Declar : Type id        { Declar $1 (fst $2) }
+
+Type  : planet          { Planet }
+      | cloud           { Cloud }
+      | star            { Star }
+      | moon            { Moon }
+      | TComp           { $1 }
+
+TComp : '[' Type ']' cluster      { Cluster $2 }
+      | '[' Type ']' quasar       { Quasar $2 }
+      | '[' Type ']' nebula       { Nebula $2 }
+      | '~' Type                  { Pointer $2 }
 {
 parseError :: [Token] -> a
 parseError _ = error "Parse error"
+
+midny = midnight.alexScanTokens
+
+data Program
+      = Root Seq 
+      deriving Show
+
+data Seq
+      = Empty
+      | One Instr
+      | Many Instr Seq
+      deriving Show
+
+data Instr 
+      = Perro String
+      | Declar Type String
+      deriving Show
+
+data Type
+      = Planet
+      | Cloud
+      | Star
+      | Moon
+      | Cluster Type
+      | Quasar Type
+      | Nebula Type
+      | Pointer Type
+      deriving Show
 
 gato f = do
   s <- readFile(f)
