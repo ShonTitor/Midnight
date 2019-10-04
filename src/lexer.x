@@ -85,13 +85,13 @@ tokens :-
   ¬\=           {\pos s -> TkDistinto pos}
   \=            {\pos s -> TkAsignacion pos}
   ¬             {\pos s -> TkNegacion pos}
-  \"($printable #\")*\" {\pos s -> TkString (read s) pos}
-  \'($printable #\')*\' {\pos s -> TkChar (read s) pos}
-  $digit+\.$digit+       { \pos s -> TkFloat (read s)  pos}
-  $digit+       { \pos s -> TkInt (read s)  pos}
-  $alpha [$alpha $digit \_]*   { \pos s -> TkId s  pos}
+  \"($printable #\")*\" {\pos s -> TkString ((read s :: String), pos)}
+  \'($printable #\')*\' {\pos s -> TkChar ((read s :: Char), pos)}
+  $digit+\.$digit+       { \pos s -> TkFloat ((read s :: Float),  pos)}
+  $digit+       { \pos s -> TkInt ((read s :: Int),  pos)}
+  $alpha [$alpha $digit \_]*   { \pos s -> TkId (s,  pos)}
   $white+       ;
-  .             {\pos s -> TkError s pos}
+  .             {\pos s -> TkError (s, pos)}
 
 {
 -- Each action has type :: String -> Token
@@ -172,16 +172,16 @@ data Token =
   TkDistinto  AlexPosn |
   TkAsignacion AlexPosn |
   TkNegacion  AlexPosn |
-  TkString String AlexPosn |
-  TkChar Char AlexPosn |
-  TkId String AlexPosn |
-  TkFloat Float AlexPosn |
-  TkInt Int   AlexPosn |
-  TkError String AlexPosn
+  TkString (String, AlexPosn) |
+  TkChar (Char, AlexPosn) |
+  TkId (String, AlexPosn) |
+  TkFloat (Float, AlexPosn) |
+  TkInt (Int, AlexPosn) |
+  TkError (String, AlexPosn)
   deriving (Eq,Show)
 
 isError :: Token -> Bool
-isError (TkError _ _) = True
+isError (TkError _) = True
 isError _ = False
 
 getTokens f = do

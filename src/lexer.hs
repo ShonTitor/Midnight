@@ -33225,16 +33225,16 @@ data Token =
   TkDistinto  AlexPosn |
   TkAsignacion AlexPosn |
   TkNegacion  AlexPosn |
-  TkString String AlexPosn |
-  TkChar Char AlexPosn |
-  TkId String AlexPosn |
-  TkFloat Float AlexPosn |
-  TkInt Int   AlexPosn |
-  TkError String AlexPosn
+  TkString (String, AlexPosn) |
+  TkChar (Char, AlexPosn) |
+  TkId (String, AlexPosn) |
+  TkFloat (Float, AlexPosn) |
+  TkInt (Int, AlexPosn) |
+  TkError (String, AlexPosn)
   deriving (Eq,Show)
 
 isError :: Token -> Bool
-isError (TkError _ _) = True
+isError (TkError _) = True
 isError _ = False
 
 getTokens f = do
@@ -33315,12 +33315,12 @@ alex_action_70 = \pos s -> TkIgual pos
 alex_action_71 = \pos s -> TkDistinto pos
 alex_action_72 = \pos s -> TkAsignacion pos
 alex_action_73 = \pos s -> TkNegacion pos
-alex_action_74 = \pos s -> TkString (read s) pos
-alex_action_75 = \pos s -> TkChar (read s) pos
-alex_action_76 =  \pos s -> TkFloat (read s)  pos
-alex_action_77 =  \pos s -> TkInt (read s)  pos
-alex_action_78 =  \pos s -> TkId s  pos
-alex_action_80 = \pos s -> TkError s pos
+alex_action_74 = \pos s -> TkString ((read s :: String), pos)
+alex_action_75 = \pos s -> TkChar ((read s :: Char), pos)
+alex_action_76 =  \pos s -> TkFloat ((read s :: Float),  pos)
+alex_action_77 =  \pos s -> TkInt ((read s :: Int),  pos)
+alex_action_78 =  \pos s -> TkId (s,  pos)
+alex_action_80 = \pos s -> TkError (s, pos)
 {-# LINE 1 "templates/GenericTemplate.hs" #-}
 -- -----------------------------------------------------------------------------
 -- ALEX TEMPLATE

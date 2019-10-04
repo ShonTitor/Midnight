@@ -84,7 +84,11 @@ import Lexer
       '¬='            { TkDistinto  $$ }
       '='             { TkAsignacion $$ }
       '¬'             { TkNegacion  $$ }
-
+      str             { TkString $$ }
+      chr             { TkChar $$ }
+      id              { TkId $$ }
+      float           { TkFloat $$ }
+      int             { TkInt $$ }
 %%
 
 S     : space Seq end {"aqui debe ir el arbol jaja salu2"}

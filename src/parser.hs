@@ -17,18 +17,18 @@ data HappyAbsSyn t4 t5
 	| HappyAbsSyn5 t5
 
 happyExpList :: Happy_Data_Array.Array Int Int
-happyExpList = Happy_Data_Array.listArray (0,78) ([32,0,0,0,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0
+happyExpList = Happy_Data_Array.listArray (0,83) ([32,0,0,0,0,512,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,64,0,0,0,0,0,0,0,0,0,0,0
 	])
 
 {-# NOINLINE happyExpListPerState #-}
 happyExpListPerState st =
     token_strs_expected
-  where token_strs = ["error","%dummy","%start_midnight","S","Seq","space","end","moon","new","full","planet","cloud","star","blackhole","cosmos","constellation","cluster","quasar","nebula","galaxy","ufo","comet","satellite","terraform","print","read","around","range","pop","add","bigbang","if","elseif","else","unless","while","until","orbit","arroba","'('","')'","'['","']'","'{'","'}'","'..'","'.'","','","';'","':'","'~'","'+='","'+'","'-='","'-'","'*='","'*'","'^='","'^'","'//='","'//'","'/='","'/'","'%='","'%'","'->'","'>='","'>'","'<='","'<'","'&&'","'&'","'||'","'|'","'=='","'\9516\188='","'='","'\9516\188'","%eof"]
-        bit_start = st * 79
-        bit_end = (st + 1) * 79
+  where token_strs = ["error","%dummy","%start_midnight","S","Seq","space","end","moon","new","full","planet","cloud","star","blackhole","cosmos","constellation","cluster","quasar","nebula","galaxy","ufo","comet","satellite","terraform","print","read","around","range","pop","add","bigbang","if","elseif","else","unless","while","until","orbit","arroba","'('","')'","'['","']'","'{'","'}'","'..'","'.'","','","';'","':'","'~'","'+='","'+'","'-='","'-'","'*='","'*'","'^='","'^'","'//='","'//'","'/='","'/'","'%='","'%'","'->'","'>='","'>'","'<='","'<'","'&&'","'&'","'||'","'|'","'=='","'\9516\188='","'='","'\9516\188'","str","chr","id","float","int","%eof"]
+        bit_start = st * 84
+        bit_end = (st + 1) * 84
         read_bit = readArrayBit happyExpList
         bits = map read_bit [bit_start..bit_end - 1]
-        bits_indexed = zip bits [0..78]
+        bits_indexed = zip bits [0..83]
         token_strs_expected = concatMap f bits_indexed
         f (False, _) = []
         f (True, nr) = [token_strs !! nr]
@@ -43,7 +43,7 @@ action_1 _ = happyFail (happyExpListPerState 1)
 action_2 (5) = happyGoto action_4
 action_2 _ = happyReduce_2
 
-action_3 (79) = happyAccept
+action_3 (84) = happyAccept
 action_3 _ = happyFail (happyExpListPerState 3)
 
 action_4 (7) = happyShift action_5
@@ -65,7 +65,7 @@ happyReduction_2  =  HappyAbsSyn5
 	)
 
 happyNewToken action sts stk [] =
-	action 79 79 notHappyAtAll (HappyState action) sts stk []
+	action 84 84 notHappyAtAll (HappyState action) sts stk []
 
 happyNewToken action sts stk (tk:tks) =
 	let cont i = action i i tk (HappyState action) sts stk tks in
@@ -143,10 +143,15 @@ happyNewToken action sts stk (tk:tks) =
 	TkDistinto  happy_dollar_dollar -> cont 76;
 	TkAsignacion happy_dollar_dollar -> cont 77;
 	TkNegacion  happy_dollar_dollar -> cont 78;
+	TkString happy_dollar_dollar -> cont 79;
+	TkChar happy_dollar_dollar -> cont 80;
+	TkId happy_dollar_dollar -> cont 81;
+	TkFloat happy_dollar_dollar -> cont 82;
+	TkInt happy_dollar_dollar -> cont 83;
 	_ -> happyError' ((tk:tks), [])
 	}
 
-happyError_ explist 79 tk tks = happyError' (tks, explist)
+happyError_ explist 84 tk tks = happyError' (tks, explist)
 happyError_ explist _ tk tks = happyError' ((tk:tks), explist)
 
 newtype HappyIdentity a = HappyIdentity a
