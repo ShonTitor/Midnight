@@ -44,7 +44,7 @@ import Lexer
       while           { TkWhile     $$ }
       until           { TkUntil     $$ }
       orbit           { TkOrbit     $$ }
-      arroba          { TkArroba      $$ }
+      '@'             { TkArroba      $$ }
       '('             { TkParA      $$ }
       ')'             { TkParC      $$ }
       '['             { TkCorA      $$ }
@@ -121,7 +121,7 @@ LValue : id              { Var (fst $1) }
        | id Slice        { Access (Var (fst $1)) $2 }
        | '(' LValue ')'  { $2 }
 
-RValue : LValue           { Lval $1 }
+RValue : Exp              { Other $1 }
        | ExpBool          { Bool $1 }
        | ExpNum           { Int $1 }
 
@@ -136,27 +136,39 @@ Slice : '[' str ']'                            { Key (fst $2) }
       | '[' ExpNum '..' ']'                    { Begin $2 }
       | '[' ExpNum '..' ']' Slice              { ManyAc (Begin $2) $5 }
 
+Funcall  : LValue '(' Args ')'    { Funcall $1 $3 }
+         | LValue '(' ')'         { Funcall $1 NoArgs }
+
+Args  : RValue ',' Args           { KArgs (Arg True $1) $3 }
+      | RValue                    { Arg False $1 }
+      | '@' RValue ',' Args       { KArgs (Arg True $2) $4 }
+      | '@' RValue                { Arg True $2 }
+
+Exp : Funcall                     { $1 }
+    | LValue                      { ExpWha $1 }
+
 ExpBool : BoolLit                 { $1 }
         | BoolAux '&&' ExpBool    { And $1 $3 }
         | BoolAux '&' ExpBool     { Bitand $1 $3 }
         | BoolAux '||' ExpBool    { Or $1 $3 }
         | BoolAux '|' ExpBool     { Bitor $1 $3 }
         | '¬' ExpBool             { Not $2 }
-        | BoolAux '&&' LValue     { And $1 (LBool $3) }
-        | BoolAux '&' LValue      { Bitand $1 (LBool $3) }
-        | BoolAux '||' LValue     { Or $1 (LBool $3) }
-        | BoolAux '|' LValue      { Bitor $1 (LBool $3) }
-        | '¬' LValue              { Not (LBool $2) }
+        | BoolAux '&&' Exp        { And $1 (LBool $3) }
+        | BoolAux '&' Exp         { Bitand $1 (LBool $3) }
+        | BoolAux '||' Exp        { Or $1 (LBool $3) }
+        | BoolAux '|' Exp         { Bitor $1 (LBool $3) }
+        | '¬' Exp                 { Not (LBool $2) }
         | '(' ExpBool ')'         { $2 }
 
 BoolLit : new                     { New }
         | full                    { Full }
 
 BoolAux : BoolLit                 { $1 }
-        | LValue                  { LBool $1 }
+        | LValue                  { LBool (ExpWha $1) }
         | '(' ExpBool ')'         { $2 }
 
 ExpNum : int                      { IntLit (fst $1) }
+       | float                    { FloLit (fst $1) }
        | IntAux '+' ExpNum        { Sum $1 $3 }
        | IntAux '-' ExpNum        { Sub $1 $3 }
        | IntAux '*' ExpNum        { Mul $1 $3 }
@@ -218,7 +230,7 @@ data LValue
       deriving Show
 
 data RValue
-      = Lval LValue
+      = Other Exp
       | Bool ExpBool
       | Int ExpNum
       deriving Show
@@ -231,6 +243,17 @@ data Slice
       | Begin ExpNum
       deriving Show
 
+data Args
+      = NoArgs
+      | Arg Bool RValue
+      | KArgs Args Args 
+      deriving Show
+
+data Exp
+      = Funcall LValue Args
+      | ExpWha LValue
+      deriving Show
+
 data ExpBool
       = New
       | Full
@@ -239,7 +262,7 @@ data ExpBool
       | Or ExpBool ExpBool
       | Bitor ExpBool ExpBool
       | Not ExpBool
-      | LBool LValue
+      | LBool Exp
       deriving Show
 
 data ExpNum
