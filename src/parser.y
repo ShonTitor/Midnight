@@ -98,8 +98,8 @@ Seq   : Instr           { One $1 }
       | Instr ';'       { One $1 }
       | Instr ';' Seq   { Many $1 $3 }
 
-Instr : id              { Perro (fst $1) }
-      | Declar          { $1 }
+Instr : Declar                { $1 }
+      | LValue '=' RValue     { Asig $1 $3 }
 
 Declar : Type id        { Declar $1 (fst $2) }
 
@@ -113,6 +113,40 @@ TComp : '[' Type ']' cluster      { Cluster $2 }
       | '[' Type ']' quasar       { Quasar $2 }
       | '[' Type ']' nebula       { Nebula $2 }
       | '~' Type                  { Pointer $2 }
+
+LValue : id              { Var (fst $1) }
+       | id '.' id       { Attr (Var (fst $1)) (fst $3) }
+       | id '.' id Slice { Access (Attr (Var (fst $1)) (fst $3)) $4 }
+       | id Slice '.' id { Attr (Access (Var (fst $1)) $2) (fst $4) }
+       | id Slice        { Access (Var (fst $1)) $2 }
+       | '(' LValue ')'  { $2 }
+
+RValue : LValue           { Lval $1 }
+       | ExpBool          { Bool $1 }
+
+Slice : '[' str ']'               { Dict (fst $2) }
+      | '[' str ']' Slice         { ManyAc (Dict (fst $2)) $4 }
+
+ExpBool : BoolLit                 { $1 }
+        | BoolAux '&&' ExpBool    { And $1 $3 }
+        | BoolAux '&' ExpBool     { Bitand $1 $3 }
+        | BoolAux '||' ExpBool    { Or $1 $3 }
+        | BoolAux '|' ExpBool     { Bitor $1 $3 }
+        | '¬' ExpBool             { Not $2 }
+        | BoolAux '&&' LValue     { And $1 (LBool $3) }
+        | BoolAux '&' LValue      { Bitand $1 (LBool $3) }
+        | BoolAux '||' LValue     { Or $1 (LBool $3) }
+        | BoolAux '|' LValue      { Bitor $1 (LBool $3) }
+        | '¬' LValue              { Not (LBool $2) }
+        | '(' ExpBool ')'         { $2 }
+
+BoolLit : new                     { New }
+        | full                    { Full }
+
+BoolAux : BoolLit                 { $1 }
+        | LValue                  { LBool $1 }
+        | '(' ExpBool ')'         { $2 }
+
 {
 parseError :: [Token] -> a
 parseError _ = error "Parse error"
@@ -132,6 +166,7 @@ data Seq
 data Instr 
       = Perro String
       | Declar Type String
+      | Asig LValue RValue
       deriving Show
 
 data Type
@@ -144,6 +179,34 @@ data Type
       | Nebula Type
       | Pointer Type
       deriving Show
+
+data LValue
+      = Var String
+      | Access LValue Slice
+      | Attr LValue String
+      deriving Show
+
+data RValue
+      = Lval LValue
+      | Bool ExpBool
+      deriving Show
+
+data Slice
+      = ManyAc Slice Slice
+      | Dict String
+      deriving Show
+
+data ExpBool
+      = New
+      | Full
+      | And ExpBool ExpBool
+      | Bitand ExpBool ExpBool
+      | Or ExpBool ExpBool
+      | Bitor ExpBool ExpBool
+      | Not ExpBool
+      | LBool LValue
+      deriving Show
+
 
 gato f = do
   s <- readFile(f)
