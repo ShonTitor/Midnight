@@ -123,9 +123,18 @@ LValue : id              { Var (fst $1) }
 
 RValue : LValue           { Lval $1 }
        | ExpBool          { Bool $1 }
+       | ExpNum           { Int $1 }
 
-Slice : '[' str ']'               { Dict (fst $2) }
-      | '[' str ']' Slice         { ManyAc (Dict (fst $2)) $4 }
+Slice : '[' str ']'                            { Key (fst $2) }
+      | '[' str ']' Slice                      { ManyAc (Key (fst $2)) $4 }
+      | '[' ExpNum ']'                         { Index $2 }
+      | '[' ExpNum ']' Slice                   { ManyAc (Index $2) $4 }
+      | '[' ExpNum '..' ExpNum ']'             { Interval $2 $4 }
+      | '[' ExpNum '..' ExpNum ']' Slice       { ManyAc (Interval $2 $4) $6 }
+      | '[' '..' ExpNum ']'                    { Interval (IntLit 0) $3 }
+      | '[' '..' ExpNum ']' Slice              { ManyAc (Interval (IntLit 0) $3) $5 }
+      | '[' ExpNum '..' ']'                    { Begin $2 }
+      | '[' ExpNum '..' ']' Slice              { ManyAc (Begin $2) $5 }
 
 ExpBool : BoolLit                 { $1 }
         | BoolAux '&&' ExpBool    { And $1 $3 }
@@ -146,6 +155,28 @@ BoolLit : new                     { New }
 BoolAux : BoolLit                 { $1 }
         | LValue                  { LBool $1 }
         | '(' ExpBool ')'         { $2 }
+
+ExpNum : int                      { IntLit (fst $1) }
+       | IntAux '+' ExpNum        { Sum $1 $3 }
+       | IntAux '-' ExpNum        { Sub $1 $3 }
+       | IntAux '*' ExpNum        { Mul $1 $3 }
+       | IntAux '^' ExpNum        { Pow $1 $3 }
+       | IntAux '//' ExpNum       { Div $1 $3 }
+       | IntAux '%' ExpNum        { Mod $1 $3 }
+       | '-' ExpNum               { Neg $2 }
+       | IntAux '+' LValue        { Sum $1 (LNum $3) }
+       | IntAux '-' LValue        { Sub $1 (LNum $3) }
+       | IntAux '*' LValue        { Mul $1 (LNum $3) }
+       | IntAux '^' LValue        { Pow $1 (LNum $3) }
+       | IntAux '//' LValue       { Div $1 (LNum $3) }
+       | IntAux '%' LValue        { Mod $1 (LNum $3) }
+       | '-' LValue               { Neg (LNum $2) }
+       | '(' ExpNum ')'           { $2 }
+
+IntAux : int                      { IntLit (fst $1) }
+       | float                    { FloLit (fst $1) }
+       | LValue                   { LNum $1 }
+       | '(' ExpNum ')'           { $2 }
 
 {
 parseError :: [Token] -> a
@@ -189,11 +220,15 @@ data LValue
 data RValue
       = Lval LValue
       | Bool ExpBool
+      | Int ExpNum
       deriving Show
 
 data Slice
       = ManyAc Slice Slice
-      | Dict String
+      | Key String
+      | Index ExpNum
+      | Interval ExpNum ExpNum
+      | Begin ExpNum
       deriving Show
 
 data ExpBool
@@ -207,6 +242,18 @@ data ExpBool
       | LBool LValue
       deriving Show
 
+data ExpNum
+      = IntLit Int
+      | FloLit Float
+      | LNum LValue
+      | Sum ExpNum ExpNum
+      | Sub ExpNum ExpNum
+      | Mul ExpNum ExpNum
+      | Pow ExpNum ExpNum
+      | Div ExpNum ExpNum
+      | Mod ExpNum ExpNum
+      | Neg ExpNum
+      deriving Show
 
 gato f = do
   s <- readFile(f)
