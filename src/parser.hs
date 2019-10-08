@@ -32,7 +32,7 @@ data HappyAbsSyn t4 t5 t6 t7 t8 t9 t10 t11 t12 t13 t14 t15 t16 t17 t18 t19 t20
 	| HappyAbsSyn20 t20
 
 happyExpList :: Happy_Data_Array.Array Int Int
-happyExpList = Happy_Data_Array.listArray (0,1556) ([0,16,0,0,0,0,0,1024,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,57344,65151,62049,4138,1,8064,0,8,0,0,0,0,0,0,0,0,64,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,16384,0,0,0,0,0,0,0,0,0,0,41226,682,64,0,0,0,0,21840,4093,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,512,0,0,0,0,0,0,0,0,256,0,0,0,0,0,16384,0,0,0,0,0,0,16,0,0,0,0,0,1024,0,0,0,128,0,0,0,0,0,8192,0,0,0,0,0,0,8,0,0,0,0,0,512,0,0,0,0,0,32768,0,0,0,0,0,0,32,0,0,0,0,0,2048,0,0,0,0,0,3072,2,0,1024,0,4192,2168,2688,64,57344,7,0,0,0,0,0,0,0,33030,135,168,4,32256,0,32704,8678,10752,272,32768,31,61440,31135,32776,17418,0,2016,0,1048,542,672,16,63488,1,63744,24,10240,64,0,0,32768,57409,33,42,1,8064,0,4192,2168,2688,64,57344,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10240,4,0,0,0,0,0,16384,1365,0,0,4192,2168,2688,64,57344,7,6144,7684,40962,4098,0,504,0,0,0,0,0,0,0,0,0,0,0,0,0,36864,399,32768,1026,0,0,0,25572,0,160,1,0,0,0,0,0,21800,65493,0,0,0,0,64,0,0,0,0,0,4096,0,0,0,0,0,0,1,0,0,0,0,0,2048,54613,255,0,0,0,4096,0,0,0,0,0,0,128,0,0,0,0,0,0,32768,0,0,0,0,4096,21760,65493,0,0,0,0,16384,62805,63,0,0,0,0,21840,4093,0,0,0,8192,0,0,0,0,0,0,8,0,0,0,32704,25086,10994,272,32768,31,0,32768,0,0,0,0,0,1048,542,672,16,63488,1,1536,34689,43008,1024,0,126,0,0,0,4,0,0,0,4192,2168,2688,64,57344,7,0,0,16384,0,0,0,0,33030,135,168,4,32256,0,16768,8672,10752,256,32768,31,0,0,32768,0,0,0,0,0,0,32,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4192,2168,2688,64,57344,7,6144,7684,40962,4098,0,504,0,33030,135,168,4,32256,0,16768,8672,10752,256,32768,31,24576,30736,32776,16394,0,2016,0,1048,542,672,16,63488,1,1536,34689,43008,1024,0,126,32768,57409,33,42,1,8064,0,4192,2168,2688,64,57344,7,6144,7684,40962,4098,0,504,0,33030,135,168,4,32256,0,16768,8672,10752,256,32768,31,24576,30736,32776,16394,0,2016,0,1048,542,672,16,63488,1,1536,34689,43008,1024,0,126,32768,57409,33,42,1,8064,0,4192,2168,2688,64,57344,7,6144,7684,40962,4098,0,504,0,0,0,0,0,0,0,16768,8672,11776,256,32768,31,24576,30736,32776,16426,0,2016,0,0,0,0,0,16384,0,1536,34689,43008,1024,0,126,32768,57409,33,42,1,8064,0,4192,2168,2688,64,57344,7,6144,7684,40962,4098,0,504,0,33030,135,168,4,32256,0,16768,8672,10752,256,32768,31,24576,30736,32776,16394,0,2016,0,1048,542,672,16,63488,1,0,0,0,0,0,1,49152,65151,62049,4138,1,8064,0,0,0,0,0,0,0,0,0,0,0,0,0,0,33030,135,168,4,32256,0,0,0,0,21824,16373,0,0,0,0,20480,64853,15,0,0,0,0,21844,1023,0,0,0,0,21760,65493,0,0,0,0,16384,62805,63,0,0,0,0,21840,4093,0,0,0,0,21504,65365,3,0,0,0,0,54613,255,0,0,0,0,0,0,0,0,0,0,20516,64853,15,0,1048,542,672,16,63488,1,0,0,4096,0,0,0,0,0,0,0,0,0,0,0,0,0,21840,961,0,0,0,0,21504,61525,0,0,0,0,0,5461,0,0,0,0,0,21824,5,0,0,0,0,20480,341,0,0,0,0,0,21844,0,0,0,0,0,21760,15381,0,0,0,0,16384,1365,15,0,0,0,0,21840,961,0,0,0,0,21504,61525,0,0,0,0,0,64,0,0,0,0,0,4096,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,16384,0,0,0,0,0,0,1364,0,0,0,0,0,21760,1,0,0,0,16384,21504,65365,3,0,6393,0,16440,0,0,0,15936,6,3584,16,0,0,0,0,0,20481,64853,15,0,0,0,64,0,0,0,0,0,0,0,0,0,0,0,0,16388,62805,63,0,0,0,0,0,0,0,0,0,16384,21504,65365,3,0,0,0,16,54613,255,0,16768,9696,10752,256,32768,31,0,0,0,256,0,0,0,1048,542,672,16,63488,1,1536,34689,43008,1024,0,126,0,0,0,0,0,0,0,36752,1,640,4,0,0,58368,99,40960,256,0,0,0,0,0,0,0,0,0,16768,8672,10752,256,32768,31,0,1136,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32768,57409,33,42,1,8064,0,0,0,32768,21840,4093,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,256,21840,4093,0,0,0,16384,21504,65365,3,0,33030,135,168,4,32256,0,0,0,8192,21824,16373,0,0,0,32768,0,0,0,0,0,0,512,0,0,0,0,0,32768,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,16,0,0,0,16768,8672,11008,256,32768,31,0,0,0,8,0,0,0,0,0,64,0,0,0,0,0,32768,0,0,0,16384,1598,0,4106,0,0,0,0,0,0,0,0,0,0,0,0,21505,65365,3,0,0,0,0,0,0,0,16768,8672,14848,256,32768,31,0,0,0,20480,64853,15,0,0,0,256,21844,1023,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,63999,51591,16555,4,32256,0,0,0,8192,0,0,0,61440,32671,48280,17418,0,2016,0,0,0,8192,21844,1023,0,1536,34689,43008,1024,0,126,0,0,0,32,0,0,0,40944,39039,2748,68,57344,7,64512,8167,44838,4354,0,504,0,33030,135,168,4,32256,0,32704,25086,10994,272,32768,31,0,0,0,20736,64853,15,0,0,0,512,0,0,0,0,0,32768,0,0,0,0,0,0,0,0,0,0,4192,2168,2688,64,57344,7,0,0,0,21632,65365,3,0,0,0,0,0,0,0,32704,25086,10994,272,32768,31,61440,32671,48280,17418,0,2016,0,59388,9759,687,17,63488,1,0,0,0,1,0,0,0,0,0,16900,62805,63,0,0,0,4096,0,0,0,0,0,0,4,0,0,0,63999,51591,16555,4,32256,0,0,0,0,21826,16373,0,36864,399,32768,1026,0,0,0,0,0,1024,0,0,0,65280,34809,43977,1088,0,126,0,0,0,64,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1024,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,36752,1,640,4,0,0,0,0,0,4,0,0,0,0,1536,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1048,542,672,16,63488,1,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,4096,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,0,0,0,0,8256,21844,1023,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,2048,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,61440,32671,48280,17418,0,2016,0,1048,542,672,16,63488,1,0,0,0,0,0,0,32768,57409,33,42,1,8064,0,40944,39039,2748,68,57344,7,0,0,0,4,0,0,0,0,0,16,54613,255,0,0,0,1024,21824,16373,0,0,0,0,16,0,0,0,0,0,0,0,0,0,0,0,32768,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,64512,8167,44838,4354,0,504,0,0,0,256,0,0,0,0,32768,1,0,0,0,0,0,0,0,0,0,0
+happyExpList = Happy_Data_Array.listArray (0,1477) ([0,16,0,0,0,0,0,1024,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,57344,65151,62049,4138,1,8064,0,8,0,0,0,0,0,0,0,0,64,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,16384,0,0,0,0,0,0,0,0,0,0,41226,682,64,0,0,0,0,21840,4093,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,512,0,0,0,0,0,0,0,0,256,0,0,0,0,0,16384,0,0,0,0,0,0,16,0,0,0,0,0,1024,0,0,0,128,0,0,0,0,0,8192,0,0,0,0,0,0,8,0,0,0,0,0,512,0,0,0,0,0,32768,0,0,0,0,0,0,32,0,0,0,0,0,2048,0,0,0,0,0,3072,2,0,1024,0,4192,2168,2688,64,57344,7,0,0,0,0,0,0,0,33030,135,168,4,32256,0,32704,8678,10752,272,32768,31,61440,31135,32776,17418,0,2016,0,1048,542,672,16,63488,1,63744,24,10240,64,0,0,32768,57409,33,42,1,8064,0,4192,2168,2688,64,57344,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10240,4,0,0,0,0,0,16384,1365,0,0,4192,2168,2688,64,57344,7,6144,7684,40962,4098,0,504,0,0,0,0,0,0,0,0,0,0,0,0,0,36864,399,32768,1026,0,0,0,25572,0,160,1,0,0,0,0,0,21800,65493,0,0,0,0,64,0,0,0,0,0,4096,0,0,0,0,0,0,1,0,0,0,0,0,2048,54613,255,0,0,0,4096,0,0,0,0,0,0,128,0,0,0,0,0,0,32768,0,0,0,0,4096,21760,65493,0,0,0,0,16384,62805,63,0,0,0,0,21840,4093,0,0,0,8192,0,0,0,0,0,0,8,0,0,0,32704,25086,10994,272,32768,31,0,32768,0,0,0,0,0,1048,542,672,16,63488,1,1536,34689,43008,1024,0,126,0,0,0,4,0,0,0,4192,2168,2688,64,57344,7,0,0,16384,0,0,0,0,33030,135,168,4,32256,0,16768,8672,10752,256,32768,31,0,0,32768,0,0,0,0,0,0,32,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4192,2168,2688,64,57344,7,6144,7684,40962,4098,0,504,0,33030,135,168,4,32256,0,16768,8672,10752,256,32768,31,24576,30736,32776,16394,0,2016,0,1048,542,672,16,63488,1,1536,34689,43008,1024,0,126,32768,57409,33,42,1,8064,0,4192,2168,2688,64,57344,7,6144,7684,40962,4098,0,504,0,33030,135,168,4,32256,0,16768,8672,10752,256,32768,31,24576,30736,32776,16394,0,2016,0,1048,542,672,16,63488,1,1536,34689,43008,1024,0,126,32768,57409,33,42,1,8064,0,4192,2168,2688,64,57344,7,6144,7684,40962,4098,0,504,0,0,0,0,0,0,0,16768,8672,11776,256,32768,31,24576,30736,32776,16426,0,2016,0,0,0,0,0,16384,0,1536,34689,43008,1024,0,126,32768,57409,33,42,1,8064,0,4192,2168,2688,64,57344,7,6144,7684,40962,4098,0,504,0,33030,135,168,4,32256,0,16768,8672,10752,256,32768,31,24576,30736,32776,16394,0,2016,0,1048,542,672,16,63488,1,0,0,0,0,0,1,49152,65151,62049,4138,1,8064,0,0,0,0,0,0,0,0,0,0,0,0,0,0,33030,135,168,4,32256,0,0,0,0,21824,16373,0,0,0,0,20480,64853,15,0,0,0,0,21844,1023,0,0,0,0,21760,65493,0,0,0,0,16384,62805,63,0,0,0,0,21840,4093,0,0,0,0,21504,65365,3,0,0,0,0,54613,255,0,0,0,0,0,0,0,0,0,0,20516,64853,15,0,1048,542,672,16,63488,1,0,0,4096,0,0,0,0,0,0,0,0,0,0,0,0,0,21840,961,0,0,0,0,21504,61525,0,0,0,0,0,5461,0,0,0,0,0,21824,5,0,0,0,0,20480,341,0,0,0,0,0,21844,0,0,0,0,0,21760,15381,0,0,0,0,16384,1365,15,0,0,0,0,21840,961,0,0,0,0,21504,61525,0,0,0,0,0,64,0,0,0,0,0,4096,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,16384,0,0,0,0,0,0,1364,0,0,0,0,0,21760,1,0,0,0,16384,21504,65365,3,0,6393,0,16440,0,0,0,15936,6,3584,16,0,0,0,0,0,20481,64853,15,0,0,0,64,0,0,0,0,0,0,0,0,0,0,0,0,16388,62805,63,0,0,0,0,0,0,0,0,0,16384,21504,65365,3,0,0,0,16,54613,255,0,16768,9696,10752,256,32768,31,0,0,0,256,0,0,0,1048,542,672,16,63488,1,1536,34689,43008,1024,0,126,0,0,0,0,0,0,0,36752,1,640,4,0,0,58368,99,40960,256,0,0,0,0,0,0,0,0,0,16768,8672,10752,256,32768,31,0,1136,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32768,57409,33,42,1,8064,0,0,0,32768,21840,4093,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,256,21840,4093,0,0,0,16384,21504,65365,3,0,33030,135,168,4,32256,0,0,0,8192,21824,16373,0,0,0,32768,0,0,0,0,0,0,512,0,0,0,0,0,32768,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,16,0,0,0,0,0,256,0,0,4,0,0,0,0,512,0,0,0,0,64,0,0,0,0,0,0,0,32,0,16384,1598,0,4106,0,0,0,0,0,0,0,0,0,0,0,0,21505,65365,3,0,0,0,0,0,0,0,16768,8672,14848,256,32768,31,0,0,0,20480,64853,15,0,0,0,256,21844,1023,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6393,0,16424,0,0,0,0,0,0,0,8,0,36864,399,32768,1026,0,0,0,0,0,0,0,16384,0,0,0,0,8,0,0,0,0,0,0,2048,0,0,40944,39039,2748,68,57344,7,64512,8167,44838,4354,0,504,0,33030,135,168,4,32256,0,32704,25086,10994,272,32768,31,0,0,0,20736,64853,15,0,0,0,512,0,0,0,0,0,32768,0,0,0,0,0,0,0,0,0,0,4192,2168,2688,64,57344,7,0,0,0,21632,65365,3,0,0,0,0,0,0,0,32704,25086,10994,272,32768,31,61440,32671,48280,17418,0,2016,0,59388,9759,687,17,63488,1,0,0,0,1,0,0,0,0,0,16900,62805,63,0,0,0,4096,0,0,0,0,0,0,4,0,0,0,6393,0,16424,0,0,0,15936,6,2560,16,0,0,0,0,0,128,0,0,0,0,0,512,0,0,0,63744,24,10240,64,0,0,0,0,0,32,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,61440,32671,48280,17418,0,2016,0,0,0,512,0,0,0,65280,34809,43977,1088,0,126,16384,1598,0,4106,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,1536,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1048,542,672,16,63488,1,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,4096,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,0,0,0,0,8256,21844,1023,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,2048,0,0,0,64512,8167,44838,4354,0,504,0,0,0,0,0,0,0,0,0,16384,0,0,0,61440,32671,48280,17418,0,2016,0,0,0,1024,0,0,0,0,0,0,0,0,0,0,0,0,64,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,63999,51591,16555,4,32256,0,16768,8672,10752,256,32768,31,0,0,0,0,0,0,0,1048,542,672,16,63488,1,65280,34809,43977,1088,0,126,0,0,0,64,0,0,0,0,0,256,21840,4093,0,0,0,16384,21504,65365,3,0,0,0,256,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32768,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,64512,8167,44838,4354,0,504,0,0,0,256,0,0,0,0,32768,1,0,0,0,0,0,0,0,0,0,0
 	])
 
 {-# NOINLINE happyExpListPerState #-}
@@ -2389,37 +2389,17 @@ action_190 _ = happyReduce_72
 action_191 (59) = happyShift action_212
 action_191 _ = happyFail (happyExpListPerState 191)
 
-action_192 (24) = happyShift action_17
-action_192 (25) = happyShift action_18
-action_192 (31) = happyShift action_24
-action_192 (38) = happyShift action_29
-action_192 (39) = happyShift action_30
-action_192 (40) = happyShift action_31
-action_192 (41) = happyShift action_32
-action_192 (46) = happyShift action_33
-action_192 (57) = happyShift action_211
-action_192 (58) = happyShift action_53
-action_192 (60) = happyShift action_54
-action_192 (62) = happyShift action_42
-action_192 (73) = happyShift action_44
-action_192 (96) = happyShift action_45
-action_192 (97) = happyShift action_46
-action_192 (98) = happyShift action_47
-action_192 (99) = happyShift action_48
-action_192 (100) = happyShift action_49
-action_192 (101) = happyShift action_50
-action_192 (15) = happyGoto action_51
-action_192 (16) = happyGoto action_210
-action_192 (18) = happyGoto action_14
+action_192 (57) = happyShift action_210
+action_192 (99) = happyShift action_211
 action_192 _ = happyFail (happyExpListPerState 192)
 
-action_193 (62) = happyShift action_209
+action_193 (84) = happyShift action_209
 action_193 _ = happyFail (happyExpListPerState 193)
 
 action_194 (59) = happyShift action_208
 action_194 _ = happyFail (happyExpListPerState 194)
 
-action_195 (62) = happyShift action_207
+action_195 (84) = happyShift action_207
 action_195 _ = happyFail (happyExpListPerState 195)
 
 action_196 (23) = happyShift action_16
@@ -2539,146 +2519,45 @@ action_205 _ = happyReduce_107
 action_206 _ = happyReduce_101
 
 action_207 (23) = happyShift action_16
-action_207 (24) = happyShift action_17
-action_207 (25) = happyShift action_18
 action_207 (26) = happyShift action_19
 action_207 (27) = happyShift action_20
 action_207 (28) = happyShift action_21
 action_207 (29) = happyShift action_22
 action_207 (30) = happyShift action_23
-action_207 (31) = happyShift action_24
 action_207 (34) = happyShift action_25
 action_207 (35) = happyShift action_26
-action_207 (36) = happyShift action_27
-action_207 (37) = happyShift action_28
-action_207 (38) = happyShift action_29
-action_207 (39) = happyShift action_30
-action_207 (40) = happyShift action_31
-action_207 (41) = happyShift action_32
-action_207 (46) = happyShift action_33
-action_207 (47) = happyShift action_34
-action_207 (50) = happyShift action_35
-action_207 (53) = happyShift action_36
-action_207 (54) = happyShift action_37
-action_207 (55) = happyShift action_38
-action_207 (56) = happyShift action_39
-action_207 (58) = happyShift action_40
-action_207 (60) = happyShift action_41
-action_207 (62) = happyShift action_42
+action_207 (58) = happyShift action_57
+action_207 (60) = happyShift action_58
 action_207 (69) = happyShift action_43
-action_207 (73) = happyShift action_44
-action_207 (96) = happyShift action_45
-action_207 (97) = happyShift action_46
-action_207 (98) = happyShift action_47
-action_207 (99) = happyShift action_48
-action_207 (100) = happyShift action_49
-action_207 (101) = happyShift action_50
-action_207 (5) = happyGoto action_236
-action_207 (6) = happyGoto action_6
-action_207 (7) = happyGoto action_7
-action_207 (9) = happyGoto action_8
-action_207 (10) = happyGoto action_9
-action_207 (12) = happyGoto action_10
+action_207 (12) = happyGoto action_236
 action_207 (14) = happyGoto action_11
-action_207 (15) = happyGoto action_12
-action_207 (16) = happyGoto action_13
-action_207 (18) = happyGoto action_14
 action_207 _ = happyFail (happyExpListPerState 207)
 
-action_208 (62) = happyShift action_235
+action_208 (84) = happyShift action_235
 action_208 _ = happyFail (happyExpListPerState 208)
 
 action_209 (23) = happyShift action_16
-action_209 (24) = happyShift action_17
-action_209 (25) = happyShift action_18
 action_209 (26) = happyShift action_19
 action_209 (27) = happyShift action_20
 action_209 (28) = happyShift action_21
 action_209 (29) = happyShift action_22
 action_209 (30) = happyShift action_23
-action_209 (31) = happyShift action_24
 action_209 (34) = happyShift action_25
 action_209 (35) = happyShift action_26
-action_209 (36) = happyShift action_27
-action_209 (37) = happyShift action_28
-action_209 (38) = happyShift action_29
-action_209 (39) = happyShift action_30
-action_209 (40) = happyShift action_31
-action_209 (41) = happyShift action_32
-action_209 (46) = happyShift action_33
-action_209 (47) = happyShift action_34
-action_209 (50) = happyShift action_35
-action_209 (53) = happyShift action_36
-action_209 (54) = happyShift action_37
-action_209 (55) = happyShift action_38
-action_209 (56) = happyShift action_39
-action_209 (58) = happyShift action_40
-action_209 (60) = happyShift action_41
-action_209 (62) = happyShift action_42
+action_209 (58) = happyShift action_57
+action_209 (60) = happyShift action_58
 action_209 (69) = happyShift action_43
-action_209 (73) = happyShift action_44
-action_209 (96) = happyShift action_45
-action_209 (97) = happyShift action_46
-action_209 (98) = happyShift action_47
-action_209 (99) = happyShift action_48
-action_209 (100) = happyShift action_49
-action_209 (101) = happyShift action_50
-action_209 (5) = happyGoto action_234
-action_209 (6) = happyGoto action_6
-action_209 (7) = happyGoto action_7
-action_209 (9) = happyGoto action_8
-action_209 (10) = happyGoto action_9
-action_209 (12) = happyGoto action_10
+action_209 (12) = happyGoto action_234
 action_209 (14) = happyGoto action_11
-action_209 (15) = happyGoto action_12
-action_209 (16) = happyGoto action_13
-action_209 (18) = happyGoto action_14
 action_209 _ = happyFail (happyExpListPerState 209)
 
-action_210 (66) = happyShift action_233
-action_210 (71) = happyShift action_86
-action_210 (73) = happyShift action_87
-action_210 (75) = happyShift action_88
-action_210 (77) = happyShift action_89
-action_210 (79) = happyShift action_90
-action_210 (81) = happyShift action_91
-action_210 (83) = happyShift action_92
-action_210 (85) = happyShift action_93
-action_210 (86) = happyShift action_94
-action_210 (87) = happyShift action_95
-action_210 (88) = happyShift action_96
-action_210 (89) = happyShift action_97
-action_210 (90) = happyShift action_98
-action_210 (91) = happyShift action_99
-action_210 (92) = happyShift action_100
-action_210 (93) = happyShift action_101
-action_210 (94) = happyShift action_102
-action_210 _ = happyReduce_43
+action_210 (99) = happyShift action_233
+action_210 _ = happyFail (happyExpListPerState 210)
 
-action_211 (24) = happyShift action_17
-action_211 (25) = happyShift action_18
-action_211 (31) = happyShift action_24
-action_211 (38) = happyShift action_29
-action_211 (39) = happyShift action_30
-action_211 (40) = happyShift action_31
-action_211 (41) = happyShift action_32
-action_211 (46) = happyShift action_33
-action_211 (58) = happyShift action_53
-action_211 (60) = happyShift action_54
-action_211 (62) = happyShift action_42
-action_211 (73) = happyShift action_44
-action_211 (96) = happyShift action_45
-action_211 (97) = happyShift action_46
-action_211 (98) = happyShift action_47
-action_211 (99) = happyShift action_48
-action_211 (100) = happyShift action_49
-action_211 (101) = happyShift action_50
-action_211 (15) = happyGoto action_51
-action_211 (16) = happyGoto action_232
-action_211 (18) = happyGoto action_14
-action_211 _ = happyFail (happyExpListPerState 211)
+action_211 (66) = happyShift action_232
+action_211 _ = happyReduce_43
 
-action_212 (62) = happyShift action_231
+action_212 (84) = happyShift action_231
 action_212 _ = happyFail (happyExpListPerState 212)
 
 action_213 (23) = happyShift action_16
@@ -3090,139 +2969,58 @@ action_230 (63) = happyShift action_247
 action_230 _ = happyFail (happyExpListPerState 230)
 
 action_231 (23) = happyShift action_16
-action_231 (24) = happyShift action_17
-action_231 (25) = happyShift action_18
 action_231 (26) = happyShift action_19
 action_231 (27) = happyShift action_20
 action_231 (28) = happyShift action_21
 action_231 (29) = happyShift action_22
 action_231 (30) = happyShift action_23
-action_231 (31) = happyShift action_24
 action_231 (34) = happyShift action_25
 action_231 (35) = happyShift action_26
-action_231 (36) = happyShift action_27
-action_231 (37) = happyShift action_28
-action_231 (38) = happyShift action_29
-action_231 (39) = happyShift action_30
-action_231 (40) = happyShift action_31
-action_231 (41) = happyShift action_32
-action_231 (46) = happyShift action_33
-action_231 (47) = happyShift action_34
-action_231 (50) = happyShift action_35
-action_231 (53) = happyShift action_36
-action_231 (54) = happyShift action_37
-action_231 (55) = happyShift action_38
-action_231 (56) = happyShift action_39
-action_231 (58) = happyShift action_40
-action_231 (60) = happyShift action_41
-action_231 (62) = happyShift action_42
+action_231 (58) = happyShift action_57
+action_231 (60) = happyShift action_58
 action_231 (69) = happyShift action_43
-action_231 (73) = happyShift action_44
-action_231 (96) = happyShift action_45
-action_231 (97) = happyShift action_46
-action_231 (98) = happyShift action_47
-action_231 (99) = happyShift action_48
-action_231 (100) = happyShift action_49
-action_231 (101) = happyShift action_50
-action_231 (5) = happyGoto action_246
-action_231 (6) = happyGoto action_6
-action_231 (7) = happyGoto action_7
-action_231 (9) = happyGoto action_8
-action_231 (10) = happyGoto action_9
-action_231 (12) = happyGoto action_10
+action_231 (12) = happyGoto action_246
 action_231 (14) = happyGoto action_11
-action_231 (15) = happyGoto action_12
-action_231 (16) = happyGoto action_13
-action_231 (18) = happyGoto action_14
 action_231 _ = happyFail (happyExpListPerState 231)
 
-action_232 (66) = happyShift action_245
-action_232 (71) = happyShift action_86
-action_232 (73) = happyShift action_87
-action_232 (75) = happyShift action_88
-action_232 (77) = happyShift action_89
-action_232 (79) = happyShift action_90
-action_232 (81) = happyShift action_91
-action_232 (83) = happyShift action_92
-action_232 (85) = happyShift action_93
-action_232 (86) = happyShift action_94
-action_232 (87) = happyShift action_95
-action_232 (88) = happyShift action_96
-action_232 (89) = happyShift action_97
-action_232 (90) = happyShift action_98
-action_232 (91) = happyShift action_99
-action_232 (92) = happyShift action_100
-action_232 (93) = happyShift action_101
-action_232 (94) = happyShift action_102
-action_232 _ = happyReduce_45
+action_232 (23) = happyShift action_16
+action_232 (26) = happyShift action_19
+action_232 (27) = happyShift action_20
+action_232 (28) = happyShift action_21
+action_232 (29) = happyShift action_22
+action_232 (30) = happyShift action_23
+action_232 (34) = happyShift action_25
+action_232 (35) = happyShift action_26
+action_232 (58) = happyShift action_57
+action_232 (60) = happyShift action_58
+action_232 (69) = happyShift action_43
+action_232 (11) = happyGoto action_245
+action_232 (12) = happyGoto action_192
+action_232 (14) = happyGoto action_11
+action_232 _ = happyFail (happyExpListPerState 232)
 
-action_233 (23) = happyShift action_16
-action_233 (26) = happyShift action_19
-action_233 (27) = happyShift action_20
-action_233 (28) = happyShift action_21
-action_233 (29) = happyShift action_22
-action_233 (30) = happyShift action_23
-action_233 (34) = happyShift action_25
-action_233 (35) = happyShift action_26
-action_233 (58) = happyShift action_57
-action_233 (60) = happyShift action_58
-action_233 (69) = happyShift action_43
-action_233 (11) = happyGoto action_244
-action_233 (12) = happyGoto action_192
-action_233 (14) = happyGoto action_11
-action_233 _ = happyFail (happyExpListPerState 233)
+action_233 (66) = happyShift action_244
+action_233 _ = happyReduce_45
 
-action_234 (63) = happyShift action_243
+action_234 (62) = happyShift action_243
 action_234 _ = happyFail (happyExpListPerState 234)
 
 action_235 (23) = happyShift action_16
-action_235 (24) = happyShift action_17
-action_235 (25) = happyShift action_18
 action_235 (26) = happyShift action_19
 action_235 (27) = happyShift action_20
 action_235 (28) = happyShift action_21
 action_235 (29) = happyShift action_22
 action_235 (30) = happyShift action_23
-action_235 (31) = happyShift action_24
 action_235 (34) = happyShift action_25
 action_235 (35) = happyShift action_26
-action_235 (36) = happyShift action_27
-action_235 (37) = happyShift action_28
-action_235 (38) = happyShift action_29
-action_235 (39) = happyShift action_30
-action_235 (40) = happyShift action_31
-action_235 (41) = happyShift action_32
-action_235 (46) = happyShift action_33
-action_235 (47) = happyShift action_34
-action_235 (50) = happyShift action_35
-action_235 (53) = happyShift action_36
-action_235 (54) = happyShift action_37
-action_235 (55) = happyShift action_38
-action_235 (56) = happyShift action_39
-action_235 (58) = happyShift action_40
-action_235 (60) = happyShift action_41
-action_235 (62) = happyShift action_42
+action_235 (58) = happyShift action_57
+action_235 (60) = happyShift action_58
 action_235 (69) = happyShift action_43
-action_235 (73) = happyShift action_44
-action_235 (96) = happyShift action_45
-action_235 (97) = happyShift action_46
-action_235 (98) = happyShift action_47
-action_235 (99) = happyShift action_48
-action_235 (100) = happyShift action_49
-action_235 (101) = happyShift action_50
-action_235 (5) = happyGoto action_242
-action_235 (6) = happyGoto action_6
-action_235 (7) = happyGoto action_7
-action_235 (9) = happyGoto action_8
-action_235 (10) = happyGoto action_9
-action_235 (12) = happyGoto action_10
+action_235 (12) = happyGoto action_242
 action_235 (14) = happyGoto action_11
-action_235 (15) = happyGoto action_12
-action_235 (16) = happyGoto action_13
-action_235 (18) = happyGoto action_14
 action_235 _ = happyFail (happyExpListPerState 235)
 
-action_236 (63) = happyShift action_241
+action_236 (62) = happyShift action_241
 action_236 _ = happyFail (happyExpListPerState 236)
 
 action_237 _ = happyReduce_108
@@ -3235,32 +3033,122 @@ action_239 _ = happyReduce_105
 
 action_240 _ = happyReduce_106
 
-action_241 _ = happyReduce_39
+action_241 (23) = happyShift action_16
+action_241 (24) = happyShift action_17
+action_241 (25) = happyShift action_18
+action_241 (26) = happyShift action_19
+action_241 (27) = happyShift action_20
+action_241 (28) = happyShift action_21
+action_241 (29) = happyShift action_22
+action_241 (30) = happyShift action_23
+action_241 (31) = happyShift action_24
+action_241 (34) = happyShift action_25
+action_241 (35) = happyShift action_26
+action_241 (36) = happyShift action_27
+action_241 (37) = happyShift action_28
+action_241 (38) = happyShift action_29
+action_241 (39) = happyShift action_30
+action_241 (40) = happyShift action_31
+action_241 (41) = happyShift action_32
+action_241 (46) = happyShift action_33
+action_241 (47) = happyShift action_34
+action_241 (50) = happyShift action_35
+action_241 (53) = happyShift action_36
+action_241 (54) = happyShift action_37
+action_241 (55) = happyShift action_38
+action_241 (56) = happyShift action_39
+action_241 (58) = happyShift action_40
+action_241 (60) = happyShift action_41
+action_241 (62) = happyShift action_42
+action_241 (69) = happyShift action_43
+action_241 (73) = happyShift action_44
+action_241 (96) = happyShift action_45
+action_241 (97) = happyShift action_46
+action_241 (98) = happyShift action_47
+action_241 (99) = happyShift action_48
+action_241 (100) = happyShift action_49
+action_241 (101) = happyShift action_50
+action_241 (5) = happyGoto action_266
+action_241 (6) = happyGoto action_6
+action_241 (7) = happyGoto action_7
+action_241 (9) = happyGoto action_8
+action_241 (10) = happyGoto action_9
+action_241 (12) = happyGoto action_10
+action_241 (14) = happyGoto action_11
+action_241 (15) = happyGoto action_12
+action_241 (16) = happyGoto action_13
+action_241 (18) = happyGoto action_14
+action_241 _ = happyFail (happyExpListPerState 241)
 
-action_242 (63) = happyShift action_264
+action_242 (62) = happyShift action_265
 action_242 _ = happyFail (happyExpListPerState 242)
 
-action_243 _ = happyReduce_41
+action_243 (23) = happyShift action_16
+action_243 (24) = happyShift action_17
+action_243 (25) = happyShift action_18
+action_243 (26) = happyShift action_19
+action_243 (27) = happyShift action_20
+action_243 (28) = happyShift action_21
+action_243 (29) = happyShift action_22
+action_243 (30) = happyShift action_23
+action_243 (31) = happyShift action_24
+action_243 (34) = happyShift action_25
+action_243 (35) = happyShift action_26
+action_243 (36) = happyShift action_27
+action_243 (37) = happyShift action_28
+action_243 (38) = happyShift action_29
+action_243 (39) = happyShift action_30
+action_243 (40) = happyShift action_31
+action_243 (41) = happyShift action_32
+action_243 (46) = happyShift action_33
+action_243 (47) = happyShift action_34
+action_243 (50) = happyShift action_35
+action_243 (53) = happyShift action_36
+action_243 (54) = happyShift action_37
+action_243 (55) = happyShift action_38
+action_243 (56) = happyShift action_39
+action_243 (58) = happyShift action_40
+action_243 (60) = happyShift action_41
+action_243 (62) = happyShift action_42
+action_243 (69) = happyShift action_43
+action_243 (73) = happyShift action_44
+action_243 (96) = happyShift action_45
+action_243 (97) = happyShift action_46
+action_243 (98) = happyShift action_47
+action_243 (99) = happyShift action_48
+action_243 (100) = happyShift action_49
+action_243 (101) = happyShift action_50
+action_243 (5) = happyGoto action_264
+action_243 (6) = happyGoto action_6
+action_243 (7) = happyGoto action_7
+action_243 (9) = happyGoto action_8
+action_243 (10) = happyGoto action_9
+action_243 (12) = happyGoto action_10
+action_243 (14) = happyGoto action_11
+action_243 (15) = happyGoto action_12
+action_243 (16) = happyGoto action_13
+action_243 (18) = happyGoto action_14
+action_243 _ = happyFail (happyExpListPerState 243)
 
-action_244 _ = happyReduce_42
+action_244 (23) = happyShift action_16
+action_244 (26) = happyShift action_19
+action_244 (27) = happyShift action_20
+action_244 (28) = happyShift action_21
+action_244 (29) = happyShift action_22
+action_244 (30) = happyShift action_23
+action_244 (34) = happyShift action_25
+action_244 (35) = happyShift action_26
+action_244 (58) = happyShift action_57
+action_244 (60) = happyShift action_58
+action_244 (69) = happyShift action_43
+action_244 (11) = happyGoto action_263
+action_244 (12) = happyGoto action_192
+action_244 (14) = happyGoto action_11
+action_244 _ = happyFail (happyExpListPerState 244)
 
-action_245 (23) = happyShift action_16
-action_245 (26) = happyShift action_19
-action_245 (27) = happyShift action_20
-action_245 (28) = happyShift action_21
-action_245 (29) = happyShift action_22
-action_245 (30) = happyShift action_23
-action_245 (34) = happyShift action_25
-action_245 (35) = happyShift action_26
-action_245 (58) = happyShift action_57
-action_245 (60) = happyShift action_58
-action_245 (69) = happyShift action_43
-action_245 (11) = happyGoto action_263
-action_245 (12) = happyGoto action_192
-action_245 (14) = happyGoto action_11
-action_245 _ = happyFail (happyExpListPerState 245)
+action_245 _ = happyReduce_42
 
-action_246 (63) = happyShift action_262
+action_246 (62) = happyShift action_262
 action_246 _ = happyFail (happyExpListPerState 246)
 
 action_247 (48) = happyShift action_260
@@ -3310,11 +3198,11 @@ action_255 _ = happyReduce_35
 
 action_256 _ = happyReduce_36
 
-action_257 (62) = happyShift action_269
+action_257 (62) = happyShift action_275
 action_257 _ = happyFail (happyExpListPerState 257)
 
-action_258 (59) = happyShift action_267
-action_258 (66) = happyShift action_268
+action_258 (59) = happyShift action_273
+action_258 (66) = happyShift action_274
 action_258 (71) = happyShift action_86
 action_258 (73) = happyShift action_87
 action_258 (75) = happyShift action_88
@@ -3336,17 +3224,63 @@ action_258 _ = happyFail (happyExpListPerState 258)
 
 action_259 _ = happyReduce_31
 
-action_260 (58) = happyShift action_266
+action_260 (58) = happyShift action_272
 action_260 _ = happyFail (happyExpListPerState 260)
 
-action_261 (62) = happyShift action_265
+action_261 (62) = happyShift action_271
 action_261 _ = happyFail (happyExpListPerState 261)
 
-action_262 _ = happyReduce_40
+action_262 (23) = happyShift action_16
+action_262 (24) = happyShift action_17
+action_262 (25) = happyShift action_18
+action_262 (26) = happyShift action_19
+action_262 (27) = happyShift action_20
+action_262 (28) = happyShift action_21
+action_262 (29) = happyShift action_22
+action_262 (30) = happyShift action_23
+action_262 (31) = happyShift action_24
+action_262 (34) = happyShift action_25
+action_262 (35) = happyShift action_26
+action_262 (36) = happyShift action_27
+action_262 (37) = happyShift action_28
+action_262 (38) = happyShift action_29
+action_262 (39) = happyShift action_30
+action_262 (40) = happyShift action_31
+action_262 (41) = happyShift action_32
+action_262 (46) = happyShift action_33
+action_262 (47) = happyShift action_34
+action_262 (50) = happyShift action_35
+action_262 (53) = happyShift action_36
+action_262 (54) = happyShift action_37
+action_262 (55) = happyShift action_38
+action_262 (56) = happyShift action_39
+action_262 (58) = happyShift action_40
+action_262 (60) = happyShift action_41
+action_262 (62) = happyShift action_42
+action_262 (69) = happyShift action_43
+action_262 (73) = happyShift action_44
+action_262 (96) = happyShift action_45
+action_262 (97) = happyShift action_46
+action_262 (98) = happyShift action_47
+action_262 (99) = happyShift action_48
+action_262 (100) = happyShift action_49
+action_262 (101) = happyShift action_50
+action_262 (5) = happyGoto action_270
+action_262 (6) = happyGoto action_6
+action_262 (7) = happyGoto action_7
+action_262 (9) = happyGoto action_8
+action_262 (10) = happyGoto action_9
+action_262 (12) = happyGoto action_10
+action_262 (14) = happyGoto action_11
+action_262 (15) = happyGoto action_12
+action_262 (16) = happyGoto action_13
+action_262 (18) = happyGoto action_14
+action_262 _ = happyFail (happyExpListPerState 262)
 
 action_263 _ = happyReduce_44
 
-action_264 _ = happyReduce_38
+action_264 (63) = happyShift action_269
+action_264 _ = happyFail (happyExpListPerState 264)
 
 action_265 (23) = happyShift action_16
 action_265 (24) = happyShift action_17
@@ -3383,7 +3317,7 @@ action_265 (98) = happyShift action_47
 action_265 (99) = happyShift action_48
 action_265 (100) = happyShift action_49
 action_265 (101) = happyShift action_50
-action_265 (5) = happyGoto action_273
+action_265 (5) = happyGoto action_268
 action_265 (6) = happyGoto action_6
 action_265 (7) = happyGoto action_7
 action_265 (9) = happyGoto action_8
@@ -3395,212 +3329,276 @@ action_265 (16) = happyGoto action_13
 action_265 (18) = happyGoto action_14
 action_265 _ = happyFail (happyExpListPerState 265)
 
-action_266 (24) = happyShift action_17
-action_266 (25) = happyShift action_18
-action_266 (31) = happyShift action_24
-action_266 (38) = happyShift action_29
-action_266 (39) = happyShift action_30
-action_266 (40) = happyShift action_31
-action_266 (41) = happyShift action_32
-action_266 (46) = happyShift action_33
-action_266 (58) = happyShift action_53
-action_266 (60) = happyShift action_54
-action_266 (62) = happyShift action_42
-action_266 (73) = happyShift action_44
-action_266 (96) = happyShift action_45
-action_266 (97) = happyShift action_46
-action_266 (98) = happyShift action_47
-action_266 (99) = happyShift action_48
-action_266 (100) = happyShift action_49
-action_266 (101) = happyShift action_50
-action_266 (15) = happyGoto action_51
-action_266 (16) = happyGoto action_272
-action_266 (18) = happyGoto action_14
+action_266 (63) = happyShift action_267
 action_266 _ = happyFail (happyExpListPerState 266)
 
-action_267 _ = happyReduce_21
+action_267 _ = happyReduce_39
 
-action_268 (24) = happyShift action_17
-action_268 (25) = happyShift action_18
-action_268 (31) = happyShift action_24
-action_268 (38) = happyShift action_29
-action_268 (39) = happyShift action_30
-action_268 (40) = happyShift action_31
-action_268 (41) = happyShift action_32
-action_268 (46) = happyShift action_33
-action_268 (58) = happyShift action_53
-action_268 (60) = happyShift action_54
-action_268 (62) = happyShift action_42
-action_268 (73) = happyShift action_44
-action_268 (96) = happyShift action_45
-action_268 (97) = happyShift action_46
-action_268 (98) = happyShift action_47
-action_268 (99) = happyShift action_48
-action_268 (100) = happyShift action_49
-action_268 (101) = happyShift action_50
-action_268 (15) = happyGoto action_51
-action_268 (16) = happyGoto action_271
-action_268 (18) = happyGoto action_14
+action_268 (63) = happyShift action_281
 action_268 _ = happyFail (happyExpListPerState 268)
 
-action_269 (23) = happyShift action_16
-action_269 (24) = happyShift action_17
-action_269 (25) = happyShift action_18
-action_269 (26) = happyShift action_19
-action_269 (27) = happyShift action_20
-action_269 (28) = happyShift action_21
-action_269 (29) = happyShift action_22
-action_269 (30) = happyShift action_23
-action_269 (31) = happyShift action_24
-action_269 (34) = happyShift action_25
-action_269 (35) = happyShift action_26
-action_269 (36) = happyShift action_27
-action_269 (37) = happyShift action_28
-action_269 (38) = happyShift action_29
-action_269 (39) = happyShift action_30
-action_269 (40) = happyShift action_31
-action_269 (41) = happyShift action_32
-action_269 (46) = happyShift action_33
-action_269 (47) = happyShift action_34
-action_269 (50) = happyShift action_35
-action_269 (53) = happyShift action_36
-action_269 (54) = happyShift action_37
-action_269 (55) = happyShift action_38
-action_269 (56) = happyShift action_39
-action_269 (58) = happyShift action_40
-action_269 (60) = happyShift action_41
-action_269 (62) = happyShift action_42
-action_269 (69) = happyShift action_43
-action_269 (73) = happyShift action_44
-action_269 (96) = happyShift action_45
-action_269 (97) = happyShift action_46
-action_269 (98) = happyShift action_47
-action_269 (99) = happyShift action_48
-action_269 (100) = happyShift action_49
-action_269 (101) = happyShift action_50
-action_269 (5) = happyGoto action_270
-action_269 (6) = happyGoto action_6
-action_269 (7) = happyGoto action_7
-action_269 (9) = happyGoto action_8
-action_269 (10) = happyGoto action_9
-action_269 (12) = happyGoto action_10
-action_269 (14) = happyGoto action_11
-action_269 (15) = happyGoto action_12
-action_269 (16) = happyGoto action_13
-action_269 (18) = happyGoto action_14
-action_269 _ = happyFail (happyExpListPerState 269)
+action_269 _ = happyReduce_41
 
-action_270 (63) = happyShift action_277
+action_270 (63) = happyShift action_280
 action_270 _ = happyFail (happyExpListPerState 270)
 
-action_271 (59) = happyShift action_276
-action_271 (71) = happyShift action_86
-action_271 (73) = happyShift action_87
-action_271 (75) = happyShift action_88
-action_271 (77) = happyShift action_89
-action_271 (79) = happyShift action_90
-action_271 (81) = happyShift action_91
-action_271 (83) = happyShift action_92
-action_271 (85) = happyShift action_93
-action_271 (86) = happyShift action_94
-action_271 (87) = happyShift action_95
-action_271 (88) = happyShift action_96
-action_271 (89) = happyShift action_97
-action_271 (90) = happyShift action_98
-action_271 (91) = happyShift action_99
-action_271 (92) = happyShift action_100
-action_271 (93) = happyShift action_101
-action_271 (94) = happyShift action_102
+action_271 (23) = happyShift action_16
+action_271 (24) = happyShift action_17
+action_271 (25) = happyShift action_18
+action_271 (26) = happyShift action_19
+action_271 (27) = happyShift action_20
+action_271 (28) = happyShift action_21
+action_271 (29) = happyShift action_22
+action_271 (30) = happyShift action_23
+action_271 (31) = happyShift action_24
+action_271 (34) = happyShift action_25
+action_271 (35) = happyShift action_26
+action_271 (36) = happyShift action_27
+action_271 (37) = happyShift action_28
+action_271 (38) = happyShift action_29
+action_271 (39) = happyShift action_30
+action_271 (40) = happyShift action_31
+action_271 (41) = happyShift action_32
+action_271 (46) = happyShift action_33
+action_271 (47) = happyShift action_34
+action_271 (50) = happyShift action_35
+action_271 (53) = happyShift action_36
+action_271 (54) = happyShift action_37
+action_271 (55) = happyShift action_38
+action_271 (56) = happyShift action_39
+action_271 (58) = happyShift action_40
+action_271 (60) = happyShift action_41
+action_271 (62) = happyShift action_42
+action_271 (69) = happyShift action_43
+action_271 (73) = happyShift action_44
+action_271 (96) = happyShift action_45
+action_271 (97) = happyShift action_46
+action_271 (98) = happyShift action_47
+action_271 (99) = happyShift action_48
+action_271 (100) = happyShift action_49
+action_271 (101) = happyShift action_50
+action_271 (5) = happyGoto action_279
+action_271 (6) = happyGoto action_6
+action_271 (7) = happyGoto action_7
+action_271 (9) = happyGoto action_8
+action_271 (10) = happyGoto action_9
+action_271 (12) = happyGoto action_10
+action_271 (14) = happyGoto action_11
+action_271 (15) = happyGoto action_12
+action_271 (16) = happyGoto action_13
+action_271 (18) = happyGoto action_14
 action_271 _ = happyFail (happyExpListPerState 271)
 
-action_272 (59) = happyShift action_275
-action_272 (71) = happyShift action_86
-action_272 (73) = happyShift action_87
-action_272 (75) = happyShift action_88
-action_272 (77) = happyShift action_89
-action_272 (79) = happyShift action_90
-action_272 (81) = happyShift action_91
-action_272 (83) = happyShift action_92
-action_272 (85) = happyShift action_93
-action_272 (86) = happyShift action_94
-action_272 (87) = happyShift action_95
-action_272 (88) = happyShift action_96
-action_272 (89) = happyShift action_97
-action_272 (90) = happyShift action_98
-action_272 (91) = happyShift action_99
-action_272 (92) = happyShift action_100
-action_272 (93) = happyShift action_101
-action_272 (94) = happyShift action_102
+action_272 (24) = happyShift action_17
+action_272 (25) = happyShift action_18
+action_272 (31) = happyShift action_24
+action_272 (38) = happyShift action_29
+action_272 (39) = happyShift action_30
+action_272 (40) = happyShift action_31
+action_272 (41) = happyShift action_32
+action_272 (46) = happyShift action_33
+action_272 (58) = happyShift action_53
+action_272 (60) = happyShift action_54
+action_272 (62) = happyShift action_42
+action_272 (73) = happyShift action_44
+action_272 (96) = happyShift action_45
+action_272 (97) = happyShift action_46
+action_272 (98) = happyShift action_47
+action_272 (99) = happyShift action_48
+action_272 (100) = happyShift action_49
+action_272 (101) = happyShift action_50
+action_272 (15) = happyGoto action_51
+action_272 (16) = happyGoto action_278
+action_272 (18) = happyGoto action_14
 action_272 _ = happyFail (happyExpListPerState 272)
 
-action_273 (63) = happyShift action_274
-action_273 _ = happyFail (happyExpListPerState 273)
+action_273 _ = happyReduce_21
 
-action_274 _ = happyReduce_33
+action_274 (24) = happyShift action_17
+action_274 (25) = happyShift action_18
+action_274 (31) = happyShift action_24
+action_274 (38) = happyShift action_29
+action_274 (39) = happyShift action_30
+action_274 (40) = happyShift action_31
+action_274 (41) = happyShift action_32
+action_274 (46) = happyShift action_33
+action_274 (58) = happyShift action_53
+action_274 (60) = happyShift action_54
+action_274 (62) = happyShift action_42
+action_274 (73) = happyShift action_44
+action_274 (96) = happyShift action_45
+action_274 (97) = happyShift action_46
+action_274 (98) = happyShift action_47
+action_274 (99) = happyShift action_48
+action_274 (100) = happyShift action_49
+action_274 (101) = happyShift action_50
+action_274 (15) = happyGoto action_51
+action_274 (16) = happyGoto action_277
+action_274 (18) = happyGoto action_14
+action_274 _ = happyFail (happyExpListPerState 274)
 
-action_275 (62) = happyShift action_278
+action_275 (23) = happyShift action_16
+action_275 (24) = happyShift action_17
+action_275 (25) = happyShift action_18
+action_275 (26) = happyShift action_19
+action_275 (27) = happyShift action_20
+action_275 (28) = happyShift action_21
+action_275 (29) = happyShift action_22
+action_275 (30) = happyShift action_23
+action_275 (31) = happyShift action_24
+action_275 (34) = happyShift action_25
+action_275 (35) = happyShift action_26
+action_275 (36) = happyShift action_27
+action_275 (37) = happyShift action_28
+action_275 (38) = happyShift action_29
+action_275 (39) = happyShift action_30
+action_275 (40) = happyShift action_31
+action_275 (41) = happyShift action_32
+action_275 (46) = happyShift action_33
+action_275 (47) = happyShift action_34
+action_275 (50) = happyShift action_35
+action_275 (53) = happyShift action_36
+action_275 (54) = happyShift action_37
+action_275 (55) = happyShift action_38
+action_275 (56) = happyShift action_39
+action_275 (58) = happyShift action_40
+action_275 (60) = happyShift action_41
+action_275 (62) = happyShift action_42
+action_275 (69) = happyShift action_43
+action_275 (73) = happyShift action_44
+action_275 (96) = happyShift action_45
+action_275 (97) = happyShift action_46
+action_275 (98) = happyShift action_47
+action_275 (99) = happyShift action_48
+action_275 (100) = happyShift action_49
+action_275 (101) = happyShift action_50
+action_275 (5) = happyGoto action_276
+action_275 (6) = happyGoto action_6
+action_275 (7) = happyGoto action_7
+action_275 (9) = happyGoto action_8
+action_275 (10) = happyGoto action_9
+action_275 (12) = happyGoto action_10
+action_275 (14) = happyGoto action_11
+action_275 (15) = happyGoto action_12
+action_275 (16) = happyGoto action_13
+action_275 (18) = happyGoto action_14
 action_275 _ = happyFail (happyExpListPerState 275)
 
-action_276 _ = happyReduce_20
+action_276 (63) = happyShift action_285
+action_276 _ = happyFail (happyExpListPerState 276)
 
-action_277 _ = happyReduce_37
+action_277 (59) = happyShift action_284
+action_277 (71) = happyShift action_86
+action_277 (73) = happyShift action_87
+action_277 (75) = happyShift action_88
+action_277 (77) = happyShift action_89
+action_277 (79) = happyShift action_90
+action_277 (81) = happyShift action_91
+action_277 (83) = happyShift action_92
+action_277 (85) = happyShift action_93
+action_277 (86) = happyShift action_94
+action_277 (87) = happyShift action_95
+action_277 (88) = happyShift action_96
+action_277 (89) = happyShift action_97
+action_277 (90) = happyShift action_98
+action_277 (91) = happyShift action_99
+action_277 (92) = happyShift action_100
+action_277 (93) = happyShift action_101
+action_277 (94) = happyShift action_102
+action_277 _ = happyFail (happyExpListPerState 277)
 
-action_278 (23) = happyShift action_16
-action_278 (24) = happyShift action_17
-action_278 (25) = happyShift action_18
-action_278 (26) = happyShift action_19
-action_278 (27) = happyShift action_20
-action_278 (28) = happyShift action_21
-action_278 (29) = happyShift action_22
-action_278 (30) = happyShift action_23
-action_278 (31) = happyShift action_24
-action_278 (34) = happyShift action_25
-action_278 (35) = happyShift action_26
-action_278 (36) = happyShift action_27
-action_278 (37) = happyShift action_28
-action_278 (38) = happyShift action_29
-action_278 (39) = happyShift action_30
-action_278 (40) = happyShift action_31
-action_278 (41) = happyShift action_32
-action_278 (46) = happyShift action_33
-action_278 (47) = happyShift action_34
-action_278 (50) = happyShift action_35
-action_278 (53) = happyShift action_36
-action_278 (54) = happyShift action_37
-action_278 (55) = happyShift action_38
-action_278 (56) = happyShift action_39
-action_278 (58) = happyShift action_40
-action_278 (60) = happyShift action_41
-action_278 (62) = happyShift action_42
-action_278 (69) = happyShift action_43
-action_278 (73) = happyShift action_44
-action_278 (96) = happyShift action_45
-action_278 (97) = happyShift action_46
-action_278 (98) = happyShift action_47
-action_278 (99) = happyShift action_48
-action_278 (100) = happyShift action_49
-action_278 (101) = happyShift action_50
-action_278 (5) = happyGoto action_279
-action_278 (6) = happyGoto action_6
-action_278 (7) = happyGoto action_7
-action_278 (9) = happyGoto action_8
-action_278 (10) = happyGoto action_9
-action_278 (12) = happyGoto action_10
-action_278 (14) = happyGoto action_11
-action_278 (15) = happyGoto action_12
-action_278 (16) = happyGoto action_13
-action_278 (18) = happyGoto action_14
+action_278 (59) = happyShift action_283
+action_278 (71) = happyShift action_86
+action_278 (73) = happyShift action_87
+action_278 (75) = happyShift action_88
+action_278 (77) = happyShift action_89
+action_278 (79) = happyShift action_90
+action_278 (81) = happyShift action_91
+action_278 (83) = happyShift action_92
+action_278 (85) = happyShift action_93
+action_278 (86) = happyShift action_94
+action_278 (87) = happyShift action_95
+action_278 (88) = happyShift action_96
+action_278 (89) = happyShift action_97
+action_278 (90) = happyShift action_98
+action_278 (91) = happyShift action_99
+action_278 (92) = happyShift action_100
+action_278 (93) = happyShift action_101
+action_278 (94) = happyShift action_102
 action_278 _ = happyFail (happyExpListPerState 278)
 
-action_279 (63) = happyShift action_280
+action_279 (63) = happyShift action_282
 action_279 _ = happyFail (happyExpListPerState 279)
 
-action_280 (48) = happyShift action_260
-action_280 (49) = happyShift action_261
-action_280 (8) = happyGoto action_281
-action_280 _ = happyReduce_32
+action_280 _ = happyReduce_40
 
-action_281 _ = happyReduce_34
+action_281 _ = happyReduce_38
+
+action_282 _ = happyReduce_33
+
+action_283 (62) = happyShift action_286
+action_283 _ = happyFail (happyExpListPerState 283)
+
+action_284 _ = happyReduce_20
+
+action_285 _ = happyReduce_37
+
+action_286 (23) = happyShift action_16
+action_286 (24) = happyShift action_17
+action_286 (25) = happyShift action_18
+action_286 (26) = happyShift action_19
+action_286 (27) = happyShift action_20
+action_286 (28) = happyShift action_21
+action_286 (29) = happyShift action_22
+action_286 (30) = happyShift action_23
+action_286 (31) = happyShift action_24
+action_286 (34) = happyShift action_25
+action_286 (35) = happyShift action_26
+action_286 (36) = happyShift action_27
+action_286 (37) = happyShift action_28
+action_286 (38) = happyShift action_29
+action_286 (39) = happyShift action_30
+action_286 (40) = happyShift action_31
+action_286 (41) = happyShift action_32
+action_286 (46) = happyShift action_33
+action_286 (47) = happyShift action_34
+action_286 (50) = happyShift action_35
+action_286 (53) = happyShift action_36
+action_286 (54) = happyShift action_37
+action_286 (55) = happyShift action_38
+action_286 (56) = happyShift action_39
+action_286 (58) = happyShift action_40
+action_286 (60) = happyShift action_41
+action_286 (62) = happyShift action_42
+action_286 (69) = happyShift action_43
+action_286 (73) = happyShift action_44
+action_286 (96) = happyShift action_45
+action_286 (97) = happyShift action_46
+action_286 (98) = happyShift action_47
+action_286 (99) = happyShift action_48
+action_286 (100) = happyShift action_49
+action_286 (101) = happyShift action_50
+action_286 (5) = happyGoto action_287
+action_286 (6) = happyGoto action_6
+action_286 (7) = happyGoto action_7
+action_286 (9) = happyGoto action_8
+action_286 (10) = happyGoto action_9
+action_286 (12) = happyGoto action_10
+action_286 (14) = happyGoto action_11
+action_286 (15) = happyGoto action_12
+action_286 (16) = happyGoto action_13
+action_286 (18) = happyGoto action_14
+action_286 _ = happyFail (happyExpListPerState 286)
+
+action_287 (63) = happyShift action_288
+action_287 _ = happyFail (happyExpListPerState 287)
+
+action_288 (48) = happyShift action_260
+action_288 (49) = happyShift action_261
+action_288 (8) = happyGoto action_289
+action_288 _ = happyReduce_32
+
+action_289 _ = happyReduce_34
 
 happyReduce_1 = happySpecReduce_2  4 happyReduction_1
 happyReduction_1 _
@@ -3832,10 +3830,11 @@ happyReduction_25 _
 	)
 
 happyReduce_26 = happySpecReduce_1  6 happyReduction_26
-happyReduction_26 _
+happyReduction_26 (HappyAbsSyn10  happy_var_1)
 	 =  HappyAbsSyn6
-		 (
+		 (happy_var_1
 	)
+happyReduction_26 _  = notHappyAtAll 
 
 happyReduce_27 = happySpecReduce_2  6 happyReduction_27
 happyReduction_27 (HappyAbsSyn16  happy_var_2)
@@ -3973,9 +3972,11 @@ happyReduction_37 (_ `HappyStk`
 		 (While happy_var_5 (happy_var_3 : happy_var_10 ++ [happy_var_7])
 	) `HappyStk` happyRest
 
-happyReduce_38 = happyReduce 8 10 happyReduction_38
+happyReduce_38 = happyReduce 10 10 happyReduction_38
 happyReduction_38 (_ `HappyStk`
-	(HappyAbsSyn5  happy_var_7) `HappyStk`
+	(HappyAbsSyn5  happy_var_9) `HappyStk`
+	_ `HappyStk`
+	(HappyAbsSyn12  happy_var_7) `HappyStk`
 	_ `HappyStk`
 	_ `HappyStk`
 	(HappyAbsSyn11  happy_var_4) `HappyStk`
@@ -3984,12 +3985,14 @@ happyReduction_38 (_ `HappyStk`
 	_ `HappyStk`
 	happyRest)
 	 = HappyAbsSyn10
-		 (Func happy_var_2 happy_var_4 happy_var_7
+		 (Func (fst happy_var_2) happy_var_4 happy_var_7 happy_var_9
 	) `HappyStk` happyRest
 
-happyReduce_39 = happyReduce 7 10 happyReduction_39
+happyReduce_39 = happyReduce 9 10 happyReduction_39
 happyReduction_39 (_ `HappyStk`
-	(HappyAbsSyn5  happy_var_6) `HappyStk`
+	(HappyAbsSyn5  happy_var_8) `HappyStk`
+	_ `HappyStk`
+	(HappyAbsSyn12  happy_var_6) `HappyStk`
 	_ `HappyStk`
 	_ `HappyStk`
 	_ `HappyStk`
@@ -3997,12 +4000,14 @@ happyReduction_39 (_ `HappyStk`
 	_ `HappyStk`
 	happyRest)
 	 = HappyAbsSyn10
-		 (Func happy_var_2 [] happy_var_6
+		 (Func (fst happy_var_2) [] happy_var_6 happy_var_8
 	) `HappyStk` happyRest
 
-happyReduce_40 = happyReduce 8 10 happyReduction_40
+happyReduce_40 = happyReduce 10 10 happyReduction_40
 happyReduction_40 (_ `HappyStk`
-	(HappyAbsSyn5  happy_var_7) `HappyStk`
+	(HappyAbsSyn5  happy_var_9) `HappyStk`
+	_ `HappyStk`
+	(HappyAbsSyn12  happy_var_7) `HappyStk`
 	_ `HappyStk`
 	_ `HappyStk`
 	(HappyAbsSyn11  happy_var_4) `HappyStk`
@@ -4011,12 +4016,14 @@ happyReduction_40 (_ `HappyStk`
 	_ `HappyStk`
 	happyRest)
 	 = HappyAbsSyn10
-		 (Func happy_var_2 happy_var_4 happy_var_7
+		 (Func (fst happy_var_2) happy_var_4 happy_var_7 happy_var_9
 	) `HappyStk` happyRest
 
-happyReduce_41 = happyReduce 7 10 happyReduction_41
+happyReduce_41 = happyReduce 9 10 happyReduction_41
 happyReduction_41 (_ `HappyStk`
-	(HappyAbsSyn5  happy_var_6) `HappyStk`
+	(HappyAbsSyn5  happy_var_8) `HappyStk`
+	_ `HappyStk`
+	(HappyAbsSyn12  happy_var_6) `HappyStk`
 	_ `HappyStk`
 	_ `HappyStk`
 	_ `HappyStk`
@@ -4024,44 +4031,44 @@ happyReduction_41 (_ `HappyStk`
 	_ `HappyStk`
 	happyRest)
 	 = HappyAbsSyn10
-		 (Func happy_var_2 [] happy_var_6
+		 (Func (fst happy_var_2) [] happy_var_6 happy_var_8
 	) `HappyStk` happyRest
 
 happyReduce_42 = happyReduce 4 11 happyReduction_42
 happyReduction_42 ((HappyAbsSyn11  happy_var_4) `HappyStk`
 	_ `HappyStk`
-	(HappyAbsSyn16  happy_var_2) `HappyStk`
+	(HappyTerminal (TkId happy_var_2)) `HappyStk`
 	(HappyAbsSyn12  happy_var_1) `HappyStk`
 	happyRest)
 	 = HappyAbsSyn11
-		 ((happy_var_1, happy_var_2, False) : happy_var_4
+		 ((happy_var_1, fst happy_var_2, False) : happy_var_4
 	) `HappyStk` happyRest
 
 happyReduce_43 = happySpecReduce_2  11 happyReduction_43
-happyReduction_43 (HappyAbsSyn16  happy_var_2)
+happyReduction_43 (HappyTerminal (TkId happy_var_2))
 	(HappyAbsSyn12  happy_var_1)
 	 =  HappyAbsSyn11
-		 ([(happy_var_1, happy_var_2, False)]
+		 ([(happy_var_1, fst happy_var_2, False)]
 	)
 happyReduction_43 _ _  = notHappyAtAll 
 
 happyReduce_44 = happyReduce 5 11 happyReduction_44
 happyReduction_44 ((HappyAbsSyn11  happy_var_5) `HappyStk`
 	_ `HappyStk`
-	(HappyAbsSyn16  happy_var_3) `HappyStk`
+	(HappyTerminal (TkId happy_var_3)) `HappyStk`
 	_ `HappyStk`
 	(HappyAbsSyn12  happy_var_1) `HappyStk`
 	happyRest)
 	 = HappyAbsSyn11
-		 ((happy_var_1, happy_var_3, True) : happy_var_5
+		 ((happy_var_1, fst happy_var_3, True) : happy_var_5
 	) `HappyStk` happyRest
 
 happyReduce_45 = happySpecReduce_3  11 happyReduction_45
-happyReduction_45 _
+happyReduction_45 (HappyTerminal (TkId happy_var_3))
 	_
 	(HappyAbsSyn12  happy_var_1)
 	 =  HappyAbsSyn11
-		 ([(happy_var_1, True)]
+		 ([(happy_var_1, fst happy_var_3, True)]
 	)
 happyReduction_45 _ _ _  = notHappyAtAll 
 
@@ -4820,6 +4827,7 @@ data Instr
       | ForRange Exp Exp Exp
       | Break Exp
       | Continue
+      | Func String [(Type, String, Bool)] Type [Instr]
       | Return Exp
       | Returnsito
       deriving Show

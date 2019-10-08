@@ -130,7 +130,7 @@ Instr : Type id            { Declar $1 (fst $2) }
       | break              { Break (IntLit 1) }
       | break Exp          { Break $2 }
       | continue           { Continue }
-      | Func               {  }
+      | Func               { $1 }
       | return Exp         { Return $2 } 
       | return             { Returnsito } 
 
@@ -146,15 +146,15 @@ While : orbit while '(' Exp ')' '{' Seq '}'               { While $4 $7 }
       | orbit until '(' Exp ')' '{' Seq '}'               { While (Not $4) $7}
       | orbit '(' Instr ';' Exp ';' Instr ')' '{' Seq '}' { While $5 ($3 : $10 ++ [$7]) }
 
-Func  : comet id '(' Params ')' '{' Seq '}'               { Func $2 $4 $7 }
-      | comet id '(' ')' '{' Seq '}'                      { Func $2 [] $6 }
-      | satellite id '(' Params ')' '{' Seq '}'           { Func $2 $4 $7 }
-      | satellite id '(' ')' '{' Seq '}'                  { Func $2 [] $6 }
+Func  : comet id '(' Params ')' '->' Type '{' Seq '}'     { Func (fst $2) $4 $7 $9 }
+      | comet id '(' ')' '->' Type '{' Seq '}'            { Func (fst $2) [] $6 $8 }
+      | satellite id '(' Params ')' '->' Type '{' Seq '}' { Func (fst $2) $4 $7 $9 }
+      | satellite id '(' ')' '->' Type '{' Seq '}'        { Func (fst $2) [] $6 $8 }
 
-Params : Type Exp ',' Params         { ($1, $2, False) : $4 }
-       | Type Exp                    { [($1, $2, False)] }
-       | Type '@' Exp ',' Params     { ($1, $3, True) : $5 }
-       | Type '@' Exp                { [($1, True)] }
+Params : Type id ',' Params         { ($1, fst $2, False) : $4 }
+       | Type id                    { [($1, fst $2, False)] }
+       | Type '@' id ',' Params     { ($1, fst $3, True) : $5 }
+       | Type '@' id                { [($1, fst $3, True)] }
 
 Type  : planet          { Planet }
       | cloud           { Cloud }
@@ -259,6 +259,7 @@ data Instr
       | ForRange Exp Exp Exp
       | Break Exp
       | Continue
+      | Func String [(Type, String, Bool)] Type [Instr]
       | Return Exp
       | Returnsito
       deriving Show
