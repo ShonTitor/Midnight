@@ -99,7 +99,7 @@ Los `Cluster` pueden definirse por extensión (colocando cada elemento) o inicia
 ```
 Space
 
-[planet]Cluster A = <0,1,2,3,4>;
+[planet]Cluster A = {0,1,2,3,4};
 [planet]Cluster B = Cluster(5) of planet;
 orbit i around range(0,5) {
   B[i] = i;
