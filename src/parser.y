@@ -103,12 +103,12 @@ import Lexer
 %left NEG
 %%
 
-S     : space end       { Root [] }
-      | space Seq end   { Root $2 }
+S     : space end          { Root [] }
+      | space Seq end      { Root $2 }
 
-Seq   : Instr           { [$1] }
-      | Instr ';'       { [$1] }
-      | Instr ';' Seq   { $1 : $3 }
+Seq   : Instr              { [$1] }
+      | Instr ';'          { [$1] }
+      | Instr ';' Seq      { $1 : $3 }
 
 Instr : Type id            { Declar $1 (fst $2) }
       | Type id '=' Exp    { DeclarI $1 (fst $2) $4 }
@@ -130,6 +130,7 @@ Instr : Type id            { Declar $1 (fst $2) }
       | break              { Break (IntLit 1) }
       | break Exp          { Break $2 }
       | continue           { Continue }
+      | Func               {  }
       | return Exp         { Return $2 } 
       | return             { Returnsito } 
 
@@ -144,6 +145,16 @@ Elif : elseif '(' Exp ')' '{' Seq '}'                     { [($3, $6)] }
 While : orbit while '(' Exp ')' '{' Seq '}'               { While $4 $7 }
       | orbit until '(' Exp ')' '{' Seq '}'               { While (Not $4) $7}
       | orbit '(' Instr ';' Exp ';' Instr ')' '{' Seq '}' { While $5 ($3 : $10 ++ [$7]) }
+
+Func  : comet id '(' Params ')' '{' Seq '}'               { Func $2 $4 $7 }
+      | comet id '(' ')' '{' Seq '}'                      { Func $2 [] $6 }
+      | satellite id '(' Params ')' '{' Seq '}'           { Func $2 $4 $7 }
+      | satellite id '(' ')' '{' Seq '}'                  { Func $2 [] $6 }
+
+Params : Type Exp ',' Params         { ($1, $2, False) : $4 }
+       | Type Exp                    { [($1, $2, False)] }
+       | Type '@' Exp ',' Params     { ($1, $3, True) : $5 }
+       | Type '@' Exp                { [($1, True)] }
 
 Type  : planet          { Planet }
       | cloud           { Cloud }
@@ -226,11 +237,6 @@ Args  : Exp ',' Args              { $1 : $3 }
 
 DictItems : Exp ':' Exp ',' DictItems           { ($1, $3) : $5 }
            | Exp ':' Exp                        { [($1, $3)] }
-
-Params : Type Exp ',' Params         { ($1, $2, False) : $4 }
-       | Type Exp                    { [($1, $2, False)] }
-       | Type '@' Exp ',' Params     { ($1, $3, True) : $5 }
-       | Type '@' Exp                { [($1, True)] }
 
 {
 parseError :: [Token] -> a
