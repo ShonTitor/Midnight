@@ -89,17 +89,32 @@ import Lexer
       id              { TkId $$ }
       float           { TkFloat $$ }
       int             { TkInt $$ }
+%nonassoc '>' '<' '>=' '<=' '==' '¬='
+%left '&&' '&' '||' '|' 
+%left '¬'
+%left '+' '-'
+%left '*' '/' '//' '%'
+%nonassoc '^'
+%nonassoc '.' '[' ']' ','
+%left NEG
 %%
 
-S     : space end       { Root Empty }
+S     : space end       { Root [] }
       | space Seq end   { Root $2 }
 
-Seq   : Instr           { One $1 }
-      | Instr ';'       { One $1 }
-      | Instr ';' Seq   { Many $1 $3 }
+Seq   : Instr           { [$1] }
+      | Instr ';'       { [$1] }
+      | Instr ';' Seq   { $1 : $3 }
 
-Instr : Declar                { $1 }
-      | LValue '=' RValue     { Asig $1 $3 }
+Instr : Declar             { $1 }
+      | LValue '=' Exp     { Asig $1 $3 }
+      | LValue '+=' Exp    { Asig $1 (Sum (Lval $1) $3) }
+      | LValue '-=' Exp    { Asig $1 (Sub (Lval $1) $3) }
+      | LValue '*=' Exp    { Asig $1 (Mul (Lval $1) $3) }
+      | LValue '/=' Exp    { Asig $1 (Div (Lval $1) $3) }
+      | LValue '//=' Exp   { Asig $1 (DivE (Lval $1) $3) }
+      | LValue '%' Exp     { Asig $1 (Mod (Lval $1) $3) }
+      | LValue '^=' Exp    { Asig $1 (Pow (Lval $1) $3) }
 
 Declar : Type id        { Declar $1 (fst $2) }
 
@@ -114,81 +129,49 @@ TComp : '[' Type ']' cluster      { Cluster $2 }
       | '[' Type ']' nebula       { Nebula $2 }
       | '~' Type                  { Pointer $2 }
 
-LValue : id              { Var (fst $1) }
-       | id '.' id       { Attr (Var (fst $1)) (fst $3) }
-       | id '.' id Slice { Access (Attr (Var (fst $1)) (fst $3)) $4 }
-       | id Slice '.' id { Attr (Access (Var (fst $1)) $2) (fst $4) }
-       | id Slice        { Access (Var (fst $1)) $2 }
-       | '(' LValue ')'  { $2 }
-
-RValue : Exp              { Other $1 }
-       | ExpBool          { Bool $1 }
-       | ExpNum           { Int $1 }
-
-Slice : '[' str ']'                            { Key (fst $2) }
-      | '[' str ']' Slice                      { ManyAc (Key (fst $2)) $4 }
-      | '[' ExpNum ']'                         { Index $2 }
-      | '[' ExpNum ']' Slice                   { ManyAc (Index $2) $4 }
-      | '[' ExpNum '..' ExpNum ']'             { Interval $2 $4 }
-      | '[' ExpNum '..' ExpNum ']' Slice       { ManyAc (Interval $2 $4) $6 }
-      | '[' '..' ExpNum ']'                    { Interval (IntLit 0) $3 }
-      | '[' '..' ExpNum ']' Slice              { ManyAc (Interval (IntLit 0) $3) $5 }
-      | '[' ExpNum '..' ']'                    { Begin $2 }
-      | '[' ExpNum '..' ']' Slice              { ManyAc (Begin $2) $5 }
-
-Funcall  : LValue '(' Args ')'    { Funcall $1 $3 }
-         | LValue '(' ')'         { Funcall $1 NoArgs }
-
-Args  : RValue ',' Args           { KArgs (Arg True $1) $3 }
-      | RValue                    { Arg False $1 }
-      | '@' RValue ',' Args       { KArgs (Arg True $2) $4 }
-      | '@' RValue                { Arg True $2 }
+LValue : id                      { Var (fst $1) }
+       | LValue '.' id           { Attr $1 (fst $3) }
+       | LValue Slice            { Access $1 $2 }
+       | '(' LValue ')'          { $2 }
 
 Exp : Funcall                     { $1 }
-    | LValue                      { ExpWha $1 }
+    | LValue                      { Lval $1 }
+    | Exp '+' Exp                 { Sum $1 $3 }
+    | Exp '-' Exp                 { Sub $1 $3 }
+    | Exp '*' Exp                 { Mul $1 $3 }
+    | Exp '/' Exp                 { Div $1 $3 }
+    | Exp '//' Exp                { DivE $1 $3 }
+    | Exp '%' Exp                 { Mod $1 $3 }
+    | Exp '^' Exp                 { Pow $1 $3 }
+    | '-' Exp         %prec NEG   { Neg $2 }
+    | Exp '==' Exp                { Eq $1 $3 }
+    | Exp '¬=' Exp                { Neq $1 $3 }
+    | Exp '>' Exp                 { Mayor $1 $3 }
+    | Exp '>=' Exp                { MayorI $1 $3 }
+    | Exp '<' Exp                 { Menor $1 $3 }
+    | Exp '<=' Exp                { MenorI $1 $3 }
+    | Exp '&&' Exp                { And $1 $3 }
+    | Exp '&' Exp                 { Bitand $1 $3 }
+    | Exp '||' Exp                { Or $1 $3 }
+    | Exp '|' Exp                 { Bitor $1 $3 }
+    | '¬' Exp                     { Not $2 }
 
-ExpBool : BoolLit                 { $1 }
-        | BoolAux '&&' ExpBool    { And $1 $3 }
-        | BoolAux '&' ExpBool     { Bitand $1 $3 }
-        | BoolAux '||' ExpBool    { Or $1 $3 }
-        | BoolAux '|' ExpBool     { Bitor $1 $3 }
-        | '¬' ExpBool             { Not $2 }
-        | BoolAux '&&' Exp        { And $1 (LBool $3) }
-        | BoolAux '&' Exp         { Bitand $1 (LBool $3) }
-        | BoolAux '||' Exp        { Or $1 (LBool $3) }
-        | BoolAux '|' Exp         { Bitor $1 (LBool $3) }
-        | '¬' Exp                 { Not (LBool $2) }
-        | '(' ExpBool ')'         { $2 }
+Slice : '[' Exp ']'                      { Index $2 }
+      | '[' Exp ']' Slice                { ManyAc (Index $2) $4 }
+      | '[' Exp '..' Exp ']'             { Interval $2 $4 }
+      | '[' Exp '..' Exp ']' Slice       { ManyAc (Interval $2 $4) $6 }
+      | '[' '..' Exp ']'                 { Interval (IntLit 0) $3 }
+      | '[' '..' Exp ']' Slice           { ManyAc (Interval (IntLit 0) $3) $5 }
+      | '[' Exp '..' ']'                 { Begin $2 }
+      | '[' Exp '..' ']' Slice           { ManyAc (Begin $2) $5 }
 
-BoolLit : new                     { New }
-        | full                    { Full }
+Funcall  : LValue '(' Args ')'    { Funcall $1 $3 }
+         | LValue '(' ')'         { Funcall $1 [] }
 
-BoolAux : BoolLit                 { $1 }
-        | LValue                  { LBool (ExpWha $1) }
-        | '(' ExpBool ')'         { $2 }
-
-ExpNum : int                      { IntLit (fst $1) }
-       | float                    { FloLit (fst $1) }
-       | IntAux '+' ExpNum        { Sum $1 $3 }
-       | IntAux '-' ExpNum        { Sub $1 $3 }
-       | IntAux '*' ExpNum        { Mul $1 $3 }
-       | IntAux '^' ExpNum        { Pow $1 $3 }
-       | IntAux '//' ExpNum       { Div $1 $3 }
-       | IntAux '%' ExpNum        { Mod $1 $3 }
-       | '-' ExpNum               { Neg $2 }
-       | IntAux '+' LValue        { Sum $1 (LNum $3) }
-       | IntAux '-' LValue        { Sub $1 (LNum $3) }
-       | IntAux '*' LValue        { Mul $1 (LNum $3) }
-       | IntAux '^' LValue        { Pow $1 (LNum $3) }
-       | IntAux '//' LValue       { Div $1 (LNum $3) }
-       | IntAux '%' LValue        { Mod $1 (LNum $3) }
-       | '-' LValue               { Neg (LNum $2) }
-       | '(' ExpNum ')'           { $2 }
-
-IntAux : int                      { IntLit (fst $1) }
-       | float                    { FloLit (fst $1) }
-       | LValue                   { LNum $1 }
-       | '(' ExpNum ')'           { $2 }
+Args  : Exp ',' Args           { ($1, False) : $3 }
+      | Exp                    { [($1, False)] }
+      | '@' Exp ',' Args       { ($2, True) : $4 }
+      | '@' Exp                { [($2, True)] }
 
 {
 parseError :: [Token] -> a
@@ -197,19 +180,13 @@ parseError _ = error "Parse error"
 midny = midnight.alexScanTokens
 
 data Program
-      = Root Seq 
-      deriving Show
-
-data Seq
-      = Empty
-      | One Instr
-      | Many Instr Seq
+      = Root [Instr] 
       deriving Show
 
 data Instr 
       = Perro String
       | Declar Type String
-      | Asig LValue RValue
+      | Asig LValue Exp
       deriving Show
 
 data Type
@@ -229,53 +206,44 @@ data LValue
       | Attr LValue String
       deriving Show
 
-data RValue
-      = Other Exp
-      | Bool ExpBool
-      | Int ExpNum
-      deriving Show
-
 data Slice
       = ManyAc Slice Slice
       | Key String
-      | Index ExpNum
-      | Interval ExpNum ExpNum
-      | Begin ExpNum
-      deriving Show
-
-data Args
-      = NoArgs
-      | Arg Bool RValue
-      | KArgs Args Args 
+      | Index Exp
+      | Interval Exp Exp
+      | Begin Exp
       deriving Show
 
 data Exp
-      = Funcall LValue Args
-      | ExpWha LValue
-      deriving Show
-
-data ExpBool
-      = New
-      | Full
-      | And ExpBool ExpBool
-      | Bitand ExpBool ExpBool
-      | Or ExpBool ExpBool
-      | Bitor ExpBool ExpBool
-      | Not ExpBool
+      = Funcall LValue [(Exp, Bool)]
+      | Lval LValue
       | LBool Exp
-      deriving Show
-
-data ExpNum
-      = IntLit Int
+      -- Numericas
+      | IntLit Int
       | FloLit Float
-      | LNum LValue
-      | Sum ExpNum ExpNum
-      | Sub ExpNum ExpNum
-      | Mul ExpNum ExpNum
-      | Pow ExpNum ExpNum
-      | Div ExpNum ExpNum
-      | Mod ExpNum ExpNum
-      | Neg ExpNum
+      | Sum Exp Exp
+      | Sub Exp Exp
+      | Mul Exp Exp
+      | Pow Exp Exp
+      | Div Exp Exp
+      | DivE Exp Exp
+      | Mod Exp Exp
+      | Neg Exp
+      -- Comparaciones
+      | Eq Exp Exp
+      | Neq Exp Exp
+      | Mayor Exp Exp
+      | MayorI Exp Exp
+      | Menor Exp Exp
+      | MenorI Exp Exp
+      -- Bool
+      | New
+      | Full
+      | And Exp Exp
+      | Bitand Exp Exp
+      | Or Exp Exp
+      | Bitor Exp Exp
+      | Not Exp
       deriving Show
 
 gato f = do
