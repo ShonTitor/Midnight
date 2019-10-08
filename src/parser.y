@@ -240,7 +240,7 @@ DictItems : Exp ':' Exp ',' DictItems           { ($1, $3) : $5 }
 
 {
 parseError :: [Token] -> a
-parseError _ = error "Parse error"
+parseError x = error $ show (head x)
 
 midny = midnight.alexScanTokens
 

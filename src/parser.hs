@@ -4808,7 +4808,7 @@ happySeq = happyDontSeq
 
 
 parseError :: [Token] -> a
-parseError _ = error "Parse error"
+parseError x = error $ show (head x)
 
 midny = midnight.alexScanTokens
 
