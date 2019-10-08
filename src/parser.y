@@ -113,8 +113,17 @@ Instr : Declar             { $1 }
       | LValue '*=' Exp    { Asig $1 (Mul (Lval $1) $3) }
       | LValue '/=' Exp    { Asig $1 (Div (Lval $1) $3) }
       | LValue '//=' Exp   { Asig $1 (DivE (Lval $1) $3) }
-      | LValue '%' Exp     { Asig $1 (Mod (Lval $1) $3) }
+      | LValue '%=' Exp    { Asig $1 (Mod (Lval $1) $3) }
       | LValue '^=' Exp    { Asig $1 (Pow (Lval $1) $3) }
+      | If                 { $1 }
+
+If : if '(' Exp ')' '{' Seq '}'                           { If [($3, $6)] }
+   | unless '(' Exp ')' '{' Seq '}'                       { If [(Not $3, $6)] }
+   | if '(' Exp ')' '{' Seq '}' Elif                      { If (($3, $6) : $8) }
+
+Elif : elseif '(' Exp ')' '{' Seq '}'                     { [($3, $6)] }
+     | else  '{' Seq '}'                                  { [(Full, $3)] }
+     | elseif '(' Exp ')' '{' Seq '}' Elif                { ($3, $6) : $8 }
 
 Declar : Type id        { Declar $1 (fst $2) }
 
@@ -136,6 +145,8 @@ LValue : id                      { Var (fst $1) }
 
 Exp : Funcall                     { $1 }
     | LValue                      { Lval $1 }
+    | int                         { IntLit (fst $1) }
+    | float                       { FloLit (fst $1) }
     | Exp '+' Exp                 { Sum $1 $3 }
     | Exp '-' Exp                 { Sub $1 $3 }
     | Exp '*' Exp                 { Mul $1 $3 }
@@ -150,11 +161,15 @@ Exp : Funcall                     { $1 }
     | Exp '>=' Exp                { MayorI $1 $3 }
     | Exp '<' Exp                 { Menor $1 $3 }
     | Exp '<=' Exp                { MenorI $1 $3 }
+    | new                         { New }
+    | full                        { Full }
     | Exp '&&' Exp                { And $1 $3 }
     | Exp '&' Exp                 { Bitand $1 $3 }
     | Exp '||' Exp                { Or $1 $3 }
     | Exp '|' Exp                 { Bitor $1 $3 }
     | '¬' Exp                     { Not $2 }
+    | str                         { StrLit (fst $1) }
+    | chr                         { CharLit (fst $1) }
 
 Slice : '[' Exp ']'                      { Index $2 }
       | '[' Exp ']' Slice                { ManyAc (Index $2) $4 }
@@ -168,10 +183,13 @@ Slice : '[' Exp ']'                      { Index $2 }
 Funcall  : LValue '(' Args ')'    { Funcall $1 $3 }
          | LValue '(' ')'         { Funcall $1 [] }
 
-Args  : Exp ',' Args           { ($1, False) : $3 }
-      | Exp                    { [($1, False)] }
-      | '@' Exp ',' Args       { ($2, True) : $4 }
-      | '@' Exp                { [($2, True)] }
+Args  : Exp ',' Args           { $1 : $3 }
+      | Exp                    { [$1] }
+
+Params : Type Exp ',' Params           { ($1, $2, False) : $4 }
+       | Type Exp                    { [($1, $2, False)] }
+       | Type '@' Exp ',' Params       { ($1, $3, True) : $5 }
+       | Type '@' Exp                { [($1, True)] }
 
 {
 parseError :: [Token] -> a
@@ -187,6 +205,7 @@ data Instr
       = Perro String
       | Declar Type String
       | Asig LValue Exp
+      | If [(Exp, [Instr])]
       deriving Show
 
 data Type
@@ -215,7 +234,7 @@ data Slice
       deriving Show
 
 data Exp
-      = Funcall LValue [(Exp, Bool)]
+      = Funcall LValue [Exp]
       | Lval LValue
       | LBool Exp
       -- Numericas
@@ -244,11 +263,14 @@ data Exp
       | Or Exp Exp
       | Bitor Exp Exp
       | Not Exp
+      -- Otros
+      | StrLit String
+      | CharLit Char
       deriving Show
 
 gato f = do
   s <- readFile(f)
-  return( partition (not.isError) (alexScanTokens s) )
+  return( midnight $ filter (not.isError) (alexScanTokens s) )
 
 
 main = gato "test.mn"
