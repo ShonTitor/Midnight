@@ -163,7 +163,7 @@ TComp : '[' Type ']' cluster      { Cluster $2 }
       | '~' Type                  { Pointer $2 }
       | galaxy id                 { Galaxy (fst $2) }
       | ufo id                    { UFO (fst $2) }
-      | '(' Types ')' '->' Type   { Comet $2 $5 }
+      | '(' Types '->' Type ')'   { Comet $2 $5 }
 
 LValue : id                      { Var (fst $1) }
        | LValue '.' id           { Attr $1 (fst $3) }
