@@ -64,7 +64,7 @@ Space
 
 Constellation s = "osa mayor";
 ~planet x = bigbang(planet);
-[star]Cluster A = ('a','b','c','d');
+[star]Cluster A = {'a','b','c','d'};
 [planet]Quasar L = [1,2,3,4,5];
 [planet]Nebula = {"Juan" : 25, "María" : 31, "Wilkerman" : 27}
 
@@ -100,7 +100,7 @@ Los `Cluster` pueden definirse por extensión (colocando cada elemento) o inicia
 Space
 
 [planet]Cluster A = {0,1,2,3,4};
-[planet]Cluster B = Cluster(5) of planet;
+[planet]Cluster B = Cluster(5) planet;
 orbit i around range(0,5) {
   B[i] = i;
 }
@@ -243,7 +243,7 @@ EndofSpace
 Estando dentro de un ciclo (o dentro de varios ciclos anidados) se puede utilizar la instrucción especial `break n`, donde n es un `planet` > 0, para detener los n ciclo anidados más internos y continuar la ejecución afuera del más externo de los ciclos detenidos. Si se omite `n` se tratará como `break 1`. `continue` es similar pero en lugar de terminar el ciclo completo, termina solo la iteración actual.
 ```
 Space
-[[planet]Cluster]Cluster M = ((1,2,3),(4,5,6),(7,8,9));
+[[planet]Cluster]Cluster M = {{1,2,3},{4,5,6},{7,8,9}};
 orbit i around range(3) {
     orbit j around range(3) {
         if M[i][j] == 7 {

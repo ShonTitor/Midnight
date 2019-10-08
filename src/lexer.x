@@ -33,6 +33,7 @@ tokens :-
 
   print         {\pos s -> TkPrint pos}
   read          {\pos s -> TkRead pos}
+  scale         {\pos s -> TkScale pos}
   around        {\pos s -> TkAround pos}
   range         {\pos s -> TkRange pos}
   pop           {\pos s -> TkPop pos}
@@ -45,6 +46,9 @@ tokens :-
   while         {\pos s -> TkWhile pos}
   until         {\pos s -> TkUntil pos}
   orbit         {\pos s -> TkOrbit pos}
+  break         {\pos s -> TkBreak pos}
+  continue      {\pos s -> TkContinue pos}
+  return        {\pos s -> TkReturn pos}
   \@            {\pos s -> TkArroba pos}
   \(            {\pos s -> TkParA pos}
   \)            {\pos s -> TkParC pos}
@@ -120,6 +124,7 @@ data Token =
 
   TkPrint     AlexPosn |
   TkRead      AlexPosn |
+  TkScale     AlexPosn |
   TkAround    AlexPosn |
   TkRange     AlexPosn |
   TkPop       AlexPosn |
@@ -132,26 +137,29 @@ data Token =
   TkWhile     AlexPosn |
   TkUntil     AlexPosn |
   TkOrbit     AlexPosn |
-  TkArroba      AlexPosn |
+  TkBreak     AlexPosn |
+  TkContinue  AlexPosn |
+  TkReturn    AlexPosn |
+  TkArroba    AlexPosn |
   TkParA      AlexPosn |
   TkParC      AlexPosn |
   TkCorA      AlexPosn |
   TkCorC      AlexPosn |
   TkLlavA     AlexPosn |
   TkLlavC     AlexPosn |
-  TkPuntopunto AlexPosn |
+  TkPuntopunto AlexPosn|
   TkPunto     AlexPosn |
   TkComa      AlexPosn |
-  TkPuntoycoma AlexPosn |
+  TkPuntoycoma AlexPosn|
   TkDospuntos AlexPosn |
   TkNyangara  AlexPosn |
   TkMasIgual  AlexPosn |
   TkMas       AlexPosn |
-  TkMenosIgual AlexPosn |
+  TkMenosIgual AlexPosn|
   TkMenos     AlexPosn |
   TkMultIgual AlexPosn |
-  TkMult     AlexPosn |
-  TkPotenciaIgual AlexPosn |
+  TkMult      AlexPosn |
+  TkPotenciaIgual AlexPosn|
   TkPotencia  AlexPosn |
   TkDivIgual  AlexPosn |
   TkDiv       AlexPosn |
