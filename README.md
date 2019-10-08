@@ -222,7 +222,7 @@ orbit until (j >= 6) {
     j++
 }
 
-orbit(planet k=0 ; k < 6 ; k++) {
+orbit(planet k=0 ; k < 6 ; k+=1) {
     print(k)
 }
 EndofSpace
@@ -298,7 +298,7 @@ Satellite Primos() -> planet {
             yield p;
             L.add(p);
         }
-        p++;
+        p += 1;
     }
 }
 
@@ -328,7 +328,6 @@ EndofSpace
 `<`: menor que.  
 `>=`: mayor o igual.  
 `<=`: menor o igual.
-`i++`: postincremento (equivalente a `i = i+1`).
 
 ### Operadores lógicos
 `&&`: and con cortocircuito.  
