@@ -1,6 +1,6 @@
 Space
 
-print("Introduzca un número");
+print("Introduzca un nÃºmero");
 Constellation input = read();
 planet n = (planet) n;
 print(2^n)
