@@ -239,7 +239,9 @@ DictItems : Exp ':' Exp ',' DictItems           { ($1, $3) : $5 }
 
 {
 parseError :: [Token] -> a
-parseError x = error $ show (head x)
+parseError (x:_) = error $ "Error de sintaxis en la línea " ++ (show n) ++ " columna " ++ (show m)
+                   where (AlexPn _ n m) = getPos x
+
 
 midny = midnight.alexScanTokens
 
