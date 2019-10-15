@@ -1,7 +1,6 @@
 {
 module Lexer where
 import Data.List
-import System.IO
 }
 
 %wrapper "posn"
@@ -10,92 +9,92 @@ $digit = 0-9      -- digits
 $alpha = [a-zA-Z]   -- alphabetic characters
 
 tokens :-
-  Space         {\pos s -> TkSpace pos}
-  EndofSpace    {\pos s -> TkEndofSpace pos}
-  moon          {\pos s -> TkMoon pos}
-  new           {\pos s -> TkNew pos}
-  full          {\pos s -> TkFull pos}
-  planet        {\pos s -> TkPlanet pos}
-  cloud         {\pos s -> TkCloud pos}
-  star          {\pos s -> TkStar pos}
-  blackhole     {\pos s -> TkBlackhole pos}
-  cosmos        {\pos s -> TkCosmos pos}
-  Constellation {\pos s -> TkConstellation pos}
-  Cluster       {\pos s -> TkCluster pos}
-  Quasar        {\pos s -> TkQuasar pos}
-  Nebula        {\pos s -> TkNebula pos}
-  Galaxy        {\pos s -> TkGalaxy pos}
-  Quasar        {\pos s -> TkQuasar pos}
-  UFO           {\pos s -> TkUFO pos}
-  Comet         {\pos s -> TkComet pos}
-  Satellite     {\pos s -> TkSatellite pos}
-  terraform     {\pos s -> TkTerraform pos}
+  Space         {\pos _ -> TkSpace pos}
+  EndofSpace    {\pos _ -> TkEndofSpace pos}
+  moon          {\pos _ -> TkMoon pos}
+  new           {\pos _ -> TkNew pos}
+  full          {\pos _ -> TkFull pos}
+  planet        {\pos _ -> TkPlanet pos}
+  cloud         {\pos _ -> TkCloud pos}
+  star          {\pos _ -> TkStar pos}
+  blackhole     {\pos _ -> TkBlackhole pos}
+  cosmos        {\pos _ -> TkCosmos pos}
+  Constellation {\pos _ -> TkConstellation pos}
+  Cluster       {\pos _ -> TkCluster pos}
+  Quasar        {\pos _ -> TkQuasar pos}
+  Nebula        {\pos _ -> TkNebula pos}
+  Galaxy        {\pos _ -> TkGalaxy pos}
+  Quasar        {\pos _ -> TkQuasar pos}
+  UFO           {\pos _ -> TkUFO pos}
+  Comet         {\pos _ -> TkComet pos}
+  Satellite     {\pos _ -> TkSatellite pos}
+  terraform     {\pos _ -> TkTerraform pos}
 
-  print         {\pos s -> TkPrint pos}
-  read          {\pos s -> TkRead pos}
-  scale         {\pos s -> TkScale pos}
-  around        {\pos s -> TkAround pos}
-  range         {\pos s -> TkRange pos}
-  pop           {\pos s -> TkPop pos}
-  add           {\pos s -> TkAdd pos}
-  bigbang       {\pos s -> TkBigbang pos}
-  if            {\pos s -> TkIf pos}
-  elseif        {\pos s -> TkElseif pos}
-  else          {\pos s -> TkElse pos}
-  unless        {\pos s -> TkUnless pos}
-  while         {\pos s -> TkWhile pos}
-  until         {\pos s -> TkUntil pos}
-  orbit         {\pos s -> TkOrbit pos}
-  break         {\pos s -> TkBreak pos}
-  continue      {\pos s -> TkContinue pos}
-  return        {\pos s -> TkReturn pos}
-  \@            {\pos s -> TkArroba pos}
-  \(            {\pos s -> TkParA pos}
-  \)            {\pos s -> TkParC pos}
-  \[            {\pos s -> TkCorA pos}
-  \]            {\pos s -> TkCorC pos}
-  \{            {\pos s -> TkLlavA pos}
-  \}            {\pos s -> TkLlavC pos}
-  \.\.          {\pos s -> TkPuntopunto pos}
-  \.            {\pos s -> TkPunto pos}
-  \,            {\pos s -> TkComa pos}
-  \;            {\pos s -> TkPuntoycoma pos}
-  \:            {\pos s -> TkDospuntos pos}
-  \~            {\pos s -> TkNyangara pos}
-  \+\=          {\pos s -> TkMasIgual pos}
-  \+            {\pos s -> TkMas pos}
-  \-\=          {\pos s -> TkMenosIgual pos}
-  \-            {\pos s -> TkMenos pos}
-  \*\=          {\pos s -> TkMultIgual pos}
-  \*            {\pos s -> TkMult pos}
-  \^\=          {\pos s -> TkPotenciaIgual pos}
-  \^            {\pos s -> TkPotencia pos}
-  \/\/\=        {\pos s -> TkDivEnteraIgual pos}
-  \/\/          {\pos s -> TkDivEntera pos}
-  \/\=          {\pos s -> TkDivIgual pos}
-  \/            {\pos s -> TkDiv pos}
-  \%\=          {\pos s -> TkModIgual pos}
-  \%            {\pos s -> TkMod pos}
-  \->           {\pos s -> TkFlechita pos}
-  >=            {\pos s -> TkMayorIgual pos}
-  >             {\pos s -> TkMayor pos}
-  \<=           {\pos s -> TkMenorIgual pos}
-  \<            {\pos s -> TkMenor pos}
-  &&            {\pos s -> TkAnd pos}
-  &             {\pos s -> TkBitand pos}
-  \|\|          {\pos s -> TkOr pos}
-  \|            {\pos s -> TkBitor pos}
-  \=\=          {\pos s -> TkIgual pos}
-  ¬\=           {\pos s -> TkDistinto pos}
-  \=            {\pos s -> TkAsignacion pos}
-  ¬             {\pos s -> TkNegacion pos}
+  print         {\pos _ -> TkPrint pos}
+  read          {\pos _ -> TkRead pos}
+  scale         {\pos _ -> TkScale pos}
+  around        {\pos _ -> TkAround pos}
+  range         {\pos _ -> TkRange pos}
+  pop           {\pos _ -> TkPop pos}
+  add           {\pos _ -> TkAdd pos}
+  bigbang       {\pos _ -> TkBigbang pos}
+  if            {\pos _ -> TkIf pos}
+  elseif        {\pos _ -> TkElseif pos}
+  else          {\pos _ -> TkElse pos}
+  unless        {\pos _ -> TkUnless pos}
+  while         {\pos _ -> TkWhile pos}
+  until         {\pos _ -> TkUntil pos}
+  orbit         {\pos _ -> TkOrbit pos}
+  break         {\pos _ -> TkBreak pos}
+  continue      {\pos _ -> TkContinue pos}
+  return        {\pos _ -> TkReturn pos}
+  \@            {\pos _ -> TkArroba pos}
+  \(            {\pos _ -> TkParA pos}
+  \)            {\pos _ -> TkParC pos}
+  \[            {\pos _ -> TkCorA pos}
+  \]            {\pos _ -> TkCorC pos}
+  \{            {\pos _ -> TkLlavA pos}
+  \}            {\pos _ -> TkLlavC pos}
+  \.\.          {\pos _ -> TkPuntopunto pos}
+  \.            {\pos _ -> TkPunto pos}
+  \,            {\pos _ -> TkComa pos}
+  \;            {\pos _ -> TkPuntoycoma pos}
+  \:            {\pos _ -> TkDospuntos pos}
+  \~            {\pos _ -> TkNyangara pos}
+  \+\=          {\pos _ -> TkMasIgual pos}
+  \+            {\pos _ -> TkMas pos}
+  \-\=          {\pos _ -> TkMenosIgual pos}
+  \-            {\pos _ -> TkMenos pos}
+  \*\=          {\pos _ -> TkMultIgual pos}
+  \*            {\pos _ -> TkMult pos}
+  \^\=          {\pos _ -> TkPotenciaIgual pos}
+  \^            {\pos _ -> TkPotencia pos}
+  \/\/\=        {\pos _ -> TkDivEnteraIgual pos}
+  \/\/          {\pos _ -> TkDivEntera pos}
+  \/\=          {\pos _ -> TkDivIgual pos}
+  \/            {\pos _ -> TkDiv pos}
+  \%\=          {\pos _ -> TkModIgual pos}
+  \%            {\pos _ -> TkMod pos}
+  \->           {\pos _ -> TkFlechita pos}
+  >=            {\pos _ -> TkMayorIgual pos}
+  >             {\pos _ -> TkMayor pos}
+  \<=           {\pos _ -> TkMenorIgual pos}
+  \<            {\pos _ -> TkMenor pos}
+  &&            {\pos _ -> TkAnd pos}
+  &             {\pos _ -> TkBitand pos}
+  \|\|          {\pos _ -> TkOr pos}
+  \|            {\pos _ -> TkBitor pos}
+  \=\=          {\pos _ -> TkIgual pos}
+  ¬\=           {\pos _ -> TkDistinto pos}
+  \=            {\pos _ -> TkAsignacion pos}
+  ¬             {\pos _ -> TkNegacion pos}
   \"($printable #\")*\" {\pos s -> TkString ((read s :: String), pos)}
   \'($printable #\')*\' {\pos s -> TkChar ((read s :: Char), pos)}
   $digit+\.$digit+       { \pos s -> TkFloat ((read s :: Float),  pos)}
   $digit+       { \pos s -> TkInt ((read s :: Int),  pos)}
   $alpha [$alpha $digit \_]*   { \pos s -> TkId (s,  pos)}
   $white+       ;
-  .             {\pos s -> TkError (s, pos)}
+  .             {\pos s -> TkError (head s, pos)}
 
 {
 -- Each action has type :: String -> Token
@@ -185,14 +184,22 @@ data Token =
   TkId (String, AlexPosn) |
   TkFloat (Float, AlexPosn) |
   TkInt (Int, AlexPosn) |
-  TkError (String, AlexPosn)
+  TkError (Char, AlexPosn)
   deriving (Eq,Show)
 
 isError :: Token -> Bool
 isError (TkError _) = True
 isError _ = False
 
+perro :: String -> ([Token], [Token])
+perro s = partition (not.isError) (alexScanTokens s)
+
+perror ( TkError (e, (AlexPn _ n m)) ) = "Caracter inválido " ++ e : " en la línea " ++ (show n) ++ " columna " ++ (show m)
+perror _ = ""
+
 getTokens f = do
   s <- readFile(f)
-  return( partition (not.isError) (alexScanTokens s) )
+  let p = perro s
+  _ <- mapM putStrLn (map perror (snd p))
+  return (fst p)
  }

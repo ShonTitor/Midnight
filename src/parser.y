@@ -1,5 +1,5 @@
 {
-module Main where
+module Parser where
 import Data.Char
 import Data.List
 import Lexer
@@ -107,8 +107,7 @@ S     : space end          { Root [] }
       | space Seq end      { Root $2 }
 
 Seq   : Instr              { [$1] }
-      | Instr ';'          { [$1] }
-      | Instr ';' Seq      { $1 : $3 }
+      | Seq ';' Instr      { $3 : $1 }
 
 Instr : Type id            { Declar $1 (fst $2) }
       | Type id '=' Exp    { DeclarI $1 (fst $2) $4 }
@@ -339,8 +338,8 @@ data Exp
       deriving Show
 
 gato f = do
-  s <- readFile(f)
-  return( midnight $ filter (not.isError) (alexScanTokens s) )
+  s <- getTokens f
+  return( midnight s )
 
 
 main = gato "test.mn"
