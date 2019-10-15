@@ -97,17 +97,21 @@ import Lexer
 %left '¬'
 %left '+' '-'
 %left '*' '/' '//' '%'
-%nonassoc '^'
-%nonassoc '.' '[' ']' '(' ')' ','
+%right '^'
+%right ',' ';'
+%nonassoc '.' '[' ']' '(' ')'
 %nonassoc add pop print read
 %left NEG
 %%
 
-S     : space end          { Root [] }
-      | space Seq end      { Root $2 }
+S     : space end                { Root [] }
+      | space Seq end            { Root $2 }
 
-Seq   : Instr              { [$1] }
-      | Seq ';' Instr      { $3 : $1 }
+Seq   : SeqAux                   { reverse $1 }
+
+SeqAux   : Instr                 { [$1] }
+         | SeqAux ';' Instr      { $3 : $1 }
+         | SeqAux ';' Instr ';'  { $3 : $1 }
 
 Instr : Type id            { Declar $1 (fst $2) }
       | Type id '=' Exp    { DeclarI $1 (fst $2) $4 }
@@ -150,21 +154,25 @@ Func  : comet id '(' Params ')' '->' Type '{' Seq '}'     { Func (fst $2) $4 $7 
       | satellite id '(' Params ')' '->' Type '{' Seq '}' { Func (fst $2) $4 $7 $9 }
       | satellite id '(' ')' '->' Type '{' Seq '}'        { Func (fst $2) [] $6 $8 }
 
-Params : Type id ',' Params         { ($1, fst $2, False) : $4 }
-       | Type id                    { [($1, fst $2, False)] }
-       | Type '@' id ',' Params     { ($1, fst $3, True) : $5 }
-       | Type '@' id                { [($1, fst $3, True)] }
+Params : ParamsAux                                        { reverse $1 }
 
-Type  : planet          { Planet }
-      | cloud           { Cloud }
-      | star            { Star }
-      | moon            { Moon }
-      | blackhole       { Blackhole }
-      | constellation   { Cluster Star }
-      | TComp           { $1 }
+ParamsAux : ParamsAux ',' Type id                         { ($3, fst $4, False) : $1 }
+          | Type id                                       { [($1, fst $2, False)] }
+          | ParamsAux ',' Type '@' id                     { ($3, fst $5, True) : $1 }
+          | Type '@' id                                   { [($1, fst $3, True)] }
 
-Types : Type            { [$1] }
-      | Type ',' Types  { $1 : $3 }
+Type  : planet                    { Planet }
+      | cloud                     { Cloud }
+      | star                      { Star }
+      | moon                      { Moon }
+      | blackhole                 { Blackhole }
+      | constellation             { Cluster Star }
+      | TComp                     { $1 }
+
+Types : TypesAux                  { reverse $1 }
+
+TypesAux : Type                   { [$1] }
+         | TypesAux ',' Type      { $3 : $1 }
 
 TComp : '[' Type ']' cluster      { Cluster $2 }
       | '[' Type ']' quasar       { Quasar $2 }
@@ -229,10 +237,12 @@ Slice : '[' Exp ']'                      { Index $2 }
       | '[' Exp '..' ']' Slice           { ManyAc (Begin $2) $5 }
 
 Funcall  : LValue '(' Args ')'    { Funcall $1 $3 }
-         | LValue '(' ')'         { Funcall $1 [] }
 
-Args  : Exp ',' Args              { $1 : $3 }
-      | Exp                       { [$1] }
+Args : ArgsAux                       { reverse $1 }
+     |                               { [] }
+
+ArgsAux  : ArgsAux ',' Exp           { $3 : $1 }
+         | Exp                       { [$1] }
 
 DictItems : Exp ':' Exp ',' DictItems           { ($1, $3) : $5 }
            | Exp ':' Exp                        { [($1, $3)] }
