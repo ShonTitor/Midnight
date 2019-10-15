@@ -48,6 +48,7 @@ tokens :-
   break         {\pos _ -> TkBreak pos}
   continue      {\pos _ -> TkContinue pos}
   return        {\pos _ -> TkReturn pos}
+  yield         {\pos _ -> TkYield pos}
   \@            {\pos _ -> TkArroba pos}
   \(            {\pos _ -> TkParA pos}
   \)            {\pos _ -> TkParC pos}
@@ -139,6 +140,7 @@ data Token =
   TkBreak     AlexPosn |
   TkContinue  AlexPosn |
   TkReturn    AlexPosn |
+  TkYield     AlexPosn |
   TkArroba    AlexPosn |
   TkParA      AlexPosn |
   TkParC      AlexPosn |
@@ -226,6 +228,7 @@ getPos (TkOrbit      p) = p
 getPos (TkBreak      p) = p
 getPos (TkContinue   p) = p
 getPos (TkReturn     p) = p
+getPos (TkYield      p) = p
 getPos (TkArroba     p) = p
 getPos (TkParA       p) = p
 getPos (TkParC       p) = p

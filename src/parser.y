@@ -47,6 +47,7 @@ import Lexer
       break           { TkBreak $$ }
       continue        { TkContinue $$ }
       return          { TkReturn $$ }
+      yield           { TkYield $$ }
       '@'             { TkArroba      $$ }
       '('             { TkParA      $$ }
       ')'             { TkParC      $$ }
@@ -115,7 +116,7 @@ DefsAux : DefsAux Func                { $2 : $1 }
         | Func                        { [$1] }
 
 Func  : comet id '(' Params ')' '->' Type '{' Seq '}'     { Func (fst $2) $4 $7 $9 }
-      | satellite id '(' Params ')' '->' Type '{' Seq '}' { Func (fst $2) $4 $7 $9 }
+      | satellite id '(' Params ')' '->' Type '{' Seq '}' { Iter (fst $2) $4 $7 $9 }
       | ufo id '{' Regs '}'                               { DUFO (fst $2) $4 }
       | galaxy id '{' Regs '}'                            { DGalaxy (fst $2) $4 }
 
@@ -147,6 +148,7 @@ Instr : Type id            { Declar $1 (fst $2) }
       | continue           { Continue }
       | return Exp         { Return $2 } 
       | return             { Returnsito }
+      | yield Exp          { Yield $2 }
       | InstrB             { $1 }
 
 InstrB : If                                                 { $1 }
@@ -276,6 +278,7 @@ data Program
 
 data Def
       = Func String [(Type, String, Bool)] Type [Instr]
+      | Iter String [(Type, String, Bool)] Type [Instr]
       | DUFO String [(Type, String)]
       | DGalaxy String [(Type, String)]
       deriving Show
@@ -293,6 +296,7 @@ data Instr
       | Continue
       | Return Exp
       | Returnsito
+      | Yield Exp
       deriving Show
 
 data Type

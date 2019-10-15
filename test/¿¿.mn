@@ -11,7 +11,7 @@ Satellite Primos() -> planet {
             }
         };
         if (esprimo) {
-            return p;
+            yield p;
             L.add(p);
         };
         p += 1
