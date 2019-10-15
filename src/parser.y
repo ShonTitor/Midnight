@@ -107,8 +107,7 @@ S     : space end          { Root [] }
       | space Seq end      { Root $2 }
 
 Seq   : Instr              { [$1] }
-      | Instr ';'          { [$1] }
-      | Instr ';' Seq      { $1 : $3 }
+      | Seq ';' Instr      { $3 : $1 }
 
 Instr : Type id            { Declar $1 (fst $2) }
       | Type id '=' Exp    { DeclarI $1 (fst $2) $4 }
