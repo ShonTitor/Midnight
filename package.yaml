@@ -1,0 +1,55 @@
+name:                midnight
+version:             0.1.0.0
+github:              "LuigiCamilo/Lenguajes-II"
+license:             BSD3
+author:              "Leonardo López, Luigi Di Martino"
+maintainer:          example@example.com
+copyright:           "2019 Leonardo López, Luigi Di Martino"
+extra-source-files:  
+- "src/parser.y"
+- "src/lexer.x"
+- "README.md"
+- "ChangeLog.md"
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on Github at <https://github.com/LuigiCamilo/Lenguajes-II#readme>
+
+dependencies:
+- base >= 4.11 && < 10
+- array
+
+ghc-options:
+- -Wall
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wpartial-fields
+- -Wredundant-constraints
+
+library:
+  source-dirs: src
+  build-tools:
+    - alex
+    - happy
+  exposed-modules:
+    - Lexer
+    - Parser
+
+executables:
+  midnight-exe:
+    main:                Main.hs
+    source-dirs:         app
+    dependencies:
+    - midnight
+    - optparse-simple
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
