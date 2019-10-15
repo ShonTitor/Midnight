@@ -1,4 +1,24 @@
-Space???
+Space
+Satellite Primos() -> planet {
+    [planet]Quasar L = [];
+    planet p = 2;
+    orbit while(full) {
+        moon esprimo = full;
+        orbit q around L {
+            if (p%q == 0) {
+                esprimo = new;
+                break;
+            }
+        };
+        if (esprimo) {
+            return p;
+            L.add(p);
+        };
+        p += 1
+    }
+}
 perro = 2;
-gato(3,4,5);
+perro = 3;
+gato = 5;
+
 EndofSpace
