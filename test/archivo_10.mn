@@ -9,18 +9,17 @@ Satellite Primos() -> planet {
                 esprimo = new;
                 break;
             }
-        };
+        }
         if (esprimo) {
             yield p;
             L.add(p);
         }
-        p++;
+        p += 1
     }
-};
+}
 
-[planet]Satelline generador_primos = Primos();
 print("esto no va a parar jaja salu2");
-orbit p around generador_primos {
+orbit p around Primos() {
     print(p);
-};
+}
 EndofSpace

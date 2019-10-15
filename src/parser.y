@@ -126,37 +126,43 @@ Regs : RegsAux                                            { reverse $1 }
 RegsAux   : RegsAux ';' Type id                           { ($3, fst $4) : $1 }
           | Type id                                       { [($1, fst $2)] }
 
-Seq   : SeqA                { reverse $1 }
-      | SeqA ';'            { reverse $1 }
+Seq   : SeqAux              { reverse $1 }
+      | SeqAux InstrA       { reverse $ $2 : $1 }
+      | InstrA              { [$1] }
 
-SeqA   : Instr              { [$1] }
-       | SeqA ';' Instr     { $3 : $1 }
 
-Instr : Type id            { Declar $1 (fst $2) }
-      | Type id '=' Exp    { DeclarI $1 (fst $2) $4 }
-      | Exp                { Flotando $1 }
-      | LValue '=' Exp     { Asig $1 $3 }
-      | LValue '+=' Exp    { Asig $1 (Sum $1 $3) }
-      | LValue '-=' Exp    { Asig $1 (Sub $1 $3) }
-      | LValue '*=' Exp    { Asig $1 (Mul $1 $3) }
-      | LValue '/=' Exp    { Asig $1 (Div $1 $3) }
-      | LValue '//=' Exp   { Asig $1 (DivE $1 $3) }
-      | LValue '%=' Exp    { Asig $1 (Mod $1 $3) }
-      | LValue '^=' Exp    { Asig $1 (Pow $1 $3) }
-      | break              { Break (IntLit 1) }
-      | break Exp          { Break $2 }
-      | continue           { Continue }
-      | return Exp         { Return $2 } 
-      | return             { Returnsito }
-      | yield Exp          { Yield $2 }
-      | InstrB             { $1 }
+SeqAux  : InstrA ';'        { [$1] }
+        | SeqAux InstrA ';' { $2 : $1 }
+        | InstrB            { [$1] }
+        | SeqAux InstrB     { $2 : $1 }
 
-InstrB : If                                                 { $1 }
-       | While                                              { $1 }
-       | orbit id around Exp '{' Seq '}'                    { Foreach (fst $2) $4 $6 }
-       | orbit id around range '(' Exp ',' Exp ',' Exp ')'  { ForRange $6 $8 $10 }
-       | orbit id around range '(' Exp ',' Exp ')'          { ForRange $6 $8 (IntLit 1)}
-       | orbit id around range '(' Exp ')'                  { ForRange (IntLit 0) $6 (IntLit 1)}
+Instr : InstrA              { $1 }
+      | InstrB              { $1 }
+
+InstrA : Type id            { Declar $1 (fst $2) }
+       | Type id '=' Exp    { DeclarI $1 (fst $2) $4 }
+       | Exp                { Flotando $1 }
+       | LValue '=' Exp     { Asig $1 $3 }
+       | LValue '+=' Exp    { Asig $1 (Sum $1 $3) }
+       | LValue '-=' Exp    { Asig $1 (Sub $1 $3) }
+       | LValue '*=' Exp    { Asig $1 (Mul $1 $3) }
+       | LValue '/=' Exp    { Asig $1 (Div $1 $3) }
+       | LValue '//=' Exp   { Asig $1 (DivE $1 $3) }
+       | LValue '%=' Exp    { Asig $1 (Mod $1 $3) }
+       | LValue '^=' Exp    { Asig $1 (Pow $1 $3) }
+       | break              { Break (IntLit 1) }
+       | break Exp          { Break $2 }
+       | continue           { Continue }
+       | return Exp         { Return $2 } 
+       | return             { Returnsito }
+       | yield Exp          { Yield $2 }
+
+InstrB : If                                                             { $1 }
+       | While                                                          { $1 }
+       | orbit id around Exp '{' Seq '}'                                { Foreach (fst $2) $4 $6 }
+       | orbit id around range '(' Exp ',' Exp ',' Exp ')' '{' Seq '}'  { ForRange $6 $8 $10 $13 }
+       | orbit id around range '(' Exp ',' Exp ')' '{' Seq '}'          { ForRange $6 $8 (IntLit 1) $11}
+       | orbit id around range '(' Exp ')' '{' Seq '}'                  { ForRange (IntLit 0) $6 (IntLit 1) $9}
 
 If : if '(' Exp ')' '{' Seq '}'                           { If [($3, $6)] }
    | unless '(' Exp ')' '{' Seq '}'                       { If [(Not $3, $6)] }
@@ -253,7 +259,7 @@ Exp : LValue                      { $1 }
     | cluster '(' Exp ')' Type    { ArrInit $3 $5 }
     | '{' DictItems '}'           { DictLit $2 }
 
-Funcall  : Exp '(' Args ')'    { Funcall $1 $3 }
+Funcall  : Exp '(' Args ')'       { Funcall $1 $3 }
 
 Args : ArgsAux                       { reverse $1 }
      |                               { [] }
@@ -291,7 +297,7 @@ data Instr
       | If [(Exp, [Instr])]
       | While Exp [Instr]
       | Foreach String Exp [Instr]
-      | ForRange Exp Exp Exp
+      | ForRange Exp Exp Exp [Instr]
       | Break Exp
       | Continue
       | Return Exp

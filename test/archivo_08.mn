@@ -5,7 +5,7 @@ moon m = full;
 if (m) {
     print("perro");
 }
-else if (1==1) {
+elseif (1==1) {
     print("gato");
 }
 else {
@@ -13,22 +13,22 @@ else {
 }
 unless (m) {
     print("sapo");
-};
+}
 
 planet i = 0;
 orbit while (i < 6) {
     print(i);
-    i++
-};
+    i += 1
+}
 
 planet j = 0;
 orbit until (j >= 6) {
     print(j);
-    j++
-};
+    j += 1
+}
 
-orbit(planet k=0 ; k < 6 ; k++) {
+orbit(planet k=0 ; k < 6 ; k+=1) {
     print(k)
-};
+}
 
 EndofSpace

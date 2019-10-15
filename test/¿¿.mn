@@ -9,16 +9,16 @@ Satellite Primos() -> planet {
                 esprimo = new;
                 break;
             }
-        };
+        }
         if (esprimo) {
             yield p;
             L.add(p);
-        };
-        p += 1
+        }
+        p += 1;
     }
 }
 perro = 2;
 perro = 3;
-gato = 5;
+gato = 5
 
 EndofSpace
