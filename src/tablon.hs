@@ -21,7 +21,7 @@ data Type
       deriving (Eq, Show)
 
 data Category = Tipo
-              | ConsTipo
+              | Parametro
               | Variable
               | Campo
               | Subrutina
@@ -54,9 +54,11 @@ insertar s e t
         clash (Entry _ _ a) (Entry _ _ b) = a == b
 
 insertarV :: [String] -> [Entry] -> Tablon -> Tablon
-insertarV xs ys t = foldr insertar' t (zip xs ys)
-    where insertar' (s,e) tab = insertar s e tab
+insertarV xs ys t = insertarV' (zip xs ys) t
 
+insertarV' :: [(String,Entry)] -> Tablon -> Tablon
+insertarV' xs t = foldr insertar' t xs
+    where insertar' (s,e) tab = insertar s e tab
 
 type MonadTablon a = RWST () () (Tablon, [Integer]) IO a
 
@@ -86,7 +88,39 @@ main' = do
   lift $ putStrLn (show b)
   return ()
 
+pushTablon :: MonadTablon ()
+pushTablon = do
+    (tablonActual, pila) <- get
+    let pilaNueva = (head pila) + 1
+    put (tablonActual, pilaNueva:pila)
+
+popPila :: MonadTablon ()
+popPila = do
+    (tablonActual, pila) <- get
+    put (tablonActual, tail pila)
+
 tablontest :: IO ()
 tablontest = do 
   _ <- execRWST main' () initTablon
   return ()
+
+--insertarDecl :: String -> Type -> MonadTablon ()
+--insertarDecl id tipo' = do
+--    (tablonActual, pila@(pila:_)) <- get
+--    insertar id {tipo',,} tablonActual
+
+    --let info = replicate (length ids) (SymbolInfo tipo' pila Variable)
+   -- addToSymTab ids info actualSymTab scopes
+
+insertarCampos :: [(Type, String)] -> MonadTablon ()
+insertarCampos xs = do
+    (tablonActual,pila@(tope:_)) <- get
+    let tuplas = [ (snd x, (Entry (fst x) Campo tope)) | x <- xs ]
+    let tab = insertarV' tuplas tablonActual
+    put (tab,pila)
+
+insertarVar :: String -> Type -> MonadTablon ()
+insertarVar id tipo = do
+    (tablonActual,pila@(tope:_)) <- get
+    let tab = insertar id (Entry tipo Variable tope) tablonActual
+    put (tab,pila)

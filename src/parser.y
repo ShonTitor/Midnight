@@ -4,6 +4,8 @@ import Data.Char
 import Data.List
 import Lexer
 import Tablon
+import Control.Monad.RWS
+import qualified Data.Map as Map
 }
 
 %name midnight
@@ -107,23 +109,36 @@ import Tablon
 %left NEG
 %%
 
-S     : space end                     { Root [] [] }
-      | space Defs Seq end            { Root $2 $3 }
-      | space Defs end                { Root $2 [] }
-      | space Seq end                 { Root [] $2 }
+S :: { Program }    
+      : space end                     { % return $ Root [] [] }
+      | space Defs Seq end            { % return $ Root $2 $3 }
+      | space Defs end                { % return $ Root $2 [] }
+      | space Seq end                 { % return $ Root [] $2 }
 
 Defs : DefsAux                        { reverse $1 }
 
 DefsAux : DefsAux Func                { $2 : $1 }
         | Func                        { [$1] }
 
-Func  : comet id '(' Params ')' '->' Type '{' Seq '}'     { Func (fst $2) $4 $7 $9 }
+Func  :: { Def }
+      : comet id '(' Params ')' '->' Type '{' Seq '}'     { Func (fst $2) $4 $7 $9 }
       | satellite id '(' Params ')' '->' Type '{' Seq '}' { Iter (fst $2) $4 $7 $9 }
       | ufo id '{' Regs '}'                               { DUFO (fst $2) $4 }
-      | galaxy id '{' Regs '}'                            { DGalaxy (fst $2) $4 }
+      | galaxy id '{' Regs '}'                            
+        { % do 
+          insertarVar (fst $2) Planet
+          return (DGalaxy (fst $2) $4) }
 
-Regs : RegsAux                                            { reverse $1 }
-     | RegsAux ';'                                        { reverse $1 }
+Regs : RegsAux     
+      { % do 
+          let rex = reverse $1
+          insertarCampos rex
+          return (rex) }
+     | RegsAux ';'                                              
+     { % do 
+          let rex = reverse $1
+          insertarCampos rex
+          return (rex) }
 
 RegsAux   : RegsAux ';' Type id                           { ($3, fst $4) : $1 }
           | Type id                                       { [($1, fst $2)] }
@@ -141,11 +156,17 @@ SeqAux  : InstrA ';'        { [$1] }
 Instr : InstrA              { $1 }
       | InstrB              { $1 }
 
-InstrA : Type id            { Declar $1 (fst $2) }
-       | Type id '=' Exp    { DeclarI $1 (fst $2) $4 }
+InstrA : Type id            
+       { % do 
+          insertarVar (fst $2) $1
+          return (Declar $1 (fst $2)) }
+       | Type id '=' Exp    
+       { % do 
+          insertarVar (fst $2) $1
+          return (Asig (Var $ fst $2) $4) }
        | Exp                { Flotando $1 }
        | LValue '=' Exp     { Asig $1 $3 }
-       | LValue '+=' Exp    { Asig $1 (Sum $1 $3) }
+       | LValue '+=' Exp    { Asig $1 (Suma $1 $3) }
        | LValue '-=' Exp    { Asig $1 (Sub $1 $3) }
        | LValue '*=' Exp    { Asig $1 (Mul $1 $3) }
        | LValue '/=' Exp    { Asig $1 (Div $1 $3) }
@@ -233,7 +254,7 @@ Exp : LValue                      { $1 }
 
     | int                         { IntLit (fst $1) }
     | float                       { FloLit (fst $1) }
-    | Exp '+' Exp                 { Sum $1 $3 }
+    | Exp '+' Exp                 { Suma $1 $3 }
     | Exp '-' Exp                 { Sub $1 $3 }
     | Exp '*' Exp                 { Mul $1 $3 }
     | Exp '/' Exp                 { Div $1 $3 }
@@ -332,7 +353,7 @@ data Exp
       -- Numericas
       | IntLit Int
       | FloLit Float
-      | Sum Exp Exp
+      | Suma Exp Exp
       | Sub Exp Exp
       | Mul Exp Exp
       | Pow Exp Exp
@@ -364,7 +385,15 @@ data Exp
       | DictLit [(Exp, Exp)]
       deriving Show
 
+type Tablon  = Map.Map String [Entry]
+
 gato f = do
   s <- getTokens f
-  return( midnight s )
+  (ast,(st,_), _) <- runRWST (midnight s) () initTablon
+  print ast
+  putStrLn "\n"
+  print st
+  return()
+
+
 }

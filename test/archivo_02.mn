@@ -1,5 +1,6 @@
 Space
 
+planet perro;
 moon b = full;
 planet n = 10;
 cloud x = 3.14159;
