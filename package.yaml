@@ -25,6 +25,7 @@ dependencies:
 - array
 - containers
 - transformers
+- mtl
 
 ghc-options:
 - -Wall

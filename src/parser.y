@@ -3,11 +3,13 @@ module Parser where
 import Data.Char
 import Data.List
 import Lexer
+import Tablon
 }
 
 %name midnight
 %tokentype { Token }
 %error { parseError }
+%monad { MonadTablon }
 
 %token 
       space           { TkSpace     $$ }
@@ -305,22 +307,6 @@ data Instr
       | Yield Exp
       deriving Show
 
-data Type
-      = Planet
-      | Cloud
-      | Star
-      | Moon
-      | Blackhole
-      | Cluster Type
-      | Quasar Type
-      | Nebula Type
-      | Pointer Type
-      | Satellite Type
-      | Galaxy String
-      | UFO String
-      | Comet [Type] Type
-      deriving Show
-
 data Slice
       = Index Exp
       | Interval Exp Exp
@@ -381,7 +367,4 @@ data Exp
 gato f = do
   s <- getTokens f
   return( midnight s )
-
-
-main = gato "test.mn"
 }

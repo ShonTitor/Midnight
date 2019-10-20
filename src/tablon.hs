@@ -1,7 +1,5 @@
 module Tablon where
---import Parser
-import Control.Monad.Trans.RWS
---import Control.Monad.IO.Class
+import Control.Monad.RWS
 import qualified Data.Map as Map
 --import Data.Maybe
 
@@ -41,14 +39,18 @@ type Tablon  = Map.Map String [Entry]
 vacio :: Tablon
 vacio = Map.empty
 
+buscar :: String -> Tablon -> [Entry]
+buscar s t = lis $ Map.lookup s t
+    where
+      lis Nothing = []
+      lis (Just lista) = lista
+
 insertar :: String -> Entry -> Tablon -> Tablon
 insertar s e t
     | any (clash e) vaina = error "Redefinicion"
     | otherwise = Map.insert s (e : vaina) t
     where
-        vaina = lis $ Map.lookup s t
-        lis (Just lista) = lista
-        lis Nothing = []
+        vaina = buscar s t
         clash (Entry _ _ a) (Entry _ _ b) = a == b
 
 insertarV :: [String] -> [Entry] -> Tablon -> Tablon
@@ -58,9 +60,33 @@ insertarV xs ys t = foldr insertar' t (zip xs ys)
 
 type MonadTablon a = RWST () () (Tablon, [Integer]) IO a
 
-initState :: (Tablon,[Integer])
-initState = (t,[0])
+initTablon :: (Tablon,[Integer])
+initTablon = (t,[0])
     where
         t = insertarV claves valores vacio
         claves = ["planet", "cloud"]
         valores = [(Entry Cosmos Tipo 0), (Entry Cosmos Tipo 0)]
+
+wan :: MonadTablon ()
+wan = put initTablon
+
+idk :: MonadTablon ()
+idk = do
+  (perro,pila) <- get
+  put (perro,69:pila)
+
+main' :: MonadTablon ()
+main' = do
+  lift $ putStrLn "salu3"
+  idk
+  a <- get
+  lift $ putStrLn (show a)
+  idk
+  b <- get
+  lift $ putStrLn (show b)
+  return ()
+
+tablontest :: IO ()
+tablontest = do 
+  _ <- execRWST main' () initTablon
+  return ()
