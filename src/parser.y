@@ -166,11 +166,11 @@ Seq   : SeqAux              { reverse $1 }
 
 SeqAux  : InstrA ';'        { [$1] }
         | SeqAux InstrA ';' { $2 : $1 }
-        | InstrB            { [$1] }
-        | SeqAux InstrB     { $2 : $1 }
+        | InstrB Pop        { [$1] }
+        | SeqAux InstrB Pop { $2 : $1 }
 
 Instr : InstrA              { $1 }
-      | InstrB              { $1 }
+      | InstrB Pop          { $1 }
 
 InstrA : Type id            
        { % do 
@@ -196,12 +196,12 @@ InstrA : Type id
        | return             { Returnsito }
        | yield Exp          { Yield $2 }
 
-InstrB : If                                                             { $1 }
-       | While                                                          { $1 }
-       | orbit id around Exp '{' Seq '}'                                { Foreach (fst $2) $4 $6 }
-       | orbit id around range '(' Exp ',' Exp ',' Exp ')' '{' Seq '}'  { ForRange $6 $8 $10 $13 }
-       | orbit id around range '(' Exp ',' Exp ')' '{' Seq '}'          { ForRange $6 $8 (IntLit 1) $11}
-       | orbit id around range '(' Exp ')' '{' Seq '}'                  { ForRange (IntLit 0) $6 (IntLit 1) $9}
+InstrB : Push If                                                             { $2 }
+       | Push While                                                          { $2 }
+       | Push orbit id around Exp '{' Seq '}'                                { Foreach (fst $3) $5 $7 }
+       | Push orbit id around range '(' Exp ',' Exp ',' Exp ')' '{' Seq '}'  { ForRange $7 $9 $11 $14 }
+       | Push orbit id around range '(' Exp ',' Exp ')' '{' Seq '}'          { ForRange $7 $9 (IntLit 1) $12}
+       | Push orbit id around range '(' Exp ')' '{' Seq '}'                  { ForRange (IntLit 0) $7 (IntLit 1) $10}
 
 If : if '(' Exp ')' '{' Seq '}'                           { If [($3, $6)] }
    | unless '(' Exp ')' '{' Seq '}'                       { If [(Not $3, $6)] }
