@@ -249,7 +249,10 @@ TComp : '[' Type ']' cluster      { Cluster $2 }
       | '(' Types '->' Type ')' comet  { Comet $2 $4 }
       | '(' Types '->' Type ')' satellite  { Comet $2 $4 }
 
-LValue : id                       { Var (fst $1) }
+LValue : id                       
+       { % do
+          --insertarExp (Var (fst $1))
+          return (Var (fst $1)) }
        | Exp '.' id               { Attr $1 (fst $3) }
        | Exp Index                { Access $1 $2 }
 
@@ -311,7 +314,7 @@ ArgsAux  : ArgsAux ',' Exp           { $3 : $1 }
          | Exp                       { [$1] }
 
 DictItems : Exp ':' Exp ',' DictItems           { ($1, $3) : $5 }
-           | Exp ':' Exp                        { [($1, $3)] }
+          | Exp ':' Exp                         { [($1, $3)] }
 
 Pop :: { () }
     :   {- Lambda -}      { % popPila }

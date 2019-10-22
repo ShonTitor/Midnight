@@ -1,7 +1,5 @@
 Space
 
-moon m = full;
-
 if (m) {
     print("perro");
 }
@@ -30,5 +28,7 @@ orbit until (j >= 6) {
 orbit(planet k=0 ; k < 6 ; k+=1) {
     print(k)
 }
+
+moon m = full;
 
 EndofSpace

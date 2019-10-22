@@ -107,6 +107,17 @@ insertarReg (DUFO s _) = do
     put (tab, pila, n)
 insertarReg _ = error "No es un Registro"
 
+insertarExp :: Exp -> MonadTablon ()
+insertarExp (Var id) = do
+    (tablonActual, pila, _) <- get
+    let pervasive (Entry _ _ x) = x == 0
+    let entries = filter (\(Entry _ _ x) -> x<(head pila) && elem x pila) (buscar id tablonActual)
+    let perv = filter pervasive entries
+    let e = head perv
+    (tablonActual, pila@(tope:_), n) <- get
+    let tab = insertar id (e) tablonActual
+    put (tab, pila, n)
+
 showTablon :: Tablon -> String
 showTablon t = fst (Map.mapAccumWithKey f "" t) where
   f a k v =  (a ++ '\n' : k ++ '\n' : intercalate "\n" (map (show) v) ++ "\n" , ())
