@@ -1,8 +1,8 @@
 module Tablon where
 import Tipos
 import Control.Monad.RWS
+import Data.List (intercalate)
 import qualified Data.Map as Map
---import Data.Maybe
 
 vacio :: Tablon
 vacio = Map.empty
@@ -37,6 +37,19 @@ initTablon = (t,[0],0)
         claves = ["planet", "cloud"]
         valores = [(Entry Cosmos Tipo 0), (Entry Cosmos Tipo 0)]
 
+lookupTablon :: String -> MonadTablon (Maybe Entry)
+lookupTablon s = do
+    (tablonActual, pila, _) <- get
+    let pervasive (Entry _ _ x) = x == 0
+    let entries = filter (\(Entry _ _ x) -> x<(head pila) && elem x pila) (buscar s tablonActual)
+    let perv = filter pervasive entries
+    let e | null entries = Nothing
+          | null perv = Just $ head entries
+          | otherwise =  Just $ head perv
+    lift $ putStrLn (show e)
+    lift $ putStrLn (show entries)
+    return e
+
 pushPila :: MonadTablon ()
 pushPila = do
     (tablonActual, pila, n) <- get
@@ -48,14 +61,6 @@ popPila = do
     (tablonActual, pila, n) <- get
     put (tablonActual, tail pila, n)
 
---insertarDecl :: String -> Type -> MonadTablon ()
---insertarDecl id tipo' = do
---    (tablonActual, pila@(pila:_)) <- get
---    insertar id {tipo',,} tablonActual
-
-    --let info = replicate (length ids) (SymbolInfo tipo' pila Variable)
-   -- addToSymTab ids info actualSymTab scopes
-
 insertarCampos :: [(Type, String)] -> MonadTablon ()
 insertarCampos xs = do
     (tablonActual, pila@(tope:_), n) <- get
@@ -64,24 +69,25 @@ insertarCampos xs = do
     put (tab, pila, n)
 
 insertarVar :: String -> Type -> MonadTablon ()
-insertarVar id tipo = do
+insertarVar s t = do
     (tablonActual, pila@(tope:_), n) <- get
-    let tab = insertar id (Entry tipo Variable tope) tablonActual
+    let tab = insertar s (Entry t Variable tope) tablonActual
     put (tab, pila, n)
 
 insertarSubrutina :: Def -> MonadTablon ()
-insertarSubrutina (Func id params tret seq) = do
+insertarSubrutina (Func s params tret sequ) = do
     (tablonActual, pila@(tope:_), n) <- get
     let tparams = [ t | (t, _, _) <- params ]
-    let tipo = Comet tparams tret
-    let tab = insertar id (Entry tipo (Subrutina seq) tope) tablonActual
+    let t = Comet tparams tret
+    let tab = insertar s (Entry t (Subrutina sequ) tope) tablonActual
     put (tab, pila, n)
-insertarSubrutina (Iter id params tret seq) = do
+insertarSubrutina (Iter s params tret sequ) = do
     (tablonActual, pila@(tope:_), n) <- get
     let tparams = [ t | (t, _, _) <- params ]
-    let tipo = Satellite tparams tret
-    let tab = insertar id (Entry tipo (Subrutina seq) tope) tablonActual
+    let t = Satellite tparams tret
+    let tab = insertar s (Entry t (Subrutina sequ) tope) tablonActual
     put (tab, pila, n)
+insertarSubrutina _ = error "No es una Subrutina"
 
 insertarParams :: [(Type, String, Bool)] -> MonadTablon ()
 insertarParams params = do
@@ -91,11 +97,37 @@ insertarParams params = do
     put (tab, pila, n)
 
 insertarReg :: Def -> MonadTablon ()
-insertarReg (DGalaxy id _) = do
+insertarReg (DGalaxy s _) = do
     (tablonActual, pila@(tope:_), n) <- get
-    let tab = insertar id (Entry Cosmos (Registro (Galaxy id) n) tope) tablonActual
+    let tab = insertar s (Entry Cosmos (Registro (Galaxy s) n) tope) tablonActual
     put (tab, pila, n)
-insertarReg (DUFO id _) = do
+insertarReg (DUFO s _) = do
     (tablonActual, pila@(tope:_), n) <- get
-    let tab = insertar id (Entry Cosmos (Registro (UFO id) n) tope) tablonActual
+    let tab = insertar s (Entry Cosmos (Registro (UFO s) n) tope) tablonActual
     put (tab, pila, n)
+insertarReg _ = error "No es un Registro"
+
+showTablon :: Tablon -> String
+showTablon t = fst (Map.mapAccumWithKey f "" t) where
+  f a k v =  (a ++ '\n' : k ++ '\n' : intercalate "\n" (map (show) v) ++ "\n" , ())
+
+tablonTest' :: MonadTablon ()
+tablonTest' = do
+  pushPila
+  insertarVar "perro" Planet
+  pushPila
+  insertarVar "perro" Cloud
+  pushPila
+  insertarVar "perro" Star
+  _ <- lookupTablon "perro"
+  popPila
+  _ <- lookupTablon "perro"
+  popPila
+  _ <- lookupTablon "perro"
+  _ <- lookupTablon "planet"
+  popPila
+
+tablonTest :: IO ()
+tablonTest = do
+  _ <- runRWST tablonTest' () initTablon
+  return ()

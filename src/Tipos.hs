@@ -1,5 +1,4 @@
 module Tipos where
-import Control.Monad.RWS
 import qualified Data.Map as Map
 
 data Type
