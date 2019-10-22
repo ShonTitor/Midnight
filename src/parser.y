@@ -203,9 +203,18 @@ InstrB : Push If                                                             { $
        | Push orbit id around range '(' Exp ',' Exp ')' '{' Seq '}'          { ForRange $7 $9 (IntLit 1) $12}
        | Push orbit id around range '(' Exp ')' '{' Seq '}'                  { ForRange (IntLit 0) $7 (IntLit 1) $10}
 
-If : if '(' Exp ')' '{' Seq '}'                           { If [($3, $6)] }
-   | unless '(' Exp ')' '{' Seq '}'                       { If [(Not $3, $6)] }
-   | if '(' Exp ')' '{' Seq '}' Elif                      { If (($3, $6) : $8) }
+If : if '(' Exp ')' '{' Seq '}'                           
+   { % do
+        insertarExp ($3)
+        return (If [($3, $6)]) }
+   | unless '(' Exp ')' '{' Seq '}'                       
+   { % do
+        insertarExp ($3)
+        return (If [(Not $3, $6)]) } 
+   | if '(' Exp ')' '{' Seq '}' Elif                      
+   { % do
+        insertarExp ($3)
+        return (If (($3, $6) : $8)) }
 
 Elif : elseif '(' Exp ')' '{' Seq '}'                     { [($3, $6)] }
      | else  '{' Seq '}'                                  { [(Full, $3)] }

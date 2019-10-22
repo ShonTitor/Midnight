@@ -2,7 +2,7 @@ Space
 
 moon m = full;
 
-if (m) {
+if (full) {
     print("perro");
 }
 elseif (1==1) {
@@ -11,7 +11,7 @@ elseif (1==1) {
 else {
     print("vaca");
 }
-unless (m) {
+unless (new) {
     print("sapo");
 }
 
