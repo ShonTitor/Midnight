@@ -205,15 +205,15 @@ InstrB : Push If                                                             { $
 
 If : if '(' Exp ')' '{' Seq '}'                           
    { % do
-        insertarExp ($3)
+        --insertarExp ($3)
         return (If [($3, $6)]) }
    | unless '(' Exp ')' '{' Seq '}'                       
    { % do
-        insertarExp ($3)
+        --insertarExp ($3)
         return (If [(Not $3, $6)]) } 
    | if '(' Exp ')' '{' Seq '}' Elif                      
    { % do
-        insertarExp ($3)
+        --insertarExp ($3)
         return (If (($3, $6) : $8)) }
 
 Elif : elseif '(' Exp ')' '{' Seq '}'                     { [($3, $6)] }
