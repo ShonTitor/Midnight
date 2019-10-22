@@ -21,7 +21,6 @@ data Type
 data Category = Tipo
               | Parametro Bool
               | Variable
-              | Literal
               | Registro Type Integer
               | Campo
               | Subrutina [Instr]

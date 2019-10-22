@@ -107,16 +107,6 @@ insertarReg (DUFO s _) = do
     put (tab, pila, n)
 insertarReg _ = error "No es un Registro"
 
-insertarExp :: Exp -> MonadTablon ()
-insertarExp New = do
-    (tablonActual, pila@(tope:_), n) <- get
-    let tab = insertar "JustNewMoon" (Entry Moon Literal tope) tablonActual
-    put (tab, pila, n)
-insertarExp Full = do
-    (tablonActual, pila@(tope:_), n) <- get
-    let tab = insertar "JustFullMoon" (Entry Moon Literal tope) tablonActual
-    put (tab, pila, n)
-
 showTablon :: Tablon -> String
 showTablon t = fst (Map.mapAccumWithKey f "" t) where
   f a k v =  (a ++ '\n' : k ++ '\n' : intercalate "\n" (map (show) v) ++ "\n" , ())
