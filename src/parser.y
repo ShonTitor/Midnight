@@ -4,6 +4,7 @@ import Data.Char
 import Data.List
 import Lexer
 import Tablon
+import Tipos
 import Control.Monad.RWS
 import qualified Data.Map as Map
 }
@@ -109,11 +110,13 @@ import qualified Data.Map as Map
 %left NEG
 %%
 
-S :: { Program }    
-      : space end                     { % return $ Root [] [] }
-      | space Defs Seq end            { % return $ Root $2 $3 }
-      | space Defs end                { % return $ Root $2 [] }
-      | space Seq end                 { % return $ Root [] $2 }
+S :: { Program } : Push Programa Pop  { $2 }
+
+Programa :: { Program }    
+      : space end                     { % return $ Root [] }
+      | space Defs Seq end            { % return $ Root $3 }
+      | space Defs end                { % return $ Root [] }
+      | space Seq end                 { % return $ Root $2 }
 
 Defs : DefsAux                        { reverse $1 }
 
@@ -121,22 +124,35 @@ DefsAux : DefsAux Func                { $2 : $1 }
         | Func                        { [$1] }
 
 Func  :: { Def }
-      : comet id '(' Params ')' '->' Type '{' Seq '}'     { Func (fst $2) $4 $7 $9 }
-      | satellite id '(' Params ')' '->' Type '{' Seq '}' { Iter (fst $2) $4 $7 $9 }
-      | ufo id '{' Regs '}'                               { DUFO (fst $2) $4 }
-      | galaxy id '{' Regs '}'                            
+      : comet id '(' Params ')' '->' Type '{' Seq '}' Pop    
+        { % do
+          let d = Func (fst $2) $4 $7 $9
+          insertarSubrutina d
+          return d }
+      | satellite id '(' Params ')' '->' Type '{' Seq '}' Pop 
+        { % do
+          let d = Iter (fst $2) $4 $7 $9
+          insertarSubrutina d
+          return d }
+      | ufo id '{' Regs '}'                               
+        { % do
+          let a = DUFO (fst $2) $4
+          insertarReg a
+          return a }
+      | galaxy id '{' Regs Pop '}'                            
         { % do 
-          insertarVar (fst $2) Planet
-          return (DGalaxy (fst $2) $4) }
+          let a = DGalaxy (fst $2) $4
+          insertarReg a
+          return a }
 
-Regs : RegsAux     
-      { % do 
-          let rex = reverse $1
+Regs : Push RegsAux    
+      { % do
+          let rex = reverse $2
           insertarCampos rex
           return (rex) }
-     | RegsAux ';'                                              
-     { % do 
-          let rex = reverse $1
+     | Push RegsAux ';'                                             
+     { % do
+          let rex = reverse $2
           insertarCampos rex
           return (rex) }
 
@@ -199,8 +215,12 @@ While : orbit while '(' Exp ')' '{' Seq '}'               { While $4 $7 }
       | orbit until '(' Exp ')' '{' Seq '}'               { While (Not $4) $7}
       | orbit '(' Instr ';' Exp ';' Instr ')' '{' Seq '}' { While $5 ($3 : $10 ++ [$7]) }
 
-Params : ParamsAux                                        { reverse $1 }
-       |                                                  { [] }
+Params : Push ParamsAux                                   
+         { % do 
+           let params = reverse $2
+           insertarParams params 
+           return params }
+       | Push                                             { [] }
 
 ParamsAux : ParamsAux ',' Type id                         { ($3, fst $4, False) : $1 }
           | Type id                                       { [($1, fst $2, False)] }
@@ -223,11 +243,11 @@ TypesAux : Type                   { [$1] }
 TComp : '[' Type ']' cluster      { Cluster $2 }
       | '[' Type ']' quasar       { Quasar $2 }
       | '[' Type ']' nebula       { Nebula $2 }
-      | '[' Type ']' satellite    { Satellite $2 }
       | '~' Type                  { Pointer $2 }
       | id galaxy                 { Galaxy (fst $1) }
       | id ufo                    { UFO (fst $1) }
-      | '(' Types '->' Type ')'   { Comet $2 $4 }
+      | '(' Types '->' Type ')' comet  { Comet $2 $4 }
+      | '(' Types '->' Type ')' satellite  { Comet $2 $4 }
 
 LValue : id                       { Var (fst $1) }
        | Exp '.' id               { Attr $1 (fst $3) }
@@ -293,6 +313,12 @@ ArgsAux  : ArgsAux ',' Exp           { $3 : $1 }
 DictItems : Exp ':' Exp ',' DictItems           { ($1, $3) : $5 }
            | Exp ':' Exp                        { [($1, $3)] }
 
+Pop :: { () }
+    :   {- Lambda -}      { % popPila }
+
+Push  ::  { () }
+      :   {- Lambda -}    { % pushPila }
+
 {
 parseError :: [Token] -> a
 parseError (x:_) = error $ "Error de sintaxis en la línea " ++ (show n) ++ " columna " ++ (show m)
@@ -301,98 +327,14 @@ parseError (x:_) = error $ "Error de sintaxis en la línea " ++ (show n) ++ " co
 
 midny = midnight.alexScanTokens
 
-data Program
-      = Root [Def] [Instr] 
-      deriving Show
-
-data Def
-      = Func String [(Type, String, Bool)] Type [Instr]
-      | Iter String [(Type, String, Bool)] Type [Instr]
-      | DUFO String [(Type, String)]
-      | DGalaxy String [(Type, String)]
-      deriving Show
-
-data Instr 
-      = Flotando Exp
-      | Declar Type String
-      | DeclarI Type String Exp
-      | Asig Exp Exp
-      | If [(Exp, [Instr])]
-      | While Exp [Instr]
-      | Foreach String Exp [Instr]
-      | ForRange Exp Exp Exp [Instr]
-      | Break Exp
-      | Continue
-      | Return Exp
-      | Returnsito
-      | Yield Exp
-      deriving Show
-
-data Slice
-      = Index Exp
-      | Interval Exp Exp
-      | Begin Exp
-      deriving Show
-
-data Exp
-      = Funcall Exp [Exp]
-      -- LValues
-      | Var String
-      | Access Exp Slice
-      | Attr Exp String
-      -- funciones de preludio
-      | Print [Exp]
-      | Read
-      | Bigbang
-      | Scale Exp
-      | Pop Exp [Exp]
-      | Add Exp [Exp]
-      | Terraform Exp
-
-      | Desref Exp
-      -- Numericas
-      | IntLit Int
-      | FloLit Float
-      | Suma Exp Exp
-      | Sub Exp Exp
-      | Mul Exp Exp
-      | Pow Exp Exp
-      | Div Exp Exp
-      | DivE Exp Exp
-      | Mod Exp Exp
-      | Neg Exp
-      -- Comparaciones
-      | Eq Exp Exp
-      | Neq Exp Exp
-      | Mayor Exp Exp
-      | MayorI Exp Exp
-      | Menor Exp Exp
-      | MenorI Exp Exp
-      -- Bool
-      | New
-      | Full
-      | And Exp Exp
-      | Bitand Exp Exp
-      | Or Exp Exp
-      | Bitor Exp Exp
-      | Not Exp
-      -- Otros
-      | StrLit String
-      | CharLit Char
-      | ArrLit [Exp]
-      | ArrInit Exp Type
-      | ListLit [Exp]
-      | DictLit [(Exp, Exp)]
-      deriving Show
-
 type Tablon  = Map.Map String [Entry]
 
 gato f = do
   s <- getTokens f
-  (ast,(st,_), _) <- runRWST (midnight s) () initTablon
-  print ast
-  putStrLn "\n"
-  print st
+  (arbol, (tabla, _, _), _) <- runRWST (midnight s) () initTablon
+  print arbol
+  putStrLn ""
+  print tabla
   return()
 
 

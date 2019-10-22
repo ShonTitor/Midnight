@@ -1,5 +1,5 @@
 Space
-Satellite Primos() -> planet {
+Satellite Primos(planet with) -> planet {
     [planet]Quasar L = [];
     planet p = 2;
     orbit while(full) {

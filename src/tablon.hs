@@ -1,40 +1,8 @@
 module Tablon where
+import Tipos
 import Control.Monad.RWS
 import qualified Data.Map as Map
 --import Data.Maybe
-
-data Type
-      = Planet
-      | Cloud
-      | Star
-      | Moon
-      | Cosmos
-      | Blackhole
-      | Cluster Type
-      | Quasar Type
-      | Nebula Type
-      | Pointer Type
-      | Satellite Type
-      | Galaxy String
-      | UFO String
-      | Comet [Type] Type
-      deriving (Eq, Show)
-
-data Category = Tipo
-              | Parametro
-              | Variable
-              | Campo
-              | Subrutina
-    deriving Show
-
-data Entry = Entry {
-    tipo :: Type,
-    categoria :: Category,
-    alcance :: Integer
-    }
-    deriving Show
-
-type Tablon  = Map.Map String [Entry]
 
 vacio :: Tablon
 vacio = Map.empty
@@ -60,49 +28,25 @@ insertarV' :: [(String,Entry)] -> Tablon -> Tablon
 insertarV' xs t = foldr insertar' t xs
     where insertar' (s,e) tab = insertar s e tab
 
-type MonadTablon a = RWST () () (Tablon, [Integer]) IO a
+type MonadTablon a = RWST () () (Tablon, [Integer], Integer) IO a
 
-initTablon :: (Tablon,[Integer])
-initTablon = (t,[0])
+initTablon :: (Tablon,[Integer], Integer)
+initTablon = (t,[0],0)
     where
         t = insertarV claves valores vacio
         claves = ["planet", "cloud"]
         valores = [(Entry Cosmos Tipo 0), (Entry Cosmos Tipo 0)]
 
-wan :: MonadTablon ()
-wan = put initTablon
-
-idk :: MonadTablon ()
-idk = do
-  (perro,pila) <- get
-  put (perro,69:pila)
-
-main' :: MonadTablon ()
-main' = do
-  lift $ putStrLn "salu3"
-  idk
-  a <- get
-  lift $ putStrLn (show a)
-  idk
-  b <- get
-  lift $ putStrLn (show b)
-  return ()
-
-pushTablon :: MonadTablon ()
-pushTablon = do
-    (tablonActual, pila) <- get
-    let pilaNueva = (head pila) + 1
-    put (tablonActual, pilaNueva:pila)
+pushPila :: MonadTablon ()
+pushPila = do
+    (tablonActual, pila, n) <- get
+    let m = n + 1
+    put (tablonActual, m:pila, m)
 
 popPila :: MonadTablon ()
 popPila = do
-    (tablonActual, pila) <- get
-    put (tablonActual, tail pila)
-
-tablontest :: IO ()
-tablontest = do 
-  _ <- execRWST main' () initTablon
-  return ()
+    (tablonActual, pila, n) <- get
+    put (tablonActual, tail pila, n)
 
 --insertarDecl :: String -> Type -> MonadTablon ()
 --insertarDecl id tipo' = do
@@ -114,13 +58,44 @@ tablontest = do
 
 insertarCampos :: [(Type, String)] -> MonadTablon ()
 insertarCampos xs = do
-    (tablonActual,pila@(tope:_)) <- get
+    (tablonActual, pila@(tope:_), n) <- get
     let tuplas = [ (snd x, (Entry (fst x) Campo tope)) | x <- xs ]
     let tab = insertarV' tuplas tablonActual
-    put (tab,pila)
+    put (tab, pila, n)
 
 insertarVar :: String -> Type -> MonadTablon ()
 insertarVar id tipo = do
-    (tablonActual,pila@(tope:_)) <- get
+    (tablonActual, pila@(tope:_), n) <- get
     let tab = insertar id (Entry tipo Variable tope) tablonActual
-    put (tab,pila)
+    put (tab, pila, n)
+
+insertarSubrutina :: Def -> MonadTablon ()
+insertarSubrutina (Func id params tret seq) = do
+    (tablonActual, pila@(tope:_), n) <- get
+    let tparams = [ t | (t, _, _) <- params ]
+    let tipo = Comet tparams tret
+    let tab = insertar id (Entry tipo (Subrutina seq) tope) tablonActual
+    put (tab, pila, n)
+insertarSubrutina (Iter id params tret seq) = do
+    (tablonActual, pila@(tope:_), n) <- get
+    let tparams = [ t | (t, _, _) <- params ]
+    let tipo = Satellite tparams tret
+    let tab = insertar id (Entry tipo (Subrutina seq) tope) tablonActual
+    put (tab, pila, n)
+
+insertarParams :: [(Type, String, Bool)] -> MonadTablon ()
+insertarParams params = do
+    (tablonActual, pila@(tope:_), n) <- get
+    let tuplas = [ (s, (Entry t (Parametro b) tope)) | (t, s, b) <- params ]
+    let tab = insertarV' tuplas tablonActual
+    put (tab, pila, n)
+
+insertarReg :: Def -> MonadTablon ()
+insertarReg (DGalaxy id _) = do
+    (tablonActual, pila@(tope:_), n) <- get
+    let tab = insertar id (Entry Cosmos (Registro (Galaxy id) n) tope) tablonActual
+    put (tab, pila, n)
+insertarReg (DUFO id _) = do
+    (tablonActual, pila@(tope:_), n) <- get
+    let tab = insertar id (Entry Cosmos (Registro (UFO id) n) tope) tablonActual
+    put (tab, pila, n)

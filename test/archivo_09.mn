@@ -14,7 +14,7 @@ Comet double(planet @n) -> blackhole {
     n *= 2
 }
 
-(planet -> planet) f = twice;
+(planet -> planet) Comet f = twice;
 planet z = f(2);
 
 EndofSpace
