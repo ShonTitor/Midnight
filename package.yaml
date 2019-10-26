@@ -6,8 +6,8 @@ author:              "Leonardo López, Luigi Di Martino"
 maintainer:          example@example.com
 copyright:           "2019 Leonardo López, Luigi Di Martino"
 extra-source-files:  
-- "src/parser.y"
-- "src/lexer.x"
+- "src/Parser.y"
+- "src/Lexer.x"
 - "README.md"
 - "ChangeLog.md"
 
