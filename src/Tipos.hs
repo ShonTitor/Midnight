@@ -52,6 +52,10 @@ data Instr
       | Yield Exp
       deriving Show
 
+isDeclar :: Instr -> Bool
+isDeclar (Declar _ _) = True
+isDeclar _ = False
+
 data Slice
       = Index Exp
       | Interval Exp Exp

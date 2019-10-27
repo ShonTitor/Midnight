@@ -163,8 +163,8 @@ Seq   : SeqAux              { reverse $1 }
       | InstrA              { [$1] }
 
 
-SeqAux  : InstrA ';'        { [$1] }
-        | SeqAux InstrA ';' { $2 : $1 }
+SeqAux  : InstrA ';'        { if (isDeclar $1) then [] else [$1] }
+        | SeqAux InstrA ';' { if (isDeclar $2) then $1 else $2 : $1 }
         | InstrB Pop        { [$1] }
         | SeqAux InstrB Pop { $2 : $1 }
 
