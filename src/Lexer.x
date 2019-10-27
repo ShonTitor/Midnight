@@ -5,8 +5,9 @@ import Data.List
 
 %wrapper "posn"
 
-$digit = 0-9      -- digits
-$alpha = [a-zA-Z]   -- alphabetic characters
+$digit = 0-9      -- digitos
+$alpha = [a-zA-Z]   -- alfabéticos
+@espchar = \\[nt\"\'\\] -- caracteres especiales
 
 tokens :-
   Space         {\pos _ -> TkSpace pos}
@@ -87,8 +88,8 @@ tokens :-
   ¬\=           {\pos _ -> TkDistinto pos}
   \=            {\pos _ -> TkAsignacion pos}
   ¬             {\pos _ -> TkNegacion pos}
-  \"($printable #\")*\" {\pos s -> TkString ((read s :: String), pos)}
-  \'($printable #\')*\' {\pos s -> TkChar ((read s :: Char), pos)}
+  \"([$printable # \"] | @espchar)*\" {\pos s -> TkString ((read s :: String), pos)}
+  \'([$printable # \'] | @espchar)+\' {\pos s -> TkChar ((read s :: Char), pos)}
   $digit+\.$digit+       { \pos s -> TkFloat ((read s :: Float),  pos)}
   $digit+       { \pos s -> TkInt ((read s :: Int),  pos)}
   $alpha [$alpha $digit \_]*   { \pos s -> TkId (s,  pos)}
