@@ -32,7 +32,6 @@ import qualified Data.Map as Map
       ufo             { TkUFO       $$ }
       comet           { TkComet     $$ }
       satellite       { TkSatellite $$ }
-      terraform       { TkTerraform $$ }
 
       print           { TkPrint     $$ }
       read            { TkRead      $$ }
@@ -227,12 +226,12 @@ ParamsAux : ParamsAux ',' Type id                         { ($3, fst $4, False) 
           | ParamsAux ',' Type '@' id                     { ($3, fst $5, True) : $1 }
           | Type '@' id                                   { [($1, fst $3, True)] }
 
-Type  : planet                    { Planet }
-      | cloud                     { Cloud }
-      | star                      { Star }
-      | moon                      { Moon }
-      | blackhole                 { Blackhole }
-      | constellation             { Cluster Star }
+Type  : planet                    { Simple $ fst $1 }
+      | cloud                     { Simple $ fst $1 }
+      | star                      { Simple $ fst $1 }
+      | moon                      { Simple $ fst $1 }
+      | blackhole                 { Simple $ fst $1 }
+      | constellation             { Composite (fst $1) (Simple "star") }
       | TComp                     { $1 }
 
 Types : TypesAux                  { reverse $1 }
@@ -240,14 +239,14 @@ Types : TypesAux                  { reverse $1 }
 TypesAux : Type                   { [$1] }
          | TypesAux ',' Type      { $3 : $1 }
 
-TComp : '[' Type ']' cluster      { Cluster $2 }
-      | '[' Type ']' quasar       { Quasar $2 }
-      | '[' Type ']' nebula       { Nebula $2 }
-      | '~' Type                  { Pointer $2 }
-      | id galaxy                 { Galaxy (fst $1) }
-      | id ufo                    { UFO (fst $1) }
-      | '(' Types '->' Type ')' comet  { Comet $2 $4 }
-      | '(' Types '->' Type ')' satellite  { Comet $2 $4 }
+TComp : '[' Type ']' cluster      { Composite (fst $4) $2 }
+      | '[' Type ']' quasar       { Composite (fst $4) $2 }
+      | '[' Type ']' nebula       { Composite (fst $4) $2 }
+      | '~' Type                  { Composite (fst $1) $2 }
+      | id galaxy                 { Record (fst $2) (fst $1) }
+      | id ufo                    { Record (fst $2) (fst $1) }
+      | '(' Types '->' Type ')' comet      { Subroutine (fst $6) $2 $4 }
+      | '(' Types '->' Type ')' satellite  { Subroutine (fst $6) $2 $4 }
 
 LValue : id                       { Var (fst $1) }
        | Exp '.' id               { Attr $1 (fst $3) }
@@ -270,7 +269,6 @@ Exp : LValue                      { $1 }
     | scale '(' Exp ')'           { Scale $3 }
     | Exp '.' pop '(' Args ')'    { Pop $1 $5 }
     | Exp '.' add '(' Args ')'    { Add $1 $5 }
-    | terraform '(' Exp ')'       { Terraform $3 }
 
     | int                         { IntLit (fst $1) }
     | float                       { FloLit (fst $1) }

@@ -34,20 +34,27 @@ initTablon :: (Tablon,[Integer], Integer)
 initTablon = (t,[0],0)
     where
         t = insertarV claves valores vacio
-        claves = ["planet", "cloud"]
-        valores = [(Entry Cosmos Tipo 0), (Entry Cosmos Tipo 0)]
+        claves = ["new", "full", "moon", "planet", "cloud", "star", "blackhole", "cosmos"]
+        valores = [(Entry (Simple "moon") Tipo 0),
+                   (Entry (Simple "moon") Tipo 0),
+                   (Entry (Simple "cosmos") Tipo 0),
+                   (Entry (Simple "cosmos") Tipo 0),
+                   (Entry (Simple "cosmos") Tipo 0),
+                   (Entry (Simple "cosmos") Tipo 0),
+                   (Entry (Simple "cosmos") Tipo 0),
+                   (Entry (Simple "cosmos") Tipo 0)
+                   ]
 
 lookupTablon :: String -> MonadTablon (Maybe Entry)
 lookupTablon s = do
     (tablonActual, pila, _) <- get
     let pervasive (Entry _ _ x) = x == 0
-    let entries = filter (\(Entry _ _ x) -> x<(head pila) && elem x pila) (buscar s tablonActual)
-    let perv = filter pervasive entries
-    let e | null entries = Nothing
+        entries = filter (\(Entry _ _ x) -> x<(head pila) && elem x pila) (buscar s tablonActual)
+        perv = filter pervasive entries
+        e 
+          | null entries = Nothing
           | null perv = Just $ head entries
           | otherwise =  Just $ head perv
-    lift $ putStrLn (show e)
-    lift $ putStrLn (show entries)
     return e
 
 pushPila :: MonadTablon ()
@@ -78,14 +85,14 @@ insertarSubrutina :: Def -> MonadTablon ()
 insertarSubrutina (Func s params tret sequ) = do
     (tablonActual, pila@(tope:_), n) <- get
     let tparams = [ t | (t, _, _) <- params ]
-    let t = Comet tparams tret
-    let tab = insertar s (Entry t (Subrutina sequ) tope) tablonActual
+        ti = Subroutine "Comet" tparams tret
+        tab = insertar s (Entry ti (Subrutina sequ) tope) tablonActual
     put (tab, pila, n)
 insertarSubrutina (Iter s params tret sequ) = do
     (tablonActual, pila@(tope:_), n) <- get
     let tparams = [ t | (t, _, _) <- params ]
-    let t = Satellite tparams tret
-    let tab = insertar s (Entry t (Subrutina sequ) tope) tablonActual
+        ti = Subroutine "Satellite" tparams tret
+        tab = insertar s (Entry ti (Subrutina sequ) tope) tablonActual
     put (tab, pila, n)
 insertarSubrutina _ = error "No es una Subrutina"
 
@@ -99,35 +106,14 @@ insertarParams params = do
 insertarReg :: Def -> MonadTablon ()
 insertarReg (DGalaxy s _) = do
     (tablonActual, pila@(tope:_), n) <- get
-    let tab = insertar s (Entry Cosmos (Registro (Galaxy s) n) tope) tablonActual
+    let tab = insertar s (Entry (Simple "cosmos") (Registro (Record "Galaxy" s)  n) tope) tablonActual
     put (tab, pila, n)
 insertarReg (DUFO s _) = do
     (tablonActual, pila@(tope:_), n) <- get
-    let tab = insertar s (Entry Cosmos (Registro (UFO s) n) tope) tablonActual
+    let tab = insertar s (Entry (Simple "cosmos") (Registro (Record "UFO" s)  n) tope) tablonActual
     put (tab, pila, n)
 insertarReg _ = error "No es un Registro"
 
 showTablon :: Tablon -> String
 showTablon t = fst (Map.mapAccumWithKey f "" t) where
   f a k v =  (a ++ '\n' : k ++ '\n' : intercalate "\n" (map (show) v) ++ "\n" , ())
-
-tablonTest' :: MonadTablon ()
-tablonTest' = do
-  pushPila
-  insertarVar "perro" Planet
-  pushPila
-  insertarVar "perro" Cloud
-  pushPila
-  insertarVar "perro" Star
-  _ <- lookupTablon "perro"
-  popPila
-  _ <- lookupTablon "perro"
-  popPila
-  _ <- lookupTablon "perro"
-  _ <- lookupTablon "planet"
-  popPila
-
-tablonTest :: IO ()
-tablonTest = do
-  _ <- runRWST tablonTest' () initTablon
-  return ()

@@ -2,20 +2,10 @@ module Tipos where
 import qualified Data.Map as Map
 
 data Type
-      = Planet
-      | Cloud
-      | Star
-      | Moon
-      | Cosmos
-      | Blackhole
-      | Cluster Type
-      | Quasar Type
-      | Nebula Type
-      | Pointer Type
-      | Satellite [Type] Type
-      | Galaxy String
-      | UFO String
-      | Comet [Type] Type
+      = Simple String
+      | Composite String Type
+      | Record String String
+      | Subroutine String [Type] Type
       deriving (Eq, Show)
 
 data Category = Tipo

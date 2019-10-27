@@ -11,24 +11,23 @@ $alpha = [a-zA-Z]   -- alphabetic characters
 tokens :-
   Space         {\pos _ -> TkSpace pos}
   EndofSpace    {\pos _ -> TkEndofSpace pos}
-  moon          {\pos _ -> TkMoon pos}
   new           {\pos _ -> TkNew pos}
   full          {\pos _ -> TkFull pos}
-  planet        {\pos _ -> TkPlanet pos}
-  cloud         {\pos _ -> TkCloud pos}
-  star          {\pos _ -> TkStar pos}
-  blackhole     {\pos _ -> TkBlackhole pos}
-  cosmos        {\pos _ -> TkCosmos pos}
-  Constellation {\pos _ -> TkConstellation pos}
-  Cluster       {\pos _ -> TkCluster pos}
-  Quasar        {\pos _ -> TkQuasar pos}
-  Nebula        {\pos _ -> TkNebula pos}
-  Galaxy        {\pos _ -> TkGalaxy pos}
-  Quasar        {\pos _ -> TkQuasar pos}
-  UFO           {\pos _ -> TkUFO pos}
-  Comet         {\pos _ -> TkComet pos}
-  Satellite     {\pos _ -> TkSatellite pos}
-  terraform     {\pos _ -> TkTerraform pos}
+  moon          {\pos s -> TkMoon (s,  pos)}
+  planet        {\pos s -> TkPlanet (s,  pos)}
+  cloud         {\pos s -> TkCloud (s,  pos)}
+  star          {\pos s -> TkStar (s,  pos)}
+  blackhole     {\pos s -> TkBlackhole (s,  pos)}
+  cosmos        {\pos s -> TkCosmos (s,  pos)}
+  Constellation {\pos s -> TkConstellation (s,  pos)}
+  Cluster       {\pos s -> TkCluster (s,  pos)}
+  Quasar        {\pos s -> TkQuasar (s,  pos)}
+  Nebula        {\pos s -> TkNebula (s,  pos)}
+  Galaxy        {\pos s -> TkGalaxy (s,  pos)}
+  UFO           {\pos s -> TkUFO (s,  pos)}
+  Comet         {\pos s -> TkComet (s,  pos)}
+  Satellite     {\pos s -> TkSatellite (s,  pos)}
+  \~            {\pos s -> TkNyangara (s, pos)}
 
   print         {\pos _ -> TkPrint pos}
   read          {\pos _ -> TkRead pos}
@@ -61,7 +60,6 @@ tokens :-
   \,            {\pos _ -> TkComa pos}
   \;            {\pos _ -> TkPuntoycoma pos}
   \:            {\pos _ -> TkDospuntos pos}
-  \~            {\pos _ -> TkNyangara pos}
   \+\=          {\pos _ -> TkMasIgual pos}
   \+            {\pos _ -> TkMas pos}
   \-\=          {\pos _ -> TkMenosIgual pos}
@@ -104,24 +102,23 @@ tokens :-
 data Token =
   TkSpace     AlexPosn |
   TkEndofSpace AlexPosn |
-  TkMoon      AlexPosn |
   TkNew       AlexPosn |
   TkFull      AlexPosn |
-  TkPlanet    AlexPosn |
-  TkCloud     AlexPosn |
-  TkStar      AlexPosn |
-  TkBlackhole AlexPosn |
-  TkCosmos    AlexPosn |
-  TkConstellation AlexPosn |
-  TkCluster   AlexPosn |
-  TkQuasar    AlexPosn |
-  TkNebula    AlexPosn |
-  TkGalaxy    AlexPosn |
-  TkUFO       AlexPosn |
-  TkComet     AlexPosn |
-  TkSatellite AlexPosn |
-  TkTerraform AlexPosn |
-
+  TkMoon      (String, AlexPosn) |
+  TkPlanet    (String, AlexPosn) |
+  TkCloud     (String, AlexPosn) |
+  TkStar      (String, AlexPosn) |
+  TkBlackhole (String, AlexPosn) |
+  TkCosmos    (String, AlexPosn) |
+  TkConstellation (String, AlexPosn) |
+  TkCluster   (String, AlexPosn) |
+  TkQuasar    (String, AlexPosn) |
+  TkNebula    (String, AlexPosn) |
+  TkGalaxy    (String, AlexPosn) |
+  TkUFO       (String, AlexPosn) |
+  TkComet     (String, AlexPosn) |
+  TkSatellite (String, AlexPosn) |
+  TkNyangara  (String, AlexPosn) |
   TkPrint     AlexPosn |
   TkRead      AlexPosn |
   TkScale     AlexPosn |
@@ -153,7 +150,6 @@ data Token =
   TkComa      AlexPosn |
   TkPuntoycoma AlexPosn|
   TkDospuntos AlexPosn |
-  TkNyangara  AlexPosn |
   TkMasIgual  AlexPosn |
   TkMas       AlexPosn |
   TkMenosIgual AlexPosn|
@@ -192,24 +188,22 @@ data Token =
 getPos :: Token -> AlexPosn
 getPos (TkSpace      p) = p
 getPos (TkEndofSpace  p) = p
-getPos (TkMoon       p) = p
 getPos (TkNew        p) = p
 getPos (TkFull       p) = p
-getPos (TkPlanet     p) = p
-getPos (TkCloud      p) = p
-getPos (TkStar       p) = p
-getPos (TkBlackhole  p) = p
-getPos (TkCosmos     p) = p
-getPos (TkConstellation  p) = p
-getPos (TkCluster    p) = p
-getPos (TkQuasar     p) = p
-getPos (TkNebula     p) = p
-getPos (TkGalaxy     p) = p
-getPos (TkUFO        p) = p
-getPos (TkComet      p) = p
-getPos (TkSatellite  p) = p
-getPos (TkTerraform  p) = p
-
+getPos (TkMoon       (_,  p)) = p
+getPos (TkPlanet     (_,  p)) = p
+getPos (TkCloud      (_,  p)) = p
+getPos (TkStar       (_,  p)) = p
+getPos (TkBlackhole  (_,  p)) = p
+getPos (TkCosmos     (_,  p)) = p
+getPos (TkConstellation  (_,  p)) = p
+getPos (TkCluster    (_,  p)) = p
+getPos (TkQuasar     (_,  p)) = p
+getPos (TkNebula     (_,  p)) = p
+getPos (TkGalaxy     (_,  p)) = p
+getPos (TkUFO        (_,  p)) = p
+getPos (TkComet      (_,  p)) = p
+getPos (TkSatellite  (_,  p)) = p
 getPos (TkPrint      p) = p
 getPos (TkRead       p) = p
 getPos (TkScale      p) = p
@@ -241,7 +235,7 @@ getPos (TkPunto      p) = p
 getPos (TkComa       p) = p
 getPos (TkPuntoycoma  p) = p
 getPos (TkDospuntos  p) = p
-getPos (TkNyangara   p) = p
+getPos (TkNyangara   (_,p)) = p
 getPos (TkMasIgual   p) = p
 getPos (TkMas        p) = p
 getPos (TkMenosIgual  p) = p
