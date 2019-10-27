@@ -35,7 +35,8 @@ initTablon = (t,[0],0)
     where
         t = insertarV claves valores vacio
         --t = insertarV [] [] vacio
-        claves = ["new", "full", "moon", "planet", "cloud", "star", "blackhole", "cosmos"]
+        claves = ["new", "full", "moon", "planet", "cloud", "star", "blackhole", "cosmos",
+                  "Cluster", "Quasar", "Nebula", "~", "Galaxy", "UFO"]
         valores = [(Entry (Simple "moon") Literal 0),
                    (Entry (Simple "moon") Literal 0),
                    (Entry (Simple "cosmos") Tipo 0),
@@ -43,7 +44,13 @@ initTablon = (t,[0],0)
                    (Entry (Simple "cosmos") Tipo 0),
                    (Entry (Simple "cosmos") Tipo 0),
                    (Entry (Simple "cosmos") Tipo 0),
-                   (Entry (Simple "cosmos") Tipo 0)
+                   (Entry (Simple "cosmos") Tipo 0),
+                   (Entry NA Constructor 0),
+                   (Entry NA Constructor 0),
+                   (Entry NA Constructor 0),
+                   (Entry NA Constructor 0),
+                   (Entry NA Constructor 0),
+                   (Entry NA Constructor 0)
                    ]
 
 lookupTablon :: String -> MonadTablon (Maybe Entry)

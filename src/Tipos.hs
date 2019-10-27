@@ -6,9 +6,11 @@ data Type
       | Composite String Type
       | Record String String
       | Subroutine String [Type] Type
+      | NA
       deriving (Eq, Show)
 
 data Category = Tipo
+              | Constructor
               | Parametro Bool
               | Variable
               | Literal

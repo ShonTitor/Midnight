@@ -12,8 +12,8 @@ $alpha = [a-zA-Z]   -- alfabéticos
 tokens :-
   Space         {\pos _ -> TkSpace pos}
   EndofSpace    {\pos _ -> TkEndofSpace pos}
-  new           {\pos _ -> TkNew pos}
-  full          {\pos _ -> TkFull pos}
+  new           {\pos s -> TkNew (s,  pos)}
+  full          {\pos s -> TkFull (s,  pos)}
   moon          {\pos s -> TkMoon (s,  pos)}
   planet        {\pos s -> TkPlanet (s,  pos)}
   cloud         {\pos s -> TkCloud (s,  pos)}
@@ -103,8 +103,8 @@ tokens :-
 data Token =
   TkSpace     AlexPosn |
   TkEndofSpace AlexPosn |
-  TkNew       AlexPosn |
-  TkFull      AlexPosn |
+  TkNew       (String, AlexPosn) |
+  TkFull      (String, AlexPosn) |
   TkMoon      (String, AlexPosn) |
   TkPlanet    (String, AlexPosn) |
   TkCloud     (String, AlexPosn) |
@@ -189,8 +189,8 @@ data Token =
 getPos :: Token -> AlexPosn
 getPos (TkSpace      p) = p
 getPos (TkEndofSpace  p) = p
-getPos (TkNew        p) = p
-getPos (TkFull       p) = p
+getPos (TkNew        (_,  p)) = p
+getPos (TkFull       (_,  p)) = p
 getPos (TkMoon       (_,  p)) = p
 getPos (TkPlanet     (_,  p)) = p
 getPos (TkCloud      (_,  p)) = p
