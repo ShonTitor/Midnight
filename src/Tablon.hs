@@ -33,8 +33,8 @@ type MonadTablon a = RWST () () (Tablon, [Integer], Integer) IO a
 initTablon :: (Tablon,[Integer], Integer)
 initTablon = (t,[0],0)
     where
-        --t = insertarV claves valores vacio
-        t = insertarV [] [] vacio
+        t = insertarV claves valores vacio
+        --t = insertarV [] [] vacio
         claves = ["new", "full", "moon", "planet", "cloud", "star", "blackhole", "cosmos"]
         valores = [(Entry (Simple "moon") Literal 0),
                    (Entry (Simple "moon") Literal 0),
@@ -49,13 +49,14 @@ initTablon = (t,[0],0)
 lookupTablon :: String -> MonadTablon (Maybe Entry)
 lookupTablon s = do
     (tablonActual, pila, _) <- get
-    let pervasive (Entry _ _ x) = x == 0
-        entries = filter (\(Entry _ _ x) -> x<(head pila) && elem x pila) (buscar s tablonActual)
-        perv = filter pervasive entries
-        e 
-          | null entries = Nothing
-          | null perv = Just $ head entries
-          | otherwise =  Just $ head perv
+    let match n (Entry _ _ m) = n == m
+        pervasive entry = match 0 entry
+        entries = buscar s tablonActual
+        candidatos = [entry | n <- pila, entry <- entries, match n entry]
+        e | null entries = Nothing
+          | pervasive $ head entries = Just $ head entries
+          | null candidatos = Nothing
+          | otherwise = Just $ head candidatos
     return e
 
 pushPila :: MonadTablon ()

@@ -40,7 +40,6 @@ data Def
 data Instr 
       = Flotando Exp
       | Declar Type String
-      | DeclarI Type String Exp
       | Asig Exp Exp
       | If [(Exp, [Instr])]
       | While Exp [Instr]
