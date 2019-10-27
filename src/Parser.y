@@ -133,7 +133,7 @@ Func  :: { Def }
           let d = Iter (fst $2) $4 $7 $9
           insertarSubrutina d
           return d }
-      | ufo id '{' Regs '}'                               
+      | ufo id '{' Regs Pop '}'                               
         { % do
           let a = DUFO (fst $2) $4
           insertarReg a
@@ -204,11 +204,11 @@ InstrB : Push If                                                             { $
 
 If : if '(' Exp ')' '{' Seq '}'                           { If [($3, $6)] }
    | unless '(' Exp ')' '{' Seq '}'                       { If [(Not $3, $6)] }
-   | if '(' Exp ')' '{' Seq '}' Elif                      { If (($3, $6) : $8) }
+   | if '(' Exp ')' '{' Seq '}' Push Elif                      { If (($3, $6) : $9) }
 
-Elif : elseif '(' Exp ')' '{' Seq '}'                     { [($3, $6)] }
-     | else  '{' Seq '}'                                  { [(Full, $3)] }
-     | elseif '(' Exp ')' '{' Seq '}' Elif                { ($3, $6) : $8 }
+Elif : elseif '(' Exp ')' '{' Seq '}' Pop                     { [($3, $6)] }
+     | else  '{' Seq '}' Pop                                  { [(Full, $3)] }
+     | elseif '(' Exp ')' '{' Seq '}' Pop Push Elif                { ($3, $6) : $10 }
 
 While : orbit while '(' Exp ')' '{' Seq '}'               { While $4 $7 }
       | orbit until '(' Exp ')' '{' Seq '}'               { While (Not $4) $7}

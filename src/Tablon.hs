@@ -19,7 +19,7 @@ insertar s e t
     | otherwise = Map.insert s (e : vaina) t
     where
         vaina = buscar s t
-        clash (Entry _ _ a) (Entry _ _ b) = a == b
+        clash (Entry _ _ a) (Entry _ _ b) = a == b || b == 0
 
 insertarV :: [String] -> [Entry] -> Tablon -> Tablon
 insertarV xs ys t = insertarV' (zip xs ys) t
@@ -33,10 +33,11 @@ type MonadTablon a = RWST () () (Tablon, [Integer], Integer) IO a
 initTablon :: (Tablon,[Integer], Integer)
 initTablon = (t,[0],0)
     where
-        t = insertarV claves valores vacio
+        --t = insertarV claves valores vacio
+        t = insertarV [] [] vacio
         claves = ["new", "full", "moon", "planet", "cloud", "star", "blackhole", "cosmos"]
-        valores = [(Entry (Simple "moon") Tipo 0),
-                   (Entry (Simple "moon") Tipo 0),
+        valores = [(Entry (Simple "moon") Literal 0),
+                   (Entry (Simple "moon") Literal 0),
                    (Entry (Simple "cosmos") Tipo 0),
                    (Entry (Simple "cosmos") Tipo 0),
                    (Entry (Simple "cosmos") Tipo 0),

@@ -3,12 +3,15 @@ Space
 moon m = full;
 
 if (m) {
+	planet a1;
     print("perro");
 }
 elseif (1==1) {
+	planet a2;
     print("gato");
 }
 else {
+	planet a3;
     print("vaca");
 }
 unless (m) {

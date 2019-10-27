@@ -1,6 +1,6 @@
 Space
 
-UFO Perro{
+Galaxy Perro{
     Constellation nombre;
     planet edad;
     Constellation raza;
