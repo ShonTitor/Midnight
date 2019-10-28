@@ -36,7 +36,8 @@ initTablon = (t,[0],0)
         t = insertarV claves valores vacio
         --t = insertarV [] [] vacio
         claves = ["new", "full", "moon", "planet", "cloud", "star", "blackhole", "cosmos",
-                  "Cluster", "Quasar", "Nebula", "~", "Galaxy", "UFO"]
+                  "Cluster", "Quasar", "Nebula", "~", "Galaxy", "UFO",
+                  "read", "print", "push", "pop", "terraform", "vaporize", "astral", "scale", "bigbang"]
         valores = [(Entry (Simple "moon") Literal 0),
                    (Entry (Simple "moon") Literal 0),
                    (Entry (Simple "cosmos") Tipo 0),
@@ -50,7 +51,16 @@ initTablon = (t,[0],0)
                    (Entry NA Constructor 0),
                    (Entry NA Constructor 0),
                    (Entry NA Constructor 0),
-                   (Entry NA Constructor 0)
+                   (Entry NA Constructor 0),
+                   (Entry (Subroutine "Comet" [NA] (Composite "Cluster" (Simple "star"))) (Subrutina []) 0),
+                   (Entry (Subroutine "Comet" [NA] (Simple "blackhole") ) (Subrutina []) 0),
+                   (Entry (Subroutine "Comet" [NA] (Simple "blackhole") ) (Subrutina []) 0),
+                   (Entry (Subroutine "Comet" [NA] (Simple "blackhole") ) (Subrutina []) 0),
+                   (Entry (Subroutine "Comet" [NA] (Simple "planet") ) (Subrutina []) 0),
+                   (Entry (Subroutine "Comet" [NA] (Simple "cloud") ) (Subrutina []) 0),
+                   (Entry (Subroutine "Comet" [NA] (Composite "Cluster" (Simple "star")) ) (Subrutina []) 0),
+                   (Entry (Subroutine "Comet" [NA] (Simple "planet") ) (Subrutina []) 0),
+                   (Entry (Subroutine "Comet" [NA] (Composite "~" NA)) (Subrutina []) 0)
                    ]
 
 lookupTablon :: String -> MonadTablon (Maybe Entry)
@@ -126,3 +136,10 @@ insertarReg _ = error "No es un Registro"
 showTablon :: Tablon -> String
 showTablon t = fst (Map.mapAccumWithKey f "" t) where
   f a k v =  (a ++ '\n' : k ++ '\n' : intercalate "\n" (map (show) v) ++ "\n" , ())
+
+showTablon' :: Tablon -> String
+showTablon' t = showTablon $ ñame
+  where ñame = Map.filter (not.apio) t
+        papa (Entry _ _ 0) = True
+        papa _ = False
+        apio a = all papa a

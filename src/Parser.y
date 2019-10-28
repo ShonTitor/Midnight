@@ -332,7 +332,8 @@ gato f = do
   (arbol, (tabla, _, _), _) <- runRWST (midnight s) () initTablon
   print arbol
   putStrLn ""
-  putStrLn $ showTablon tabla
+  --putStrLn $ showTablon tabla
+  putStrLn $ showTablon' tabla
   return()
 
 
