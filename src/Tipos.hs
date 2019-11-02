@@ -7,6 +7,7 @@ data Type
       | Record String String
       | Subroutine String [Type] Type
       | NA
+      | IDK
       deriving (Eq, Show)
 
 data Category = Tipo
@@ -47,6 +48,7 @@ data Instr
       | While Exp [Instr]
       | Foreach String Exp [Instr]
       | ForRange Exp Exp Exp [Instr]
+      | ForC Instr Exp [Instr]
       | Break Exp
       | Continue
       | Return Exp

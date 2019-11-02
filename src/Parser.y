@@ -158,9 +158,11 @@ Regs : Push RegsAux
 RegsAux   : RegsAux ';' Type id                           { ($3, fst $4) : $1 }
           | Type id                                       { [($1, fst $2)] }
 
-Seq   : SeqAux              { reverse $1 }
-      | SeqAux InstrA       { reverse $ $2 : $1 }
-      | InstrA              { [$1] }
+Seq : SeqAux2                   { reverse $1 }
+
+SeqAux2   : SeqAux              { $1 }
+          | SeqAux InstrA       { $2 : $1 }
+          | InstrA              { [$1] }
 
 
 SeqAux  : InstrA ';'        { if (isDeclar $1) then [] else [$1] }
@@ -197,22 +199,35 @@ InstrA : Type id
 
 InstrB : Push If                                                             { $2 }
        | Push While                                                          { $2 }
-       | Push orbit id around Exp '{' Seq '}'                                { Foreach (fst $3) $5 $7 }
-       | Push orbit id around range '(' Exp ',' Exp ',' Exp ')' '{' Seq '}'  { ForRange $7 $9 $11 $14 }
-       | Push orbit id around range '(' Exp ',' Exp ')' '{' Seq '}'          { ForRange $7 $9 (IntLit 1) $12}
-       | Push orbit id around range '(' Exp ')' '{' Seq '}'                  { ForRange (IntLit 0) $7 (IntLit 1) $10}
+       | Push orbit id around Exp '{' Seq '}'                                
+         { % do 
+           insertarVar (fst $3) IDK 
+           return  $ Foreach (fst $3) $5 $7 }
+       | Push orbit id around range '(' Exp ',' Exp ',' Exp ')' '{' Seq '}'
+         { % do
+           insertarVar (fst $3) (Simple "planet")
+           return $ ForRange $7 $9 $11 $14 }
+       | Push orbit id around range '(' Exp ',' Exp ')' '{' Seq '}'
+         { % do
+           insertarVar (fst $3) (Simple "planet")
+           return $ ForRange $7 $9 (IntLit 1) $12 }
+       | Push orbit id around range '(' Exp ')' '{' Seq '}'
+         { % do
+           insertarVar (fst $3) (Simple "planet")
+           return $ ForRange (IntLit 0) $7 (IntLit 1) $10 }
+       | Push orbit '(' Instr ';' Exp ';' Instr ')' '{' SeqAux2 '}'          { ForC $4 $6 (reverse $ $8 : $11) }
 
 If : if '(' Exp ')' '{' Seq '}'                           { If [($3, $6)] }
    | unless '(' Exp ')' '{' Seq '}'                       { If [(Not $3, $6)] }
-   | if '(' Exp ')' '{' Seq '}' Push Elif                      { If (($3, $6) : $9) }
+   | if '(' Exp ')' '{' Seq '}' Push Elif                 { If (($3, $6) : $9) }
 
-Elif : elseif '(' Exp ')' '{' Seq '}' Pop                     { [($3, $6)] }
-     | else  '{' Seq '}' Pop                                  { [(Full, $3)] }
-     | elseif '(' Exp ')' '{' Seq '}' Pop Push Elif                { ($3, $6) : $10 }
+Elif : elseif '(' Exp ')' '{' Seq '}' Pop                 { [($3, $6)] }
+     | else  '{' Seq '}' Pop                              { [(Full, $3)] }
+     | elseif '(' Exp ')' '{' Seq '}' Pop Push Elif       { ($3, $6) : $10 }
 
 While : orbit while '(' Exp ')' '{' Seq '}'               { While $4 $7 }
-      | orbit until '(' Exp ')' '{' Seq '}'               { While (Not $4) $7}
-      | orbit '(' Instr ';' Exp ';' Instr ')' '{' Seq '}' { While $5 ($3 : $10 ++ [$7]) }
+      | orbit until '(' Exp ')' '{' Seq '}'               { While (Not $4) $7 }
+
 
 Params : Push ParamsAux                                   
          { % do 

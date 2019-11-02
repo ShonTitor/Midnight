@@ -52,15 +52,15 @@ initTablon = (t,[0],0)
                    (Entry NA Constructor 0),
                    (Entry NA Constructor 0),
                    (Entry NA Constructor 0),
-                   (Entry (Subroutine "Comet" [NA] (Composite "Cluster" (Simple "star"))) (Subrutina []) 0),
-                   (Entry (Subroutine "Comet" [NA] (Simple "blackhole") ) (Subrutina []) 0),
-                   (Entry (Subroutine "Comet" [NA] (Simple "blackhole") ) (Subrutina []) 0),
-                   (Entry (Subroutine "Comet" [NA] (Simple "blackhole") ) (Subrutina []) 0),
-                   (Entry (Subroutine "Comet" [NA] (Simple "planet") ) (Subrutina []) 0),
-                   (Entry (Subroutine "Comet" [NA] (Simple "cloud") ) (Subrutina []) 0),
-                   (Entry (Subroutine "Comet" [NA] (Composite "Cluster" (Simple "star")) ) (Subrutina []) 0),
-                   (Entry (Subroutine "Comet" [NA] (Simple "planet") ) (Subrutina []) 0),
-                   (Entry (Subroutine "Comet" [NA] (Composite "~" NA)) (Subrutina []) 0)
+                   (Entry (Subroutine "Comet" [IDK] (Composite "Cluster" (Simple "star"))) (Subrutina []) 0),
+                   (Entry (Subroutine "Comet" [IDK] (Simple "blackhole") ) (Subrutina []) 0),
+                   (Entry (Subroutine "Comet" [IDK] (Simple "blackhole") ) (Subrutina []) 0),
+                   (Entry (Subroutine "Comet" [IDK] (Simple "blackhole") ) (Subrutina []) 0),
+                   (Entry (Subroutine "Comet" [IDK] (Simple "planet") ) (Subrutina []) 0),
+                   (Entry (Subroutine "Comet" [IDK] (Simple "cloud") ) (Subrutina []) 0),
+                   (Entry (Subroutine "Comet" [IDK] (Composite "Cluster" (Simple "star")) ) (Subrutina []) 0),
+                   (Entry (Subroutine "Comet" [IDK] (Simple "planet") ) (Subrutina []) 0),
+                   (Entry (Subroutine "Comet" [IDK] (Composite "~" NA)) (Subrutina []) 0)
                    ]
 
 lookupTablon :: String -> MonadTablon (Maybe Entry)
