@@ -2,6 +2,7 @@ module Tablon where
 import Tipos
 import Control.Monad.RWS
 import Data.List (intercalate)
+import Data.Foldable
 import qualified Data.Map as Map
 
 vacio :: Tablon
@@ -13,20 +14,29 @@ buscar s t = lis $ Map.lookup s t
       lis Nothing = []
       lis (Just lista) = lista
 
-insertar :: String -> Entry -> Tablon -> Tablon
-insertar s e t
-    | any (clash e) vaina = error "Redefinicion"
+clash :: Entry -> Entry -> Bool
+clash (Entry _ _ a) (Entry _ _ b) = a == b || b == 0
+
+insertar' :: String -> Entry -> Tablon -> Tablon
+insertar' s e t
+    | any (clash e) vaina = error $ "(ñame) Redeclaración de \""++s++"\""
     | otherwise = Map.insert s (e : vaina) t
-    where
-        vaina = buscar s t
-        clash (Entry _ _ a) (Entry _ _ b) = a == b || b == 0
+    where vaina = (buscar s t)
+
+insertar :: String -> Entry -> Tablon -> MonadTablon Tablon
+insertar s e t = do
+  let vaina = buscar s t
+  if any (clash e) vaina then do 
+    lift $ putStrLn $ "Redeclaración de \""++s++"\""
+    return t
+  else return $ Map.insert s (e : (buscar s t)) t
+        
 
 insertarV :: [String] -> [Entry] -> Tablon -> Tablon
-insertarV xs ys t = insertarV' (zip xs ys) t
+insertarV xs ys t = foldr (uncurry insertar') t (zip xs ys)
 
 insertarV' :: [(String,Entry)] -> Tablon -> Tablon
-insertarV' xs t = foldr insertar' t xs
-    where insertar' (s,e) tab = insertar s e tab
+insertarV' xs t = foldr (uncurry insertar') t xs
 
 type MonadTablon a = RWST () () (Tablon, [Integer], Integer) IO a
 
@@ -91,13 +101,13 @@ insertarCampos :: [(Type, String)] -> MonadTablon ()
 insertarCampos xs = do
     (tablonActual, pila@(tope:_), n) <- get
     let tuplas = [ (snd x, (Entry (fst x) Campo tope)) | x <- xs ]
-    let tab = insertarV' tuplas tablonActual
+    tab <- foldrM (uncurry insertar) tablonActual tuplas
     put (tab, pila, n)
 
 insertarVar :: String -> Type -> MonadTablon ()
 insertarVar s t = do
     (tablonActual, pila@(tope:_), n) <- get
-    let tab = insertar s (Entry t Variable tope) tablonActual
+    tab <- insertar s (Entry t Variable tope) tablonActual
     put (tab, pila, n)
 
 insertarSubrutina :: Def -> MonadTablon ()
@@ -105,13 +115,13 @@ insertarSubrutina (Func s params tret sequ) = do
     (tablonActual, pila@(tope:_), n) <- get
     let tparams = [ t | (t, _, _) <- params ]
         ti = Subroutine "Comet" tparams tret
-        tab = insertar s (Entry ti (Subrutina sequ) tope) tablonActual
+    tab <- insertar s (Entry ti (Subrutina sequ) tope) tablonActual
     put (tab, pila, n)
 insertarSubrutina (Iter s params tret sequ) = do
     (tablonActual, pila@(tope:_), n) <- get
     let tparams = [ t | (t, _, _) <- params ]
         ti = Subroutine "Satellite" tparams tret
-        tab = insertar s (Entry ti (Subrutina sequ) tope) tablonActual
+    tab <- insertar s (Entry ti (Subrutina sequ) tope) tablonActual
     put (tab, pila, n)
 insertarSubrutina _ = error "No es una Subrutina"
 
@@ -119,17 +129,17 @@ insertarParams :: [(Type, String, Bool)] -> MonadTablon ()
 insertarParams params = do
     (tablonActual, pila@(tope:_), n) <- get
     let tuplas = [ (s, (Entry t (Parametro b) tope)) | (t, s, b) <- params ]
-    let tab = insertarV' tuplas tablonActual
+    tab <- foldrM (uncurry insertar) tablonActual tuplas
     put (tab, pila, n)
 
 insertarReg :: Def -> MonadTablon ()
 insertarReg (DGalaxy s _) = do
     (tablonActual, pila@(tope:_), n) <- get
-    let tab = insertar s (Entry (Simple "cosmos") (Registro (Record "Galaxy" s)  n) tope) tablonActual
+    tab <- insertar s (Entry (Simple "cosmos") (Registro (Record "Galaxy" s)  n) tope) tablonActual
     put (tab, pila, n)
 insertarReg (DUFO s _) = do
     (tablonActual, pila@(tope:_), n) <- get
-    let tab = insertar s (Entry (Simple "cosmos") (Registro (Record "UFO" s)  n) tope) tablonActual
+    tab <- insertar s (Entry (Simple "cosmos") (Registro (Record "UFO" s)  n) tope) tablonActual
     put (tab, pila, n)
 insertarReg _ = error "No es un Registro"
 

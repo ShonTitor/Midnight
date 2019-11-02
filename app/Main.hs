@@ -4,8 +4,8 @@ import System.Environment
 
 main :: IO ()
 main = do
-  putStrLn "Hola este es el main"
+  --putStrLn "Hola este es el main"
   (s:_) <- getArgs
-  putStrLn s
+  --putStrLn s
   _ <- gato s
   putStrLn "jaja salu2"

@@ -246,7 +246,7 @@ Type  : planet                    { Simple $ fst $1 }
       | star                      { Simple $ fst $1 }
       | moon                      { Simple $ fst $1 }
       | blackhole                 { Simple $ fst $1 }
-      | constellation             { Composite (fst $1) (Simple "star") }
+      | constellation             { Composite "Cluster" (Simple "star") }
       | TComp                     { $1 }
 
 Types : TypesAux                  { reverse $1 }
