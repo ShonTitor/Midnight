@@ -182,14 +182,14 @@ Space
 UFO numero { 
     planet int; 
     cloud float
-};
+}
 UFO numero n;
 n.int = 42;
 n.float = 2.72
 EndofSpace
 ```
 
-
+Tanto los `UFO` como los `Galaxy` deben ser definidos al principio del archivo junto con las definiciones de funciones e iteradores.
 
 ## Control de flujo
 
