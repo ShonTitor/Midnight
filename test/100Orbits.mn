@@ -1,0 +1,607 @@
+Space
+
+[planet]Cluster A = {0,1,2,3,4};
+[planet]Cluster B = Cluster(5) planet;
+
+orbit i around range(0,5) {
+	
+	[planet]Cluster B = Cluster(5) planet;
+ 			 
+ 	orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+	  			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+	  			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	 			orbit i around range(0,5) {
+	  			
+	  			[planet]Cluster B = Cluster(4) planet;
+ 	 			B[i] = i;
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	
+ 	}
+ 	 			B[i] = i;
+ 	
+ 	}
+ 	 			B[i] = i;
+ 	
+ 	}
+ 	
+ 	}
+    B[i] = i;
+}
+
+EndofSpace
