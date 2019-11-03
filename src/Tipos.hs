@@ -1,5 +1,6 @@
 module Tipos where
 import qualified Data.Map as Map
+import Lexer (AlexPosn)
 
 data Type
       = Simple String
@@ -34,10 +35,10 @@ data Program
       deriving Show
 
 data Def
-      = Func String [(Type, String, Bool)] Type [Instr]
-      | Iter String [(Type, String, Bool)] Type [Instr]
-      | DUFO String [(Type, String)]
-      | DGalaxy String [(Type, String)]
+      = Func String [(Type, (String, AlexPosn) , Bool)] Type [Instr]
+      | Iter String [(Type, (String, AlexPosn), Bool)] Type [Instr]
+      | DUFO String [(Type, (String, AlexPosn))]
+      | DGalaxy String [(Type, (String, AlexPosn))]
       deriving Show
 
 data Instr 

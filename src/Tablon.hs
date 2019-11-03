@@ -1,5 +1,6 @@
 module Tablon where
 import Tipos
+import Lexer (AlexPosn, AlexPosn(AlexPn))
 import Control.Monad.RWS
 import Data.List (intercalate)
 import Data.Foldable
@@ -23,11 +24,12 @@ insertar' s e t
     | otherwise = Map.insert s (e : vaina) t
     where vaina = (buscar s t)
 
-insertar :: String -> Entry -> Tablon -> MonadTablon Tablon
-insertar s e t = do
+insertar :: (String, AlexPosn) -> Entry -> Tablon -> MonadTablon Tablon
+insertar (s, pos) e t = do
   let vaina = buscar s t
+      AlexPn _ m n = pos
   if any (clash e) vaina then do 
-    lift $ putStrLn $ "Redeclaración de \""++s++"\""
+    lift $ putStrLn $ "Redeclaración de \""++s++"\" en la línea "++(show m)++" columna "++(show n)
     return t
   else return $ Map.insert s (e : (buscar s t)) t
         
@@ -97,49 +99,49 @@ popPila = do
     (tablonActual, pila, n) <- get
     put (tablonActual, tail pila, n)
 
-insertarCampos :: [(Type, String)] -> MonadTablon ()
+insertarCampos :: [(Type, (String, AlexPosn))] -> MonadTablon ()
 insertarCampos xs = do
     (tablonActual, pila@(tope:_), n) <- get
     let tuplas = [ (snd x, (Entry (fst x) Campo tope)) | x <- xs ]
     tab <- foldrM (uncurry insertar) tablonActual tuplas
     put (tab, pila, n)
 
-insertarVar :: String -> Type -> MonadTablon ()
+insertarVar :: (String, AlexPosn) -> Type -> MonadTablon ()
 insertarVar s t = do
     (tablonActual, pila@(tope:_), n) <- get
     tab <- insertar s (Entry t Variable tope) tablonActual
     put (tab, pila, n)
 
-insertarSubrutina :: Def -> MonadTablon ()
-insertarSubrutina (Func s params tret sequ) = do
+insertarSubrutina :: (Def, AlexPosn) -> MonadTablon ()
+insertarSubrutina ((Func s params tret sequ), pos) = do
     (tablonActual, pila@(tope:_), n) <- get
     let tparams = [ t | (t, _, _) <- params ]
         ti = Subroutine "Comet" tparams tret
-    tab <- insertar s (Entry ti (Subrutina sequ) tope) tablonActual
+    tab <- insertar (s, pos) (Entry ti (Subrutina sequ) tope) tablonActual
     put (tab, pila, n)
-insertarSubrutina (Iter s params tret sequ) = do
+insertarSubrutina ((Iter s params tret sequ), pos) = do
     (tablonActual, pila@(tope:_), n) <- get
     let tparams = [ t | (t, _, _) <- params ]
         ti = Subroutine "Satellite" tparams tret
-    tab <- insertar s (Entry ti (Subrutina sequ) tope) tablonActual
+    tab <- insertar (s, pos) (Entry ti (Subrutina sequ) tope) tablonActual
     put (tab, pila, n)
 insertarSubrutina _ = error "No es una Subrutina"
 
-insertarParams :: [(Type, String, Bool)] -> MonadTablon ()
+insertarParams :: [(Type, (String, AlexPosn), Bool)] -> MonadTablon ()
 insertarParams params = do
     (tablonActual, pila@(tope:_), n) <- get
     let tuplas = [ (s, (Entry t (Parametro b) tope)) | (t, s, b) <- params ]
     tab <- foldrM (uncurry insertar) tablonActual tuplas
     put (tab, pila, n)
 
-insertarReg :: Def -> MonadTablon ()
-insertarReg (DGalaxy s _) = do
+insertarReg :: (Def, AlexPosn) -> MonadTablon ()
+insertarReg ((DGalaxy s _), pos) = do
     (tablonActual, pila@(tope:_), n) <- get
-    tab <- insertar s (Entry (Simple "cosmos") (Registro (Record "Galaxy" s)  n) tope) tablonActual
+    tab <- insertar (s, pos) (Entry (Simple "cosmos") (Registro (Record "Galaxy" s)  n) tope) tablonActual
     put (tab, pila, n)
-insertarReg (DUFO s _) = do
+insertarReg ((DUFO s _), pos) = do
     (tablonActual, pila@(tope:_), n) <- get
-    tab <- insertar s (Entry (Simple "cosmos") (Registro (Record "UFO" s)  n) tope) tablonActual
+    tab <- insertar (s, pos) (Entry (Simple "cosmos") (Registro (Record "UFO" s)  n) tope) tablonActual
     put (tab, pila, n)
 insertarReg _ = error "No es un Registro"
 

@@ -1,0 +1,13 @@
+Space
+
+Comet n(planet n) -> planet {
+	"cloud n = 5";
+	return n
+}
+
+orbit while (n) {
+	star n = 'n';
+	n = n(n)
+}
+
+EndofSpace

@@ -126,22 +126,22 @@ Func  :: { Def }
       : comet id '(' Params ')' '->' Type '{' Seq '}' Pop    
         { % do
           let d = Func (fst $2) $4 $7 $9
-          insertarSubrutina d
+          insertarSubrutina (d, snd $2)
           return d }
       | satellite id '(' Params ')' '->' Type '{' Seq '}' Pop 
         { % do
           let d = Iter (fst $2) $4 $7 $9
-          insertarSubrutina d
+          insertarSubrutina (d, snd $2)
           return d }
       | ufo id '{' Regs Pop '}'                               
         { % do
           let a = DUFO (fst $2) $4
-          insertarReg a
+          insertarReg (a, snd $2)
           return a }
       | galaxy id '{' Regs Pop '}'                            
         { % do 
           let a = DGalaxy (fst $2) $4
-          insertarReg a
+          insertarReg (a, snd $2)
           return a }
 
 Regs : Push RegsAux    
@@ -155,8 +155,8 @@ Regs : Push RegsAux
           insertarCampos rex
           return (rex) }
 
-RegsAux   : RegsAux ';' Type id                           { ($3, fst $4) : $1 }
-          | Type id                                       { [($1, fst $2)] }
+RegsAux   : RegsAux ';' Type id                           { ($3, $4) : $1 }
+          | Type id                                       { [($1, $2)] }
 
 Seq : SeqAux2                   { reverse $1 }
 
@@ -175,11 +175,11 @@ Instr : InstrA              { $1 }
 
 InstrA : Type id            
        { % do 
-          insertarVar (fst $2) $1
+          insertarVar $2 $1
           return (Declar $1 (fst $2)) }
        | Type id '=' Exp    
        { % do 
-          insertarVar (fst $2) $1
+          insertarVar $2 $1
           return (Asig (Var $ fst $2) $4) }
        | Exp                { Flotando $1 }
        | LValue '=' Exp     { Asig $1 $3 }
@@ -201,19 +201,19 @@ InstrB : Push If                                                             { $
        | Push While                                                          { $2 }
        | Push orbit id around Exp '{' Seq '}'                                
          { % do 
-           insertarVar (fst $3) IDK 
+           insertarVar $3 IDK 
            return  $ Foreach (fst $3) $5 $7 }
        | Push orbit id around range '(' Exp ',' Exp ',' Exp ')' '{' Seq '}'
          { % do
-           insertarVar (fst $3) (Simple "planet")
+           insertarVar $3 (Simple "planet")
            return $ ForRange $7 $9 $11 $14 }
        | Push orbit id around range '(' Exp ',' Exp ')' '{' Seq '}'
          { % do
-           insertarVar (fst $3) (Simple "planet")
+           insertarVar $3 (Simple "planet")
            return $ ForRange $7 $9 (IntLit 1) $12 }
        | Push orbit id around range '(' Exp ')' '{' Seq '}'
          { % do
-           insertarVar (fst $3) (Simple "planet")
+           insertarVar $3 (Simple "planet")
            return $ ForRange (IntLit 0) $7 (IntLit 1) $10 }
        | Push orbit '(' Instr ';' Exp ';' Instr ')' '{' SeqAux2 '}'          { ForC $4 $6 (reverse $ $8 : $11) }
 
@@ -236,10 +236,10 @@ Params : Push ParamsAux
            return params }
        | Push                                             { [] }
 
-ParamsAux : ParamsAux ',' Type id                         { ($3, fst $4, False) : $1 }
-          | Type id                                       { [($1, fst $2, False)] }
-          | ParamsAux ',' Type '@' id                     { ($3, fst $5, True) : $1 }
-          | Type '@' id                                   { [($1, fst $3, True)] }
+ParamsAux : ParamsAux ',' Type id                         { ($3, $4, False) : $1 }
+          | Type id                                       { [($1, $2, False)] }
+          | ParamsAux ',' Type '@' id                     { ($3, $5, True) : $1 }
+          | Type '@' id                                   { [($1, $3, True)] }
 
 Type  : planet                    { Simple $ fst $1 }
       | cloud                     { Simple $ fst $1 }
@@ -334,8 +334,8 @@ Push  ::  { () }
 
 {
 parseError :: [Token] -> a
-parseError (x:_) = error $ "Error de sintaxis en la línea " ++ (show n) ++ " columna " ++ (show m)
-                   where (AlexPn _ n m) = getPos x
+parseError (x:_) = error $ "Error de sintaxis en la línea " ++ (show m) ++ " columna " ++ (show n)
+                   where (AlexPn _ m n) = getPos x
 
 
 midny = midnight.alexScanTokens
@@ -343,8 +343,10 @@ midny = midnight.alexScanTokens
 type Tablon  = Map.Map String [Entry]
 
 gato f = do
+  putStrLn ""
   s <- getTokens f
   (arbol, (tabla, _, _), _) <- runRWST (midnight s) () initTablon
+  putStrLn ""
   print arbol
   putStrLn ""
   --putStrLn $ showTablon tabla
