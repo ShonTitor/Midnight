@@ -1,16 +1,16 @@
 Space
 
-Comet halley(planet n) -> blackhole {
+Comet halley(planet n) -> BlackHole {
     print("Este es un procedimiento");
     print(n);
 }
 
 Comet twice(planet n) -> planet {
-    print("Esta es una Función");
+    print("Esta es una Funcion");
     return 2*n;
 }
 
-Comet double(planet @n) -> blackhole {
+Comet double(planet @n) -> BlackHole {
     n *= 2
 }
 

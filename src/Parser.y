@@ -20,6 +20,7 @@ import qualified Data.Map as Map
       moon            { TkMoon      $$ }
       new             { TkNew       $$ }
       full            { TkFull      $$ }
+      bh              { TkNull      $$ }
       planet          { TkPlanet    $$ }
       cloud           { TkCloud     $$ }
       star            { TkStar      $$ }
@@ -52,7 +53,7 @@ import qualified Data.Map as Map
       continue        { TkContinue $$ }
       return          { TkReturn $$ }
       yield           { TkYield $$ }
-      '@'             { TkArroba      $$ }
+      '@'             { TkArroba    $$ }
       '('             { TkParA      $$ }
       ')'             { TkParC      $$ }
       '['             { TkCorA      $$ }
@@ -222,7 +223,7 @@ If : if '(' Exp ')' '{' Seq '}'                           { If [($3, $6)] }
    | if '(' Exp ')' '{' Seq '}' Push Elif                 { If (($3, $6) : $9) }
 
 Elif : elseif '(' Exp ')' '{' Seq '}' Pop                 { [($3, $6)] }
-     | else  '{' Seq '}' Pop                              { [(Full, $3)] }
+     | else  '{' Seq '}' Pop                              { [(Var "full", $3)] }
      | elseif '(' Exp ')' '{' Seq '}' Pop Push Elif       { ($3, $6) : $10 }
 
 While : orbit while '(' Exp ')' '{' Seq '}'               { While $4 $7 }
@@ -301,8 +302,9 @@ Exp : LValue                      { $1 }
     | Exp '>=' Exp                { MayorI $1 $3 }
     | Exp '<' Exp                 { Menor $1 $3 }
     | Exp '<=' Exp                { MenorI $1 $3 }
-    | new                         { New }
-    | full                        { Full }
+    | new                         { Var $ fst $1 }
+    | full                        { Var $ fst $1 }
+    | bh                          { Var $ fst $1 }
     | Exp '&&' Exp                { And $1 $3 }
     | Exp '&' Exp                 { Bitand $1 $3 }
     | Exp '||' Exp                { Or $1 $3 }

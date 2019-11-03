@@ -47,11 +47,12 @@ initTablon = (t,[0],0)
     where
         t = insertarV claves valores vacio
         --t = insertarV [] [] vacio
-        claves = ["new", "full", "moon", "planet", "cloud", "star", "blackhole", "cosmos",
+        claves = ["new", "full", "blackhole", "moon", "planet", "cloud", "star", "BlackHole", "cosmos",
                   "Cluster", "Quasar", "Nebula", "~", "Galaxy", "UFO",
                   "read", "print", "push", "pop", "terraform", "vaporize", "astral", "scale", "bigbang"]
         valores = [(Entry (Simple "moon") Literal 0),
                    (Entry (Simple "moon") Literal 0),
+                   (Entry (Simple "BlackHole") Literal 0),
                    (Entry (Simple "cosmos") Tipo 0),
                    (Entry (Simple "cosmos") Tipo 0),
                    (Entry (Simple "cosmos") Tipo 0),

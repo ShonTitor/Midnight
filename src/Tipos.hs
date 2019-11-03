@@ -102,8 +102,6 @@ data Exp
       | Menor Exp Exp
       | MenorI Exp Exp
       -- Bool
-      | New
-      | Full
       | And Exp Exp
       | Bitand Exp Exp
       | Or Exp Exp
