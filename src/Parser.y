@@ -195,7 +195,7 @@ InstrA : Type id
        | break Exp          { Break $2 }
        | continue           { Continue }
        | return Exp         { Return $2 } 
-       | return             { Returnsito }
+       | return             { Return (Var "blackhole") }
        | yield Exp          { Yield $2 }
 
 InstrB : Push If                                                             { $2 }

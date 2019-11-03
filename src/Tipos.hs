@@ -53,7 +53,6 @@ data Instr
       | Break Exp
       | Continue
       | Return Exp
-      | Returnsito
       | Yield Exp
       deriving Show
 
