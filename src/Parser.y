@@ -338,6 +338,7 @@ Push  ::  { () }
 parseError :: [Token] -> a
 parseError (x:_) = error $ "Error de sintaxis en la línea " ++ (show m) ++ " columna " ++ (show n)
                    where (AlexPn _ m n) = getPos x
+parseError _ = error "Falta el terminador \"EndofSpace\""
 
 
 midny = midnight.alexScanTokens
