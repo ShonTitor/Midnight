@@ -103,7 +103,7 @@ insertarCampos :: [(Type, (String, AlexPosn))] -> MonadTablon ()
 insertarCampos xs = do
     (tablonActual, pila@(tope:_), n) <- get
     let tuplas = [ (snd x, (Entry (fst x) Campo tope)) | x <- xs ]
-    tab <- foldrM (uncurry insertar) tablonActual tuplas
+    tab <- foldlM (flip $ uncurry insertar) tablonActual tuplas
     put (tab, pila, n)
 
 insertarVar :: (String, AlexPosn) -> Type -> MonadTablon ()
@@ -131,7 +131,7 @@ insertarParams :: [(Type, (String, AlexPosn), Bool)] -> MonadTablon ()
 insertarParams params = do
     (tablonActual, pila@(tope:_), n) <- get
     let tuplas = [ (s, (Entry t (Parametro b) tope)) | (t, s, b) <- params ]
-    tab <- foldrM (uncurry insertar) tablonActual tuplas
+    tab <- foldlM (flip $ uncurry insertar) tablonActual tuplas
     put (tab, pila, n)
 
 insertarReg :: (Def, AlexPosn) -> MonadTablon ()
