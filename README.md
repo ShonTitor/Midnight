@@ -25,7 +25,7 @@ EndofSpace
 No puede ser una palabra reservada. Debe empezar con una letra ya sea mayúscula o minúscula seguida por cualquier cantidad de caracteres alfanuméricos o `_`.
 
 ## Tipos
-Hay tipos escalares y compuestos. Las variables pueden ser declaradas en cualquier parte del código siempre que no hayan sido declaradas previamente dentro del mismo alcance. Todos los tipos escalares tienen un valor por defecto. Las palabras clave para tipos simple se escriben en minúscula mientras que las de tipos compuestos van con la primera letra mayúscula.
+Hay tipos escalares y compuestos. Las variables pueden ser declaradas en cualquier parte del código siempre que no hayan sido declaradas previamente dentro del mismo alcance. Todos los tipos escalares tienen un valor por defecto predefinido. Los tipos compuestos tienen valor por defecto `blackhole`. Las palabras clave para tipos simples se escriben en minúscula mientras que las de tipos compuestos van con la primera letra mayúscula.
 
 ### Escalares
 
@@ -33,8 +33,8 @@ Hay tipos escalares y compuestos. Las variables pueden ser declaradas en cualqui
 - `planet` : Número entero de 32 bits en complemento a 2. Default: `0`.
 - `cloud`: Número de punto flotante con precisión simple. Default: `0.0`.
 - `star` : Caracter ASCII de 1 byte. Default: `'A'`. Admite los caracteres especiales `\n` `\t` `\\` `\"` `\'`.
-- `blackhole` : Tipo con valor único `blackhole`.
 - `cosmos` : el tipo tipo.
+- `BlackHole` : Tipo con valor único `blackhole`. Se escribe con mayúscula por ser un tipo especial. Equivalente al null de otros lenguajes.
 
 ```
 Space
@@ -72,7 +72,10 @@ EndofSpace
 ```
 ### Funciones de Conversión
 
-Se pueden generar funciones para convertir algunos tipos a otros: como por ejemplo terraform(n) donde n es una Contellation y retorna un Planet con el contenido de Constellation:
+ funciones para convertir algunos tipos a otros: como por ejemplo terraform(n) donde n es una Contellation y retorna un Planet con el contenido de Constellation:
+- `terraform` : De `cloud` o `Constellation` a `planet`.
+- `vaporize` : De `cloud` o `Constellation` a `cloud`.
+- `astral` : De cualquier tipo a `Constellation`.
 
 ```
 Space
@@ -82,13 +85,13 @@ print(n+terraform(s));
 ```
 
 ### Print y Read
-Las funciones `print` y `read` escriben y leen de la consola respecticamente. `read` lee únicamente el tipo `Constellation` pero posteriormente puede castearse a otros tipos.
+Las funciones `print` y `read` escriben y leen de la consola respecticamente. `read` lee únicamente el tipo `Constellation` pero posteriormente puede convertirse a otros tipos.
 ```
 Space
 
 print("Introduzca un número");
 Constellation input = read();
-planet n = (planet) n;
+planet n = terraform(input);
 print(2^n)
 
 EndofSpace
@@ -114,7 +117,8 @@ Los `Quasar` (listas) se pueden definir por extensión. Se les puede insertar un
 Space
 
 [planet]Quasar A = [0,1,2,3,4];
-A.add(5)
+A.add(5);
+A.pop(2)
 
 EndofSpace
 ```
@@ -138,7 +142,7 @@ EndofSpace
 ```
 
 ### Scale
-Los tipos`Quasar`, `Cluster`, `Nebula`, `Constellation` admiten el uso de la función `scale()` que da la longitud (o cantidad de elementos que contiene). El tipo `cosmos` también la admite pero en lugar de retornar la longitud, retorna la cantidad de memoria que ocupa ese tipo.
+Los tipos`Quasar`, `Cluster`, `Nebula`, `Constellation` admiten el uso de la función `scale()` que da la longitud (o cantidad de elementos que contiene).
 ```
 Space
 [planet]Quasar A = [0,1,2,3,4];
@@ -147,10 +151,10 @@ EndofSpace
 ```
 
 ### Apuntadores
-El signo `~` se coloca antes de un tipo para indicar que es un apuntador a ese tipo. Por ejemplo, una variable de tipo `~planet` es un apuntador a una de tipo `planet`. La función `bigbang` permite reservar memoria en el heap. `~` también sirve para desreferenciar.
+El signo `~` se coloca antes de un tipo para indicar que es un apuntador a ese tipo. Por ejemplo, una variable de tipo `~planet` es un apuntador a una de tipo `planet`. La función `bigbang` recibe un tipo y retorna un apuntador a ese tipo. `~` también sirve para desreferenciar.
 ```
 Space
-~planet z = bigbang(scale(planet));
+~planet z = bigbang(planet);
 planet x = ~z;
 EndofSpace
 ```
@@ -184,6 +188,8 @@ n.int = 42;
 n.float = 2.72
 EndofSpace
 ```
+
+
 
 ## Control de flujo
 
@@ -230,11 +236,14 @@ EndofSpace
 ```
 
 ### Repetición Determinada
-La notación para la repetición determinada es`orbit i around X` donde i es la variable de la repetición y X un `Cluster`, `Quasar`, `Constellation` o `Satellite` sobre el cual se desea iterar (para constellation estaríamos iterando sobre los `star` que lo conforman). Esta es también la notación que se usa para definir un `Quasar` por comprensión.
+La notación para la repetición determinada es`orbit i around X` donde i es la variable de la repetición y X un `Quasar`, o `Satellite` sobre el cual se desea iterar (para constellation estaríamos iterando sobre los `star` que lo conforman). También está `orbit i around range(begin, end, step)` que admite entre 1 y 3 argumentos enteros (en caso de dar menos de 3, se comporta igual que los slices).
 ```
 Space
 [cloud]Quasar L = [0.1, 0.15, 0.2, 0.25, 0.3]
 orbit i around L {
+    print(i);
+}
+orbit i around range(0,5) {
     print(i);
 }
 EndofSpace
@@ -258,7 +267,7 @@ EndofSpace
 ```
 
 ### Subrutinas
-Midnight tiene subrutinas (`Comet`) de segunda clase, lo que quiere decir que se pueden guardar en una variable y pasar como parámetro pero no retornarlas en una función. Un procedimiento es una función que retorna `blackhole`. Para indicar que se quiere pasar en parámetro por referencia en lugar de por valor se debe poner un `@`.
+Midnight tiene subrutinas (`Comet`) de segunda clase, lo que quiere decir que se pueden guardar en una variable y pasar como parámetro pero no retornarlas en una función. Un procedimiento es una función que retorna `blackhole` (en caso de colocarse un `return` solo, se interpreta como como `return blackhole`). Para indicar que se quiere pasar en parámetro por referencia en lugar de por valor se debe poner un `@`.
 ```
 Space
 Comet halley(planet n) -> blackhole {
