@@ -1,0 +1,14 @@
+Space
+
+Galaxy F {
+	F Galaxy F;
+}
+
+if (full) {
+	F Galaxy G;
+	F Galaxy F;
+	F.F = G;
+	F.F.F = F;
+}
+
+EndofSpace

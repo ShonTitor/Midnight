@@ -1,0 +1,17 @@
+Space
+
+UFO num {
+	cloud x;
+	planet F
+}
+
+Galaxy F {
+	num UFO F;
+}
+
+if (full) {
+	F Galaxy F;
+	F.F.F = 42
+}
+
+EndofSpace
