@@ -1,0 +1,48 @@
+Space
+
+Galaxy Perro{
+    planet edad;
+    Constellation nombre;
+}
+
+Comet perroViejo(Perro Galaxy a, Perro Galaxy b) -> moon {
+    if (a.edad > b.edad) {
+        return full;
+    }
+    return new
+}
+
+Comet perroJoven(Perro Galaxy a, Perro Galaxy b) -> moon {
+    if (a.edad < b.edad) {
+        return full
+    }
+    return new
+}
+
+Comet perrosort([Perro Galaxy]Cluster @prros,
+                (Perro Galaxy, Perro Galaxy -> moon) Comet compare)
+                -> BlackHole { 
+    n = scale(prros);
+    orbit i around range(n-1) {
+        orbit j around range(i+1, n) {
+            if (compare(prros[i], prros[j])) {
+                planet prro = prros[i];
+                prros[i] = prros[j];
+                prros[j] = prro[i]
+            }
+        }
+    }
+}
+
+Perro Galaxy a;
+Perro Galaxy b;
+a.nombre = "Patrasche";
+a.edad = 6;
+b.nombre = "Hachiko";
+b.edad = 9;
+[Perro Galaxy]Cluster prros = {a,b};
+
+perrosort(prros, perroJoven);
+perrosort(prros, perroViejo);
+
+EndofSpace

@@ -1,0 +1,14 @@
+Space
+
+planet with = terraform(read());
+if (with == 5) {
+	planet with;
+}
+elseif (with == 3) {
+	planet with
+}
+else {
+	planet with;
+}
+
+EndofSpace
