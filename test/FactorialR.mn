@@ -1,0 +1,25 @@
+Space
+
+Comet factorial(planet n) -> planet {
+
+  "se supone que no deberiamos meterle numeros negativos";
+  "Pero tampoco quiero preguntar n veces si el numero es positivo";
+
+  if (n < 0) {
+    print("Estas demente? No me vengas con tu negatividad");
+    return (-1);
+  } 
+  return (factorialR(n));
+
+}
+
+Comet factorialR(planet n) -> planet {
+
+  if (n == 0) {
+    return 1;
+  }
+  return (n * factorialR(n-1));
+
+}
+
+EndofSpace
