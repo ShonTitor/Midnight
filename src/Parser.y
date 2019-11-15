@@ -123,27 +123,19 @@ Defs : DefsAux                        { reverse $1 }
 DefsAux : DefsAux Func                { $2 : $1 }
         | Func                        { [$1] }
 
-Func  :: { Def }
+Func  :: { () }
       : comet id '(' Params ')' '->' Type '{' Seq '}' Pop    
         { % do
           let d = Func (fst $2) $4 $7 $9
-          insertarSubrutina (d, snd $2)
-          return d }
+          insertarSubrutina (d, snd $2) }
       | satellite id '(' Params ')' '->' Type '{' Seq '}' Pop 
         { % do
           let d = Iter (fst $2) $4 $7 $9
-          insertarSubrutina (d, snd $2)
-          return d }
-      | ufo id '{' Regs Pop '}'                               
-        { % do
-          let a = DUFO (fst $2) $4
-          insertarReg (a, snd $2)
-          return a }
-      | galaxy id '{' Regs Pop '}'                            
-        { % do 
-          let a = DGalaxy (fst $2) $4
-          insertarReg (a, snd $2)
-          return a }
+          insertarSubrutina (d, snd $2) }
+      | RegSig '{' Regs Pop '}'              { () }
+
+RegSig : ufo id                              { % insertarReg $2 (fst $1) }
+       | galaxy id                           { % insertarReg $2 (fst $1) }
 
 Regs : Push RegsAux    
       { % do
@@ -181,21 +173,21 @@ InstrA : Type id
        | Type id '=' Exp    
        { % do 
           insertarVar $2 $1
-          return (Asig (Var $ fst $2) $4) }
+          return (Asig (Var $ fst $2, $1) $4) }
        | Exp                { Flotando $1 }
        | LValue '=' Exp     { Asig $1 $3 }
-       | LValue '+=' Exp    { Asig $1 (Suma $1 $3) }
-       | LValue '-=' Exp    { Asig $1 (Sub $1 $3) }
-       | LValue '*=' Exp    { Asig $1 (Mul $1 $3) }
-       | LValue '/=' Exp    { Asig $1 (Div $1 $3) }
-       | LValue '//=' Exp   { Asig $1 (DivE $1 $3) }
-       | LValue '%=' Exp    { Asig $1 (Mod $1 $3) }
-       | LValue '^=' Exp    { Asig $1 (Pow $1 $3) }
-       | break              { Break (IntLit 1) }
+       | LValue '+=' Exp    { Asig $1 (Suma $1 $3, Err) }
+       | LValue '-=' Exp    { Asig $1 (Sub $1 $3, Err) }
+       | LValue '*=' Exp    { Asig $1 (Mul $1 $3, Err) }
+       | LValue '/=' Exp    { Asig $1 (Div $1 $3, Err) }
+       | LValue '//=' Exp   { Asig $1 (DivE $1 $3, Err) }
+       | LValue '%=' Exp    { Asig $1 (Mod $1 $3, Err) }
+       | LValue '^=' Exp    { Asig $1 (Pow $1 $3, Err) }
+       | break              { Break (IntLit 1, Simple "planet") }
        | break Exp          { Break $2 }
        | continue           { Continue }
        | return Exp         { Return $2 } 
-       | return             { Return (Var "blackhole") }
+       | return             { Return (Var "blackhole", Simple "BlackHole") }
        | yield Exp          { Yield $2 }
 
 InstrB : Push If                                                             { $2 }
@@ -211,23 +203,23 @@ InstrB : Push If                                                             { $
        | Push orbit id around range '(' Exp ',' Exp ')' '{' Seq '}'
          { % do
            insertarVar $3 (Simple "planet")
-           return $ ForRange $7 $9 (IntLit 1) $12 }
+           return $ ForRange $7 $9 (IntLit 1, Simple "planet") $12 }
        | Push orbit id around range '(' Exp ')' '{' Seq '}'
          { % do
            insertarVar $3 (Simple "planet")
-           return $ ForRange (IntLit 0) $7 (IntLit 1) $10 }
+           return $ ForRange (IntLit 0, Simple "planet") $7 (IntLit 1, Simple "planet") $10 }
        | Push orbit '(' Instr ';' Exp ';' Instr ')' '{' SeqAux2 '}'          { ForC $4 $6 (reverse $ $8 : $11) }
 
 If : if '(' Exp ')' '{' Seq '}'                           { If [($3, $6)] }
-   | unless '(' Exp ')' '{' Seq '}'                       { If [(Not $3, $6)] }
+   | unless '(' Exp ')' '{' Seq '}'                       { If [((Not $3, Err), $6)] }
    | if '(' Exp ')' '{' Seq '}' Push Elif                 { If (($3, $6) : $9) }
 
 Elif : elseif '(' Exp ')' '{' Seq '}' Pop                 { [($3, $6)] }
-     | else  '{' Seq '}' Pop                              { [(Var "full", $3)] }
+     | else  '{' Seq '}' Pop                              { [((Var "full", Simple "bool"), $3)] }
      | elseif '(' Exp ')' '{' Seq '}' Pop Push Elif       { ($3, $6) : $10 }
 
 While : orbit while '(' Exp ')' '{' Seq '}'               { While $4 $7 }
-      | orbit until '(' Exp ')' '{' Seq '}'               { While (Not $4) $7 }
+      | orbit until '(' Exp ')' '{' Seq '}'               { While (Not $4, Err) $7 }
 
 
 Params : Push ParamsAux                                   
@@ -259,65 +251,102 @@ TComp : '[' Type ']' cluster      { Composite (fst $4) $2 }
       | '[' Type ']' quasar       { Composite (fst $4) $2 }
       | '[' Type ']' nebula       { Composite (fst $4) $2 }
       | '~' Type                  { Composite (fst $1) $2 }
-      | id galaxy                 { Record (fst $2) (fst $1) }
-      | id ufo                    { Record (fst $2) (fst $1) }
+      | id galaxy                 { % do
+                                      lookupExists $1
+                                      return $ Record (fst $2) (fst $1) }
+      | id ufo                    { % do
+                                      lookupExists $1
+                                      return $ Record (fst $2) (fst $1) }
       | '(' Types '->' Type ')' comet      { Subroutine (fst $6) $2 $4 }
       | '(' Types '->' Type ')' satellite  { Subroutine (fst $6) $2 $4 }
 
-LValue : id                       { Var (fst $1) }
-       | Exp '.' id               { Attr $1 (fst $3) }
-       | Exp Index                { Access $1 $2 }
+LValue :: { Exp }
+      : id                       { % do
+                                    t <- lookupExists $1
+                                    return (Var (fst $1), Err) }
+       | Exp '.' id               { (Attr $1 (fst $3), Err) }
+       | Exp Index                { (Access $1 $2, Err) }
 
 Index : '[' Exp ']'               { Index $2 }
 
 Slice : '[' Exp '..' Exp ']'      { Interval $2 $4 }
-      | '[' '..' Exp ']'          { Interval (IntLit 0) $3 }
+      | '[' '..' Exp ']'          { Interval (IntLit 0, Simple "planet") $3 }
       | '[' Exp '..' ']'          { Begin $2 }
 
-Exp : LValue                      { $1 }
+Exp :: { Exp }
+    : LValue                      { $1 }
     | '(' Exp ')'                 { $2 }
-    | Exp Slice                   { Access $1 $2 }
-    | '~' Exp                     { Desref $2 }
-    | Funcall                     { $1 }
-    | print '(' Args ')'          { Print $3 }
-    | read '(' ')'                { Read }
-    | bigbang '(' ')'             { Bigbang }
-    | scale '(' Exp ')'           { Scale $3 }
-    | Exp '.' pop '(' Args ')'    { Pop $1 $5 }
-    | Exp '.' add '(' Args ')'    { Add $1 $5 }
+    | Exp Slice                   { % do
+                                    let exp = Access $1 $2
+                                    if (snd $1) == Err then return (exp, Err)
+                                    else do
+                                        let f (Composite "Nebula" _) = Err
+                                            f (Composite "~" _) = Err
+                                            f (Composite _ tipo) = tipo
+                                            f _ = Err
+                                            t = f (snd $1)
+                                        if t == Err then do
+                                            --lift $ putStrLn $ "No se le puede hacer slice a esa vaina " ++ (Show $ snd $1)
+                                            return (exp, Err)
+                                        else return (exp, snd $1) }
+    | '~' Exp                     { % do
+                                    let exp = Desref $2
+                                    if (snd $2) == Err then return (exp, Err)
+                                    else do
+                                        let f (Composite "~" tipo) = tipo
+                                            f _ = Err
+                                            t = f (snd $2)
+                                        if t == Err then do
+                                            --lift $ putStrLn $ "No se puede desreferenciar el tipo" ++ (Show $ snd $1)
+                                            return (exp, Err)
+                                        else return (exp, t) }
+    | Exp '(' Args ')'            { (Funcall $1 $3, Err) }
+    | print '(' Args ')'          { (Print $3, Err) }
+    | read '(' ')'                { (Read, Err) }
+    | bigbang '(' ')'             { (Bigbang, Err) }
+    | scale '(' Exp ')'           { (Scale $3, Err) }
+    | Exp '.' pop '(' Args ')'    { (Pop $1 $5, Err) }
+    | Exp '.' add '(' Args ')'    { (Add $1 $5, Err) }
+    | int                         { (IntLit (fst $1), Simple "planet") }
+    | float                       { (FloLit (fst $1), Simple "cloud") }
+    | new                         { (Var $ fst $1, Simple "moon") }
+    | full                        { (Var $ fst $1, Simple "moon") }
+    | bh                          { (Var $ fst $1, Simple "BlackHole") }
+    | str                         { (StrLit (fst $1), Composite "Cluster" (Simple "star")) }
+    | chr                         { (CharLit (fst $1), Simple "star") }
+    | Exp '+' Exp                 { % do
+                                    let exp = Suma $1 $3
+                                    if (snd $1) == Err || (snd $3) == Err then return (exp, Err)
+                                    else do
+                                        let f t@(Simple "planet") = t
+                                            f t@(Simple "cloud") = t
+                                            f _ = Err
+                                            t1 = f (snd $1)
+                                            t2 = f (snd $3)
+                                        return (exp, Err) }
+    | Exp '-' Exp                 { (Sub $1 $3, Err) }
+    | Exp '*' Exp                 { (Mul $1 $3, Err) }
+    | Exp '/' Exp                 { (Div $1 $3, Err) }
+    | Exp '//' Exp                { (DivE $1 $3, Err) }
+    | Exp '%' Exp                 { (Mod $1 $3 , Err)}
+    | Exp '^' Exp                 { (Pow $1 $3, Err) }
+    | '-' Exp         %prec NEG   { (Neg $2, Err) }
+    | Exp '==' Exp                { (Eq $1 $3, Err) }
+    | Exp '¬=' Exp                { (Neq $1 $3, Err) }
+    | Exp '>' Exp                 { (Mayor $1 $3, Err) }
+    | Exp '>=' Exp                { (MayorI $1 $3, Err) }
+    | Exp '<' Exp                 { (Menor $1 $3, Err) }
+    | Exp '<=' Exp                { (MenorI $1 $3, Err) }
+    | Exp '&&' Exp                { (And $1 $3, Err) }
+    | Exp '&' Exp                 { (Bitand $1 $3, Err) }
+    | Exp '||' Exp                { (Or $1 $3, Err) }
+    | Exp '|' Exp                 { (Bitor $1 $3, Err) }
+    | '¬' Exp                     { (Not $2, Err) }
+    | '[' Args ']'                { (ListLit $2, Err) }
+    | '{' Args '}'                { (ArrLit $2, Err) }
+    | cluster '(' Exp ')' Type    { (ArrInit $3 $5, Err) }
+    | '{' DictItems '}'           { (DictLit $2, Err) }
 
-    | int                         { IntLit (fst $1) }
-    | float                       { FloLit (fst $1) }
-    | Exp '+' Exp                 { Suma $1 $3 }
-    | Exp '-' Exp                 { Sub $1 $3 }
-    | Exp '*' Exp                 { Mul $1 $3 }
-    | Exp '/' Exp                 { Div $1 $3 }
-    | Exp '//' Exp                { DivE $1 $3 }
-    | Exp '%' Exp                 { Mod $1 $3 }
-    | Exp '^' Exp                 { Pow $1 $3 }
-    | '-' Exp         %prec NEG   { Neg $2 }
-    | Exp '==' Exp                { Eq $1 $3 }
-    | Exp '¬=' Exp                { Neq $1 $3 }
-    | Exp '>' Exp                 { Mayor $1 $3 }
-    | Exp '>=' Exp                { MayorI $1 $3 }
-    | Exp '<' Exp                 { Menor $1 $3 }
-    | Exp '<=' Exp                { MenorI $1 $3 }
-    | new                         { Var $ fst $1 }
-    | full                        { Var $ fst $1 }
-    | bh                          { Var $ fst $1 }
-    | Exp '&&' Exp                { And $1 $3 }
-    | Exp '&' Exp                 { Bitand $1 $3 }
-    | Exp '||' Exp                { Or $1 $3 }
-    | Exp '|' Exp                 { Bitor $1 $3 }
-    | '¬' Exp                     { Not $2 }
-    | str                         { StrLit (fst $1) }
-    | chr                         { CharLit (fst $1) }
-    | '[' Args ']'                { ListLit $2 }
-    | '{' Args '}'                { ArrLit $2 }
-    | cluster '(' Exp ')' Type    { ArrInit $3 $5 }
-    | '{' DictItems '}'           { DictLit $2 }
-
-Funcall  : Exp '(' Args ')'       { Funcall $1 $3 }
 
 Args : ArgsAux                       { reverse $1 }
      |                               { [] }

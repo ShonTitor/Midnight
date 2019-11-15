@@ -4,6 +4,7 @@ import Lexer (AlexPosn, AlexPosn(AlexPn))
 import Control.Monad.RWS
 import Data.List (intercalate)
 import Data.Foldable
+import Data.Maybe (isNothing)
 import qualified Data.Map as Map
 
 vacio :: Tablon
@@ -89,6 +90,15 @@ lookupTablon s = do
           | otherwise = Just $ head candidatos
     return e
 
+lookupExists :: (String, AlexPosn) -> MonadTablon (Maybe Entry)
+lookupExists (s, pos) = do
+    entry <- lookupTablon s
+    let AlexPn _ m n = pos
+    if isNothing entry then do
+      lift $ putStrLn $ "Variable no declarada \""++s++"\" en la línea "++(show m)++" columna "++(show n)
+      return Nothing
+    else return entry
+
 pushPila :: MonadTablon ()
 pushPila = do
     (tablonActual, pila, n) <- get
@@ -135,16 +145,11 @@ insertarParams params = do
     tab <- foldlM (flip $ uncurry insertar) tablonActual tuplas
     put (tab, pila, n)
 
-insertarReg :: (Def, AlexPosn) -> MonadTablon ()
-insertarReg ((DGalaxy s _), pos) = do
+insertarReg :: (String, AlexPosn) -> String -> MonadTablon ()
+insertarReg (s, pos) tr = do
     (tablonActual, pila@(tope:_), n) <- get
-    tab <- insertar (s, pos) (Entry (Simple "cosmos") (Registro (Record "Galaxy" s)  n) tope) tablonActual
+    tab <- insertar (s, pos) (Entry (Simple "cosmos") (Registro (Record tr s)  (n+1)) tope) tablonActual
     put (tab, pila, n)
-insertarReg ((DUFO s _), pos) = do
-    (tablonActual, pila@(tope:_), n) <- get
-    tab <- insertar (s, pos) (Entry (Simple "cosmos") (Registro (Record "UFO" s)  n) tope) tablonActual
-    put (tab, pila, n)
-insertarReg _ = error "No es un Registro"
 
 showTablon :: Tablon -> String
 showTablon t = fst (Map.mapAccumWithKey f "" t) where

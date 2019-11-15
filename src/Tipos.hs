@@ -9,6 +9,7 @@ data Type
       | Subroutine String [Type] Type
       | NA
       | IDK
+      | Err
       deriving (Eq, Show)
 
 data Category = Tipo
@@ -66,7 +67,9 @@ data Slice
       | Begin Exp
       deriving Show
 
-data Exp
+type Exp = (Expr, Type)
+
+data Expr
       = Funcall Exp [Exp]
       -- LValues
       | Var String
