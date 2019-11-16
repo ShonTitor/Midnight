@@ -5,7 +5,11 @@ Galaxy Perro{
     planet edad;
     Constellation raza;
 }
-
+Galaxy Gato{
+    Constellation nombre;
+    planet edad;
+    Constellation raza;
+}
 Perro Galaxy firulais;
 firulais.nombre = "Firulais";
 firulais.edad = 9;

@@ -123,15 +123,32 @@ Defs : DefsAux                        { reverse $1 }
 DefsAux : DefsAux Func                { $2 : $1 }
         | Func                        { [$1] }
 
+FunSig : comet id '(' Params ')' '->' Type
+        { % do
+          (t, pila, n) <- get
+          put (t, 1:pila, n)
+          let d = Func (fst $2) $4 $7 []
+          insertarSubrutina (d, snd $2)
+          popPila
+          return $ fst $2
+        }
+       | satellite id '(' Params ')' '->' Type
+        { % do
+          (t, pila, n) <- get
+          put (t, 1:pila, n)
+          let d = Iter (fst $2) $4 $7 []
+          insertarSubrutina (d, snd $2) 
+          popPila
+          return $ fst $2
+        }
+
 Func  :: { () }
-      : comet id '(' Params ')' '->' Type '{' Seq '}' Pop    
-        { % do
-          let d = Func (fst $2) $4 $7 $9
-          insertarSubrutina (d, snd $2) }
-      | satellite id '(' Params ')' '->' Type '{' Seq '}' Pop 
-        { % do
-          let d = Iter (fst $2) $4 $7 $9
-          insertarSubrutina (d, snd $2) }
+      : FunSig '{' Seq '}' Pop    
+        { % do 
+          actualizarSubrutina $1 $3
+          return () }
+          --let d = Func (fst $2) $4 $7 $9
+          --insertarSubrutina (d, snd $2) }
       | RegSig '{' Regs Pop '}'              { () }
 
 RegSig : ufo id                              { % insertarReg $2 (fst $1) }

@@ -138,6 +138,22 @@ insertarSubrutina ((Iter s params tret sequ), pos) = do
     put (tab, pila, n)
 insertarSubrutina _ = error "No es una Subrutina"
 
+actualizarSubrutina :: String -> [Instr] -> MonadTablon ()
+actualizarSubrutina s sequ = do
+    (tablonActual, pila, n) <- get
+    let f (Entry _ _ k) = k == 1 
+        entries = buscar s tablonActual
+        g (l,x:xs) = if f x then (x, l++xs)
+                     else g (x:l, xs)
+        g (_,_) = error "error raro"
+        gg = g ([],entries)
+        Entry t _ _ = fst gg
+        e = Entry t (Subrutina sequ) 1
+        updated = e : (snd gg)
+        tab = Map.insert s updated tablonActual
+    put (tab, pila, n)
+
+
 insertarParams :: [(Type, (String, AlexPosn), Bool)] -> MonadTablon ()
 insertarParams params = do
     (tablonActual, pila@(tope:_), n) <- get
