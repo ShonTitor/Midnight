@@ -79,7 +79,13 @@ initTablon = (t,[0],0)
 
 lookupTablon :: String -> MonadTablon (Maybe Entry)
 lookupTablon s = do
-    (tablonActual, pila, _) <- get
+    (_, pila, _) <- get
+    e <- lookupScope s pila
+    return e
+
+lookupScope :: String -> [Integer] -> MonadTablon (Maybe Entry)
+lookupScope s pila = do
+    (tablonActual, _, _) <- get
     let match n (Entry _ _ m) = n == m
         pervasive entry = match 0 entry
         entries = buscar s tablonActual
@@ -98,6 +104,10 @@ lookupExists (s, pos) = do
       lift $ putStrLn $ "Variable no declarada \""++s++"\" en la línea "++(show m)++" columna "++(show n)
       return Nothing
     else return entry
+
+getTipo :: Maybe Entry -> Type
+getTipo Nothing = Err
+getTipo (Just (Entry t _ _)) = t
 
 pushPila :: MonadTablon ()
 pushPila = do

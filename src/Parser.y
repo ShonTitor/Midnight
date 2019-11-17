@@ -280,11 +280,24 @@ TComp : '[' Type ']' cluster      { Composite (fst $4) $2 }
 LValue :: { Exp }
       : id                       { % do
                                     e <- lookupExists $1
-                                    let t = if isNothing e then Err
-                                            else getT $ fromJust e
-                                        getT (Entry ti _ _) = ti
-                                    return (Var (fst $1), t) }
-       | Exp '.' id               { (Attr $1 (fst $3), Err) }
+                                    return (Var (fst $1), getTipo e) }
+       | Exp '.' id               { %do 
+                                    let isRecord (Record _ _) = True
+                                        isRecord _ = False
+                                        getR (Record _ r) = r
+                                        getS (Entry _ (Registro _ sc) _) = [sc]
+                                        t1 = snd $1
+                                    if isRecord t1 then do
+                                        e1 <- lookupTablon $ getR t1
+                                        e2 <- lookupScope (fst $3) (getS $ fromJust e1)
+                                        if isNothing e2 then do
+                                          lift $ putStrLn ("El tipo "++(show t1)++" no tiene un atributo "++(show $ fst $3))
+                                          return (Attr $1 (fst $3), Err)
+                                        else return (Attr $1 (fst $3), getTipo e2)
+                                    else if t1 == Err then return (Attr $1 (fst $3), Err)
+                                    else do 
+                                        lift $ putStrLn ("El tipo "++(show t1)++" no tiene un atributo "++(show $ fst $3))
+                                        return (Attr $1 (fst $3), Err) }
        | Exp Index                { (Access $1 $2, Err) }
 
 Index : '[' Exp ']'               { Index $2 }
