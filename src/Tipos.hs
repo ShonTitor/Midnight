@@ -10,7 +10,16 @@ data Type
       | NA
       | IDK
       | Err
-      deriving (Eq, Show)
+      deriving (Eq)
+
+instance Show Type where
+  show (Simple s) = s
+  show (Composite s t) = '[' : (show t) ++ ']' : s
+  show (Record s z) = s ++  ' ' : z
+  show (Subroutine s pt rt) = (show pt) ++ '-' : '>' : (show rt) ++ ' ' : s
+  show NA = "NA"
+  show IDK = "IDK"
+  show Err = "Err"
 
 data Category = Tipo
               | Constructor

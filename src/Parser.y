@@ -6,6 +6,7 @@ import Lexer
 import Tablon
 import Tipos
 import Control.Monad.RWS
+import Data.Maybe (isNothing, fromJust)
 import qualified Data.Map as Map
 }
 
@@ -145,8 +146,7 @@ FunSig : comet id '(' Params ')' '->' Type
 Func  :: { () }
       : FunSig '{' Seq '}' Pop    
         { % do 
-          actualizarSubrutina $1 $3
-          return () }
+          actualizarSubrutina $1 $3 }
           --let d = Func (fst $2) $4 $7 $9
           --insertarSubrutina (d, snd $2) }
       | RegSig '{' Regs Pop '}'              { () }
@@ -279,8 +279,11 @@ TComp : '[' Type ']' cluster      { Composite (fst $4) $2 }
 
 LValue :: { Exp }
       : id                       { % do
-                                    t <- lookupExists $1
-                                    return (Var (fst $1), Err) }
+                                    e <- lookupExists $1
+                                    let t = if isNothing e then Err
+                                            else getT $ fromJust e
+                                        getT (Entry ti _ _) = ti
+                                    return (Var (fst $1), t) }
        | Exp '.' id               { (Attr $1 (fst $3), Err) }
        | Exp Index                { (Access $1 $2, Err) }
 
@@ -332,6 +335,7 @@ Exp :: { Exp }
     | str                         { (StrLit (fst $1), Composite "Cluster" (Simple "star")) }
     | chr                         { (CharLit (fst $1), Simple "star") }
     | Exp '+' Exp                 { % do
+                                    lift $ putStrLn ((show $ snd $1) ++ (show $ snd $3))
                                     let exp = Suma $1 $3
                                     if (snd $1) == Err || (snd $3) == Err then return (exp, Err)
                                     else do

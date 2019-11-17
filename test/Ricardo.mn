@@ -2,7 +2,7 @@ Space
 
 Comet n(planet n) -> planet {
 	"cloud n = 5";
-	return n
+	return n+2
 }
 
 orbit while (n) {
