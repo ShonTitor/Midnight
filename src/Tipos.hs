@@ -14,6 +14,7 @@ data Type
 
 instance Show Type where
   show (Simple s) = s
+  show (Composite "Cluster" (Simple "star")) = "Constellation"
   show (Composite s t) = '[' : (show t) ++ ']' : s
   show (Record s z) = s ++  ' ' : z
   show (Subroutine s pt rt) = (show pt) ++ '-' : '>' : (show rt) ++ ' ' : s

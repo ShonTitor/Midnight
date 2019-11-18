@@ -287,41 +287,119 @@ LValue :: { Exp }
                                         getR (Record _ r) = r
                                         getS (Entry _ (Registro _ sc) _) = [sc]
                                         t1 = snd $1
+                                        AlexPn _ m n = $2
                                     if isRecord t1 then do
                                         e1 <- lookupTablon $ getR t1
                                         e2 <- lookupScope (fst $3) (getS $ fromJust e1)
                                         if isNothing e2 then do
-                                          lift $ putStrLn ("El tipo "++(show t1)++" no tiene un atributo "++(show $ fst $3))
+                                          lift $ putStrLn ("Error de tipo: "++(show t1)++" no tiene un atributo "++(show $ fst $3)
+                                                            ++" en la línea "++(show m)++" columna "++(show n))
                                           return (Attr $1 (fst $3), Err)
                                         else return (Attr $1 (fst $3), getTipo e2)
                                     else if t1 == Err then return (Attr $1 (fst $3), Err)
                                     else do 
-                                        lift $ putStrLn ("El tipo "++(show t1)++" no tiene un atributo "++(show $ fst $3))
+                                        lift $ putStrLn ("Error de tipo: "++(show t1)++" no tiene un atributo "++(show $ fst $3)
+                                                          ++" en la línea "++(show m)++" columna "++(show n))
                                         return (Attr $1 (fst $3), Err) }
-       | Exp Index                { (Access $1 $2, Err) }
+       | Exp '[' Index            { % do
+                                    let exp = Access $1 $3
+                                        t1 = snd $1
+                                        Index t2' = $3
+                                        t2 = snd t2'
+                                        isComp (Composite t _) = elem t ["Cluster", "Quasar", "Nebula"]
+                                        isComp _ = False
+                                        f (Composite _ t) = t
+                                        g (Composite s _) = s
+                                        AlexPn _ m n = $2
+                                    if t1 == Err || t2 == Err || (f t1) == Err then
+                                        return (exp, Err) 
+                                    else if (not.isComp) t1 then do
+                                        lift $ putStrLn ("Error de tipo: "++(show t1)++" no es indexable "
+                                                          ++" en la línea "++(show m)++" columna "++(show n))
+                                        return (exp, Err)
+                                    else if (g t1) == "Nebula" && t2 /= (Composite "Cluster" (Simple "star")) then do
+                                        lift $ putStrLn ("Error de tipo: Nebula acepta claves de tipo Constellation, no "++(show t2)
+                                                          ++" en la línea "++(show m)++" columna "++(show n))
+                                        return (exp, Err)
+                                    else if ((g t1) == "Cluster" || (g t1) == "Quasar") && t2 /= (Simple "planet") then do
+                                        lift $ putStrLn ("Error de tipo: Los índices deben ser enteros, no "++(show t2)
+                                                          ++" en la línea "++(show m)++" columna "++(show n))
+                                        return (exp, Err)
+                                    else return (exp, f t1)
+                                    }
 
-Index : '[' Exp ']'               { Index $2 }
 
-Slice : '[' Exp '..' Exp ']'      { Interval $2 $4 }
-      | '[' '..' Exp ']'          { Interval (IntLit 0, Simple "planet") $3 }
-      | '[' Exp '..' ']'          { Begin $2 }
+
+Index :     Exp ']'               { Index $1 }
+
+Slice :     Exp '..' Exp ']'      { % do
+                                    let exp = Interval $1 $3
+                                        t1 = snd $1
+                                        t2 = snd $3
+                                        AlexPn _ m n = $2
+                                    if t1 == Err && t2 == Err then return exp
+                                    else do
+                                        if t1 /= (Simple "planet") && t2 /= (Simple "planet") then do
+                                            lift $ putStrLn ("Error de tipo: Los límites de slices deben ser enteros, no "++(show t1)
+                                                              ++" en la línea "++(show m)++" columna "++(show n))
+                                            lift $ putStrLn ("Error de tipo: Los límites de slices deben ser enteros, no "++(show t2)
+                                                              ++" en la línea "++(show m)++" columna "++(show n))
+                                            return $ Interval (fst $1, Err) (fst $3, Err)
+                                        else if t1 /= (Simple "planet") then do
+                                            lift $ putStrLn ("Error de tipo: Los límites de slices deben ser enteros, no "++(show t1)
+                                                              ++" en la línea "++(show m)++" columna "++(show n))
+                                            return $ Interval (fst $1, Err) $3
+                                        else if t2 /= (Simple "planet") then do
+                                            lift $ putStrLn ("Error de tipo: Los límites de slices deben ser enteros, no "++(show t2)
+                                                              ++" en la línea "++(show m)++" columna "++(show n))
+                                            return $ Interval $1 (fst $3, Err)
+                                        else return exp
+                                     }
+      |     '..' Exp ']'          { % do
+                                    let exp = Interval e0 $2
+                                        e0 = (IntLit 0, Simple "planet")
+                                        t = snd $2
+                                        AlexPn _ m n = $1
+                                    if t == Err then return exp
+                                    else if t /= (Simple "planet") then do
+                                            lift $ putStrLn ("Error de tipo: Los límites de slices deben ser enteros, no "++(show t)
+                                                              ++" en la línea "++(show m)++" columna "++(show n))
+                                            return $ Interval e0 (fst $2, Err)
+                                    else return exp
+                                    }
+      |     Exp '..' ']'          { % do
+                                    let exp = Begin $1
+                                        t = snd $1
+                                        AlexPn _ m n = $2
+                                    if t == Err then return exp
+                                    else if t /= (Simple "planet") then do
+                                            lift $ putStrLn ("Error de tipo: Los límites de slices deben ser enteros, no "++(show t)
+                                                              ++" en la línea "++(show m)++" columna "++(show n))
+                                            return $ Begin (fst $1, Err)
+                                    else return exp
+                                    }
 
 Exp :: { Exp }
     : LValue                      { $1 }
     | '(' Exp ')'                 { $2 }
-    | Exp Slice                   { % do
-                                    let exp = Access $1 $2
-                                    if (snd $1) == Err then return (exp, Err)
-                                    else do
-                                        let f (Composite "Nebula" _) = Err
+    | Exp  '[' Slice                   { % do
+                                        let g sl@(Interval _ _) = sl
+                                            g (Begin a) = Interval a (Scale $1, Simple "planet")
+                                            exp = Access $1 (g $3)
+                                            f (Composite "Nebula" _) = Err
                                             f (Composite "~" _) = Err
-                                            f (Composite _ tipo) = tipo
+                                            f tipo@(Composite _ _) = tipo
                                             f _ = Err
-                                            t = f (snd $1)
-                                        if t == Err then do
-                                            --lift $ putStrLn $ "No se le puede hacer slice a esa vaina " ++ (Show $ snd $1)
-                                            return (exp, Err)
-                                        else return (exp, snd $1) }
+                                            Interval (_, ti) (_,tf) = g $3
+                                            t = if ti == Err || tf == Err then Err else f (snd $1)
+                                            AlexPn _ m n = $2
+                                        if (snd $1) == Err then return (exp, Err)
+                                        else do
+                                            if t == Err then do
+                                                lift $ putStrLn ("Error de tipo: El tipo " ++ (show $ snd $1) ++ " no admite slices"
+                                                                ++" en la línea "++(show m)++" columna "++(show n))
+                                                return (exp, Err)
+                                            else return (exp, t) }
     | '~' Exp                     { % do
                                     let exp = Desref $2
                                     if (snd $2) == Err then return (exp, Err)
@@ -329,14 +407,16 @@ Exp :: { Exp }
                                         let f (Composite "~" tipo) = tipo
                                             f _ = Err
                                             t = f (snd $2)
+                                            AlexPn _ m n = snd $1
                                         if t == Err then do
-                                            --lift $ putStrLn $ "No se puede desreferenciar el tipo" ++ (Show $ snd $1)
+                                            lift $ putStrLn ("No se puede desreferenciar el tipo " ++ (show $ snd $2)
+                                                             ++" en la línea "++(show m)++" columna "++(show n))
                                             return (exp, Err)
                                         else return (exp, t) }
     | Exp '(' Args ')'            { (Funcall $1 $3, Err) }
-    | print '(' Args ')'          { (Print $3, Err) }
-    | read '(' ')'                { (Read, Err) }
-    | bigbang '(' ')'             { (Bigbang, Err) }
+    | print '(' Args ')'          { (Print $3, Composite "Cluster" (Simple "star")) }
+    | read '(' ')'                { (Read, Composite "Cluster" (Simple "star")) }
+    | bigbang '(' Type ')'        { (Bigbang, Composite "~" $3) }
     | scale '(' Exp ')'           { (Scale $3, Err) }
     | Exp '.' pop '(' Args ')'    { (Pop $1 $5, Err) }
     | Exp '.' add '(' Args ')'    { (Add $1 $5, Err) }
@@ -348,22 +428,20 @@ Exp :: { Exp }
     | str                         { (StrLit (fst $1), Composite "Cluster" (Simple "star")) }
     | chr                         { (CharLit (fst $1), Simple "star") }
     | Exp '+' Exp                 { % do
-                                    lift $ putStrLn ((show $ snd $1) ++ (show $ snd $3))
-                                    let exp = Suma $1 $3
-                                    if (snd $1) == Err || (snd $3) == Err then return (exp, Err)
-                                    else do
-                                        let f t@(Simple "planet") = t
-                                            f t@(Simple "cloud") = t
-                                            f _ = Err
-                                            t1 = f (snd $1)
-                                            t2 = f (snd $3)
-                                        return (exp, Err) }
-    | Exp '-' Exp                 { (Sub $1 $3, Err) }
-    | Exp '*' Exp                 { (Mul $1 $3, Err) }
+                                    (a,b) <- checkNum ("+", $2) $1 $3
+                                    return (Suma a b, snd a) }
+    | Exp '-' Exp                 { % do
+                                    (a,b) <- checkNum ("-", $2) $1 $3
+                                    return (Sub a b, snd a) }
+    | Exp '*' Exp                 { % do
+                                    (a,b) <- checkNum ("*", $2) $1 $3
+                                    return (Mul a b, snd a) }
     | Exp '/' Exp                 { (Div $1 $3, Err) }
     | Exp '//' Exp                { (DivE $1 $3, Err) }
     | Exp '%' Exp                 { (Mod $1 $3 , Err)}
-    | Exp '^' Exp                 { (Pow $1 $3, Err) }
+    | Exp '^' Exp                 { % do
+                                    (a,b) <- checkNum ("^", $2) $1 $3
+                                    return (Pow a b, snd a) }
     | '-' Exp         %prec NEG   { (Neg $2, Err) }
     | Exp '==' Exp                { (Eq $1 $3, Err) }
     | Exp '¬=' Exp                { (Neq $1 $3, Err) }

@@ -5,6 +5,6 @@ moon b = full;
 planet n = 10;
 n = 10+n;
 cloud x = 3.14159;
-star a = 'z'
+star a = 'z';
 
 EndofSpace

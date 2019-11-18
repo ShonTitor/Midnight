@@ -109,6 +109,25 @@ getTipo :: Maybe Entry -> Type
 getTipo Nothing = Err
 getTipo (Just (Entry t _ _)) = t
 
+checkNum :: (String, AlexPosn) -> Exp -> Exp -> MonadTablon (Exp, Exp)
+checkNum (op, AlexPn _ m n) a@(e1, t1) b@(e2, t2) = do
+  if t1 == t2 && elem t1 [Err, Simple "planet", Simple "cloud"] then return (a,b)
+  else do
+    let cast e = (Funcall (Var "vaporize", NA) [e], Simple "cloud")
+    if      (t1, t2) == (Simple "planet", Simple "cloud") then return (cast a, b)
+    else if (t2, t1) == (Simple "planet", Simple "cloud") then return (a, cast b)
+    else do
+      if not $ elem t1 [Err, Simple "planet", Simple "cloud"]
+        then lift $ putStrLn ("Error de tipo: El operador " ++ op ++ " solo admite planet y cloud, se encontró "++(show t1)
+                              ++" en la línea "++(show m)++" columna "++(show n))
+      else return ()
+      if not $ elem t2 [Err, Simple "planet", Simple "cloud"]
+        then lift $ putStrLn ("Error de tipo: El operador " ++ op ++ " solo admite planet y cloud, se encontró "++(show t2)
+                              ++" en la línea "++(show m)++" columna "++(show n))
+      else return ()
+      return ((e1, Err), (e2, Err))
+
+
 pushPila :: MonadTablon ()
 pushPila = do
     (tablonActual, pila, n) <- get
