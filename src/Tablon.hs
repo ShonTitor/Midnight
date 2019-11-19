@@ -118,15 +118,54 @@ checkNum (op, AlexPn _ m n) a@(e1, t1) b@(e2, t2) = do
     else if (t2, t1) == (Simple "planet", Simple "cloud") then return (a, cast b)
     else do
       if not $ elem t1 [Err, Simple "planet", Simple "cloud"]
-        then lift $ putStrLn ("Error de tipo: El operador " ++ op ++ " solo admite planet y cloud, se encontró "++(show t1)
+        then lift $ putStrLn ("Error de tipo: El operador " ++ op ++ " solo admite los tipos planet y cloud, se encontró "++(show t1)
                               ++" en la línea "++(show m)++" columna "++(show n))
       else return ()
       if not $ elem t2 [Err, Simple "planet", Simple "cloud"]
-        then lift $ putStrLn ("Error de tipo: El operador " ++ op ++ " solo admite planet y cloud, se encontró "++(show t2)
+        then lift $ putStrLn ("Error de tipo: El operador " ++ op ++ " solo admite los tipos planet y cloud, se encontró "++(show t2)
                               ++" en la línea "++(show m)++" columna "++(show n))
       else return ()
       return ((e1, Err), (e2, Err))
 
+checkSame :: AlexPosn -> Exp -> Exp -> MonadTablon (Exp, Exp)
+checkSame (AlexPn _ m n) a@(e1, t1) b@(e2, t2) = do
+  let isComp (Composite _ _) = True
+      isComp (Record _ _) = True
+      isComp (Subroutine _ _ _) = True
+      isComp _ = False
+  if t1 == t2 || (isComp t1 && t2 == Simple "BlackHole")|| (isComp t2 && t1 == Simple "BlackHole") then return (a,b)
+  else do
+    if t1 /= Err && t2 /= Err then return ()
+    else lift $ putStrLn ("Error de tipo: Los tipos  "++(show t1)++" y "++(show t2)++" no son comparables"
+                      ++" en la línea "++(show m)++" columna "++(show n))
+    return ((e1, Err), (e2, Err))
+
+checkT :: Type -> (String, AlexPosn) -> Exp -> Exp -> MonadTablon (Exp, Exp)
+checkT t (op, AlexPn _ m n) a@(e1, t1) b@(e2, t2) = do
+  if t1 == t2 && elem t1 [Err, t] then return (a,b)
+  else do
+    if t1 /= t || t1 == Err
+      then lift $ putStrLn ("Error de tipo: El operador " ++ op ++ " solo admite el tipo "++(show t)++", se encontró "++(show t1)
+                              ++" en la línea "++(show m)++" columna "++(show n))
+      else return ()
+    if t2 /= t || t2 == Err
+      then lift $ putStrLn ("Error de tipo: El operador " ++ op ++ " solo admite el tipo "++(show t)++", se encontró "++(show t2)
+                              ++" en la línea "++(show m)++" columna "++(show n))
+      else return ()
+    return ((e1, Err), (e2, Err))
+
+checkInt :: (String, AlexPosn) -> Exp -> Exp -> MonadTablon (Exp, Exp)
+checkInt = checkT (Simple "planet")
+
+checkBool :: (String, AlexPosn) -> Exp -> Exp -> MonadTablon (Exp, Exp)
+checkBool = checkT (Simple "moon")
+
+checkBool' :: AlexPosn -> Type -> MonadTablon ()
+checkBool' (AlexPn _ m n) t = do
+  if t /= Err && t /= Simple "moon" 
+    then lift $ putStrLn ("Error de tipo: Se esperaba moon, se encontró "++(show t)
+                              ++" en la línea "++(show m)++" columna "++(show n))
+  else return ()
 
 pushPila :: MonadTablon ()
 pushPila = do

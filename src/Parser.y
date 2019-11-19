@@ -190,9 +190,25 @@ InstrA : Type id
        | Type id '=' Exp    
        { % do 
           insertarVar $2 $1
+          let AlexPn _ m n = $3
+              t1 = $1
+              t2 = snd $4
+          if t1 /= t2 && t2 /= Err then
+            lift $ putStrLn ("Error de tipo: Se esperaba "++(show t1)++", se encontró "++(show t2)
+                      ++" en la línea "++(show m)++" columna "++(show n))
+          else return ()
           return (Asig (Var $ fst $2, $1) $4) }
        | Exp                { Flotando $1 }
-       | LValue '=' Exp     { Asig $1 $3 }
+       | LValue '=' Exp     
+       { % do 
+          let AlexPn _ m n = $2
+              t1 = snd $1
+              t2 = snd $3
+          if t1 /= t2 && t2 /= Err then
+            lift $ putStrLn ("Error de tipo: Se esperaba "++(show t1)++", se encontró "++(show t2)
+                      ++" en la línea "++(show m)++" columna "++(show n))
+          else return ()
+          return $ Asig $1 $3 }
        | LValue '+=' Exp    { Asig $1 (Suma $1 $3, Err) }
        | LValue '-=' Exp    { Asig $1 (Sub $1 $3, Err) }
        | LValue '*=' Exp    { Asig $1 (Mul $1 $3, Err) }
@@ -210,9 +226,18 @@ InstrA : Type id
 InstrB : Push If                                                             { $2 }
        | Push While                                                          { $2 }
        | Push orbit id around Exp '{' Seq '}'                                
-         { % do 
-           insertarVar $3 IDK 
-           return  $ Foreach (fst $3) $5 $7 }
+        { % do
+          let f (Composite "Quasar" t) = t
+              f _ = Err
+              t1 = snd $5
+              t2 = f t1
+              AlexPn _ m n = $4
+          if t1 /= Err && t2 == Err then
+            lift $ putStrLn ("Error de tipo: El tipo  "++(show t1)++" no es iterable"
+                              ++" en la línea "++(show m)++" columna "++(show n))
+          else return ()
+          insertarVar $3 t2
+          return  $ Foreach (fst $3) $5 $7 }
        | Push orbit id around range '(' Exp ',' Exp ',' Exp ')' '{' Seq '}'
          { % do
            insertarVar $3 (Simple "planet")
@@ -227,16 +252,37 @@ InstrB : Push If                                                             { $
            return $ ForRange (IntLit 0, Simple "planet") $7 (IntLit 1, Simple "planet") $10 }
        | Push orbit '(' Instr ';' Exp ';' Instr ')' '{' SeqAux2 '}'          { ForC $4 $6 (reverse $ $8 : $11) }
 
-If : if '(' Exp ')' '{' Seq '}'                           { If [($3, $6)] }
-   | unless '(' Exp ')' '{' Seq '}'                       { If [((Not $3, Err), $6)] }
-   | if '(' Exp ')' '{' Seq '}' Push Elif                 { If (($3, $6) : $9) }
+If : if '(' Exp ')' '{' Seq '}'                           
+    { % do
+      checkBool' $2 (snd $3)
+      return $ If [($3, $6)] }
+   | unless '(' Exp ')' '{' Seq '}'                       
+   {  % do
+      checkBool' $2 (snd $3)
+      return $ If [((Not $3, Err), $6)] }
+   | if '(' Exp ')' '{' Seq '}' Push Elif
+   {  % do
+      checkBool' $2 (snd $3)
+      return $ If (($3, $6) : $9) }
 
-Elif : elseif '(' Exp ')' '{' Seq '}' Pop                 { [($3, $6)] }
+Elif : elseif '(' Exp ')' '{' Seq '}' Pop
+   {  % do
+      checkBool' $2 (snd $3)
+      return [($3, $6)] }
      | else  '{' Seq '}' Pop                              { [((Var "full", Simple "bool"), $3)] }
-     | elseif '(' Exp ')' '{' Seq '}' Pop Push Elif       { ($3, $6) : $10 }
+     | elseif '(' Exp ')' '{' Seq '}' Pop Push Elif
+   {  % do
+      checkBool' $2 (snd $3)
+      return $ ($3, $6) : $10 }
 
-While : orbit while '(' Exp ')' '{' Seq '}'               { While $4 $7 }
-      | orbit until '(' Exp ')' '{' Seq '}'               { While (Not $4, Err) $7 }
+While : orbit while '(' Exp ')' '{' Seq '}'
+   {  % do
+      checkBool' $3 (snd $4)
+      return $ While $4 $7 }
+      | orbit until '(' Exp ')' '{' Seq '}'
+   {  % do
+      checkBool' $3 (snd $4)
+      return $ While (Not $4, Err) $7 }
 
 
 Params : Push ParamsAux                                   
@@ -420,6 +466,7 @@ Exp :: { Exp }
     | scale '(' Exp ')'           { (Scale $3, Err) }
     | Exp '.' pop '(' Args ')'    { (Pop $1 $5, Err) }
     | Exp '.' add '(' Args ')'    { (Add $1 $5, Err) }
+
     | int                         { (IntLit (fst $1), Simple "planet") }
     | float                       { (FloLit (fst $1), Simple "cloud") }
     | new                         { (Var $ fst $1, Simple "moon") }
@@ -436,24 +483,53 @@ Exp :: { Exp }
     | Exp '*' Exp                 { % do
                                     (a,b) <- checkNum ("*", $2) $1 $3
                                     return (Mul a b, snd a) }
-    | Exp '/' Exp                 { (Div $1 $3, Err) }
-    | Exp '//' Exp                { (DivE $1 $3, Err) }
-    | Exp '%' Exp                 { (Mod $1 $3 , Err)}
+    | Exp '/' Exp                 { % do
+                                    (a,b) <- checkNum ("/", $2) $1 $3
+                                    return (Div a b, if snd a == Err then Err else Simple "cloud") }
+    | Exp '//' Exp                { % do
+                                    (a,b) <- checkInt ("//", $2) $1 $3
+                                    return (DivE a b, snd a) }
+    | Exp '%' Exp                 { % do
+                                    (a,b) <- checkInt ("%", $2) $1 $3
+                                    return (Mod a b, snd a) }
     | Exp '^' Exp                 { % do
                                     (a,b) <- checkNum ("^", $2) $1 $3
                                     return (Pow a b, snd a) }
     | '-' Exp         %prec NEG   { (Neg $2, Err) }
-    | Exp '==' Exp                { (Eq $1 $3, Err) }
-    | Exp '¬=' Exp                { (Neq $1 $3, Err) }
-    | Exp '>' Exp                 { (Mayor $1 $3, Err) }
-    | Exp '>=' Exp                { (MayorI $1 $3, Err) }
-    | Exp '<' Exp                 { (Menor $1 $3, Err) }
-    | Exp '<=' Exp                { (MenorI $1 $3, Err) }
-    | Exp '&&' Exp                { (And $1 $3, Err) }
-    | Exp '&' Exp                 { (Bitand $1 $3, Err) }
-    | Exp '||' Exp                { (Or $1 $3, Err) }
-    | Exp '|' Exp                 { (Bitor $1 $3, Err) }
-    | '¬' Exp                     { (Not $2, Err) }
+    | Exp '==' Exp                { % do
+                                    (a,b) <- checkSame $2 $1 $3
+                                    return (Eq a b, if snd a == Err then Err else Simple "moon") }
+    | Exp '¬=' Exp                { % do
+                                    (a,b) <- checkSame $2 $1 $3
+                                    return (Neq a b, if snd a == Err then Err else Simple "moon") }
+    | Exp '>' Exp                 { % do
+                                    (a,b) <- checkNum (">", $2) $1 $3
+                                    return (Mayor a b, if snd a == Err then Err else (Simple "moon")) }
+    | Exp '>=' Exp                { % do
+                                    (a,b) <- checkNum (">=", $2) $1 $3
+                                    return (MayorI a b, if snd a == Err then Err else Simple "moon") }
+    | Exp '<' Exp                 { % do
+                                    (a,b) <- checkNum (">", $2) $1 $3
+                                    return (Menor a b, if snd a == Err then Err else Simple "moon") }
+    | Exp '<=' Exp                { % do
+                                    (a,b) <- checkNum ("<=", $2) $1 $3
+                                    return (MenorI a b, if snd a == Err then Err else Simple "moon") }
+    | Exp '&&' Exp                { % do
+                                    (a,b) <- checkBool ("&&", $2) $1 $3
+                                    return (And a b, snd a) }
+    | Exp '&' Exp                 { % do
+                                    (a,b) <- checkBool ("&", $2) $1 $3
+                                    return (Bitand a b, snd a) }
+    | Exp '||' Exp                { % do
+                                    (a,b) <- checkBool ("||", $2) $1 $3
+                                    return (Or a b, snd a) }
+    | Exp '|' Exp                 { % do
+                                    (a,b) <- checkBool ("|", $2) $1 $3
+                                    return (Bitor a b, snd a) }
+    | '¬' Exp                     { % do
+                                    let t = if (snd $2) == Simple "moon" then (snd $2) else Err
+                                    checkBool' $1 (snd $2)
+                                    return (Not $2, t) }
     | '[' Args ']'                { (ListLit $2, Err) }
     | '{' Args '}'                { (ArrLit $2, Err) }
     | cluster '(' Exp ')' Type    { (ArrInit $3 $5, Err) }
