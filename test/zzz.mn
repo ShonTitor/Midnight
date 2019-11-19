@@ -1,0 +1,35 @@
+Space
+
+Galaxy Perro{
+    Constellation nombre;
+    planet edad;
+    Constellation raza;
+}
+
+
+planet perro = "perro";
+perro = 2.72;
+if (perro == 5) {
+	perro = perro+"zapato";
+}
+elseif (perro > 31.5) {
+	perro = perro/2 % 3;
+}
+elseif (full & new | perro) {
+	perro = perro*2;
+}
+orbit i around perro {
+	print(i)
+}
+perro[..5];
+perro.vaina;
+
+Perro Galaxy firulais;
+perro = firulais.edad;
+
+[planet]Quasar perros;
+orbit k around perros[1..10] {
+	print(k)
+}
+
+EndofSpace
