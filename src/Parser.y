@@ -5,12 +5,13 @@ import Data.List
 import Lexer
 import Tablon
 import Tipos
+import Preparser (preparser)
 import Control.Monad.RWS
 import Data.Maybe (isNothing, fromJust)
 import qualified Data.Map as Map
 }
 
-%name midnight
+%name parser
 %tokentype { Token }
 %error { parseError }
 %monad { MonadTablon }
@@ -126,20 +127,20 @@ DefsAux : DefsAux Func                { $2 : $1 }
 
 FunSig : comet id '(' Params ')' '->' Type
         { % do
-          (t, pila, n) <- get
-          put (t, 1:pila, n)
+          --(t, pila, n) <- get
+          --put (t, 1:pila, n)
           let d = Func (fst $2) $4 $7 []
-          insertarSubrutina (d, snd $2)
-          popPila
+          --insertarSubrutina (d, snd $2)
+          --popPila
           return $ fst $2
         }
        | satellite id '(' Params ')' '->' Type
         { % do
-          (t, pila, n) <- get
-          put (t, 1:pila, n)
+          --(t, pila, n) <- get
+          --put (t, 1:pila, n)
           let d = Iter (fst $2) $4 $7 []
-          insertarSubrutina (d, snd $2) 
-          popPila
+          --insertarSubrutina (d, snd $2) 
+          --popPila
           return $ fst $2
         }
 
@@ -151,18 +152,18 @@ Func  :: { () }
           --insertarSubrutina (d, snd $2) }
       | RegSig '{' Regs Pop '}'              { () }
 
-RegSig : ufo id                              { % insertarReg $2 (fst $1) }
-       | galaxy id                           { % insertarReg $2 (fst $1) }
+RegSig : ufo id                              { () -- % insertarReg $2 (fst $1) }
+       | galaxy id                           { () -- % insertarReg $2 (fst $1) }
 
 Regs : Push RegsAux    
       { % do
           let rex = reverse $2
-          insertarCampos rex
+          --insertarCampos rex
           return (rex) }
      | Push RegsAux ';'                                             
      { % do
           let rex = reverse $2
-          insertarCampos rex
+          --insertarCampos rex
           return (rex) }
 
 RegsAux   : RegsAux ';' Type id                           { ($3, $4) : $1 }
@@ -225,32 +226,44 @@ InstrA : Type id
 
 InstrB : Push If                                                             { $2 }
        | Push While                                                          { $2 }
-       | Push orbit id around Exp '{' Seq '}'                                
-        { % do
-          let f (Composite "Quasar" t) = t
-              f _ = Err
-              t1 = snd $5
-              t2 = f t1
-              AlexPn _ m n = $4
-          if t1 /= Err && t2 == Err then
-            lift $ putStrLn ("Error de tipo: El tipo  "++(show t1)++" no es iterable"
-                              ++" en la línea "++(show m)++" columna "++(show n))
-          else return ()
-          insertarVar $3 t2
-          return  $ Foreach (fst $3) $5 $7 }
-       | Push orbit id around range '(' Exp ',' Exp ',' Exp ')' '{' Seq '}'
-         { % do
-           insertarVar $3 (Simple "planet")
-           return $ ForRange $7 $9 $11 $14 }
-       | Push orbit id around range '(' Exp ',' Exp ')' '{' Seq '}'
-         { % do
-           insertarVar $3 (Simple "planet")
-           return $ ForRange $7 $9 (IntLit 1, Simple "planet") $12 }
-       | Push orbit id around range '(' Exp ')' '{' Seq '}'
-         { % do
-           insertarVar $3 (Simple "planet")
-           return $ ForRange (IntLit 0, Simple "planet") $7 (IntLit 1, Simple "planet") $10 }
+       | IterHead '{' Seq '}'                                                { $1 $3 }
        | Push orbit '(' Instr ';' Exp ';' Instr ')' '{' SeqAux2 '}'          { ForC $4 $6 (reverse $ $8 : $11) }
+
+IterHead : Push orbit id around Exp
+          { % do
+            let f (Composite "Quasar" t) = t
+                f _ = Err
+                t1 = snd $5
+                t2 = f t1
+                AlexPn _ m n = $4
+            if t1 /= Err && t2 == Err then
+              lift $ putStrLn ("Error de tipo: El tipo  "++(show t1)++" no es iterable"
+                                ++" en la línea "++(show m)++" columna "++(show n))
+            else return ()
+            insertarVar $3 t2
+            let f' seq = Foreach (fst $3) $5 seq
+            return f' }
+         | Push orbit id around range '(' Exp ',' Exp ',' Exp ')'
+           { % do
+             insertarVar $3 (Simple "planet")
+             checkInt' $6 (snd $7)
+             checkInt' $8 (snd $9)
+             checkInt' $10 (snd $11)
+             let f seq = ForRange $7 $9 $11 seq
+             return f }
+         | Push orbit id around range '(' Exp ',' Exp ')'
+           { % do
+             insertarVar $3 (Simple "planet")
+             checkInt' $6 (snd $7)
+             checkInt' $8 (snd $9)
+             let f seq = ForRange $7 $9 (IntLit 1, Simple "planet") seq
+             return f }
+         | Push orbit id around range '(' Exp ')'
+           { % do
+             insertarVar $3 (Simple "planet")
+             checkInt' $6 (snd $7)
+             let f seq = ForRange (IntLit 0, Simple "planet") $7 (IntLit 1, Simple "planet") seq
+             return f }
 
 If : if '(' Exp ')' '{' Seq '}'                           
     { % do
@@ -288,7 +301,7 @@ While : orbit while '(' Exp ')' '{' Seq '}'
 Params : Push ParamsAux                                   
          { % do 
            let params = reverse $2
-           insertarParams params 
+           --insertarParams params 
            return params }
        | Push                                             { [] }
 
@@ -352,14 +365,14 @@ LValue :: { Exp }
                                         t1 = snd $1
                                         Index t2' = $3
                                         t2 = snd t2'
-                                        isComp (Composite t _) = elem t ["Cluster", "Quasar", "Nebula"]
-                                        isComp _ = False
+                                        isCom (Composite t _) = elem t ["Cluster", "Quasar", "Nebula"]
+                                        isCom _ = False
                                         f (Composite _ t) = t
                                         g (Composite s _) = s
                                         AlexPn _ m n = $2
                                     if t1 == Err || t2 == Err || (f t1) == Err then
                                         return (exp, Err) 
-                                    else if (not.isComp) t1 then do
+                                    else if (not.isCom) t1 then do
                                         lift $ putStrLn ("Error de tipo: "++(show t1)++" no es indexable "
                                                           ++" en la línea "++(show m)++" columna "++(show n))
                                         return (exp, Err)
@@ -459,7 +472,36 @@ Exp :: { Exp }
                                                              ++" en la línea "++(show m)++" columna "++(show n))
                                             return (exp, Err)
                                         else return (exp, t) }
-    | Exp '(' Args ')'            { (Funcall $1 $3, Err) }
+    | Exp '(' Args ')'            { % do
+                                    let isSub (Subroutine _ _ _) = True
+                                        isSub _ = False
+                                        exp = Funcall $1 $3
+                                        (_,tas) = unzip $3
+                                        AlexPn _ m n = $2
+                                    if isSub (snd $1) then do
+                                      let (Subroutine st tps rt) = snd $1
+                                          t = if st == "Comet" then rt else (snd $1)
+                                      if length tas == length tps then do 
+                                        let ts = zip tps tas
+                                            f :: [(Type, Type)] -> Int -> MonadTablon Bool
+                                            f [] _ = return True
+                                            f ((t1, t2):xs) k = do
+                                              if t1 == t2 || (isComp t1 && t2 == (Simple "BlackHole")) then do
+                                                b <- f xs (k+1)
+                                                return b
+                                              else do 
+                                                lift $ putStrLn ("Error de tipo: Se esperaba "++(show t1)++" se encontró "++(show t2)++
+                                                          " en en argumento #"++(show k)++" en la línea "++(show m)++" columna "++(show n))
+                                                b <- f xs (k+1)
+                                                return False
+                                        b <- f ts 1
+                                        if b then return (exp, t) else return (exp, Err)
+                                      else do
+                                        lift $ putStrLn ("Error de tipo: El número de argumentos no coincide con el de parámetros"
+                                                             ++" en la línea "++(show m)++" columna "++(show n))
+                                        return (exp, Err)
+                                    else return (exp, Err)
+                                  }
     | print '(' Args ')'          { (Print $3, Composite "Cluster" (Simple "star")) }
     | read '(' ')'                { (Read, Composite "Cluster" (Simple "star")) }
     | bigbang '(' Type ')'        { (Bigbang, Composite "~" $3) }
@@ -530,10 +572,44 @@ Exp :: { Exp }
                                     let t = if (snd $2) == Simple "moon" then (snd $2) else Err
                                     checkBool' $1 (snd $2)
                                     return (Not $2, t) }
-    | '[' Args ']'                { (ListLit $2, Err) }
-    | '{' Args '}'                { (ArrLit $2, Err) }
-    | cluster '(' Exp ')' Type    { (ArrInit $3 $5, Err) }
-    | '{' DictItems '}'           { (DictLit $2, Err) }
+    | '[' Args ']'                { % do
+                                    let (_, ts) = unzip $2
+                                        exp = ListLit $2
+                                        AlexPn _ m n = $1
+                                        t = if null ts then IDK else foldl tipoSerio Err ts
+                                    if t == NA then do
+                                      lift $ putStrLn ("Error de tipo: Quasar no homogeneo"
+                                                                      ++" en la línea "++(show m)++" columna "++(show n))
+                                      return (exp, Err)
+                                    else return (exp, Composite "Quasar" t) }
+    | '{' Args '}'                { % do
+                                    let (_, ts) = unzip $2
+                                        exp = ArrLit $2
+                                        AlexPn _ m n = $1
+                                        t = if null ts then IDK else foldl tipoSerio Err ts
+                                    if t == NA then do
+                                      lift $ putStrLn ("Error de tipo: Cluster no homogeneo"
+                                                                      ++" en la línea "++(show m)++" columna "++(show n))
+                                      return (exp, Err)
+                                    else return (exp, Composite "Cluster" t) }
+    | cluster '(' Exp ')' Type    { (ArrInit $3 $5, Composite "Cluster" $5) }
+    | '{' DictItems '}'           { % do
+                                    let (ks, vs) = unzip $2
+                                        (_, tks) = unzip ks
+                                        (_, tvs) = unzip vs
+                                        exp = DictLit $2
+                                        t = if null tvs then IDK else foldl tipoSerio Err tvs
+                                        AlexPn _ m n = $1
+                                    if all (\ti -> elem ti [Composite "Cluster" (Simple "star"), Err]) tks then
+                                      if t == NA then do
+                                        lift $ putStrLn ("Error de tipo: Nebula no homogenea"
+                                                                        ++" en la línea "++(show m)++" columna "++(show n))
+                                        return (exp, Err)
+                                      else return (exp, Composite "Nebula" t)
+                                    else do
+                                      lift $ putStrLn ("Error de tipo: las claves de Nebula solo pueden ser de tipo Constellation"
+                                                        ++" en la línea "++(show m)++" columna "++(show n))
+                                      return (exp, Err) }
 
 
 Args : ArgsAux                       { reverse $1 }
@@ -558,20 +634,20 @@ parseError (x:_) = error $ "Error de sintaxis en la línea " ++ (show m) ++ " co
 parseError _ = error "Final inesperado del archivo."
 
 
-midny = midnight.alexScanTokens
+midny = parser.alexScanTokens
 
 type Tablon  = Map.Map String [Entry]
 
 gato f = do
   putStrLn ""
   s <- getTokens f
-  (arbol, (tabla, _, _), _) <- runRWST (midnight s) () initTablon
+  (_, (pretablon, _, _), _) <- runRWST (preparser s) () initTablon
+  (arbol, (tablon, _, _), _) <- runRWST (parser s) () (pretablon, [0], 0)
   putStrLn ""
   print arbol
   putStrLn ""
   --putStrLn $ showTablon tabla
-  putStrLn $ showTablon' tabla
+  putStrLn $ showTablon' tablon
   return()
-
 
 }

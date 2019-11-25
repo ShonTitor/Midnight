@@ -7,6 +7,7 @@ maintainer:          example@example.com
 copyright:           "2019 Leonardo López, Luigi Di Martino"
 extra-source-files:  
 - "src/Parser.y"
+- "src/Preparser.y"
 - "src/Lexer.x"
 - "README.md"
 - "ChangeLog.md"
@@ -44,6 +45,7 @@ library:
   exposed-modules:
     - Lexer
     - Parser
+    - Preparser
     - Tipos
     - Tablon
 

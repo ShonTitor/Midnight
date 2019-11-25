@@ -6,6 +6,11 @@ Galaxy Perro{
     Constellation raza;
 }
 
+Comet halley(planet n, planet k) -> BlackHole {
+    print("Este es un procedimiento");
+    print(n);
+}
+
 
 planet perro = "perro";
 perro = 2.72;
@@ -15,7 +20,7 @@ if (perro == 5) {
 elseif (perro > 31.5) {
 	perro = perro/2 % 3;
 }
-elseif (full & new | perro) {
+elseif (full & new || perro) {
 	perro = perro*2;
 }
 orbit i around perro {
@@ -29,7 +34,17 @@ perro = firulais.edad;
 
 [planet]Quasar perros;
 orbit k around perros[1..10] {
-	print(k)
+	orbit kk around range("dog", "cat", "cow") {
+		print(k);
+	}
 }
+
+[blackhole, blackhole, perros];
+[blackhole, blackhole, perros, 24];
+{};
+{"perro" : 1, "gato" : 2, "vaca" : 35};
+{"perro" : 1, "gato" : 2, 35 : 53};
+halley(1,2,3);
+halley(1.2,1.2)
 
 EndofSpace

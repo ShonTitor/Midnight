@@ -1,0 +1,11 @@
+Space
+
+Galaxy Perro {
+    Gato Galaxy a;
+}
+
+Galaxy Gato {
+    Perro Galaxy a;
+}
+
+EndofSpace

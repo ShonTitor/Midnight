@@ -67,9 +67,9 @@ initTablon = (t,[0],0)
                    (Entry NA Constructor 0),
                    (Entry NA Constructor 0),
                    (Entry (Subroutine "Comet" [IDK] (Composite "Cluster" (Simple "star"))) (Subrutina []) 0),
-                   (Entry (Subroutine "Comet" [IDK] (Simple "blackhole") ) (Subrutina []) 0),
-                   (Entry (Subroutine "Comet" [IDK] (Simple "blackhole") ) (Subrutina []) 0),
-                   (Entry (Subroutine "Comet" [IDK] (Simple "blackhole") ) (Subrutina []) 0),
+                   (Entry (Subroutine "Comet" [IDK] (Simple "BlackHole") ) (Subrutina []) 0),
+                   (Entry (Subroutine "Comet" [IDK] (Simple "BlackHole") ) (Subrutina []) 0),
+                   (Entry (Subroutine "Comet" [IDK] (Simple "BlackHole") ) (Subrutina []) 0),
                    (Entry (Subroutine "Comet" [IDK] (Simple "planet") ) (Subrutina []) 0),
                    (Entry (Subroutine "Comet" [IDK] (Simple "cloud") ) (Subrutina []) 0),
                    (Entry (Subroutine "Comet" [IDK] (Composite "Cluster" (Simple "star")) ) (Subrutina []) 0),
@@ -129,11 +129,11 @@ checkNum (op, AlexPn _ m n) a@(e1, t1) b@(e2, t2) = do
 
 checkSame :: AlexPosn -> Exp -> Exp -> MonadTablon (Exp, Exp)
 checkSame (AlexPn _ m n) a@(e1, t1) b@(e2, t2) = do
-  let isComp (Composite _ _) = True
-      isComp (Record _ _) = True
-      isComp (Subroutine _ _ _) = True
-      isComp _ = False
-  if t1 == t2 || (isComp t1 && t2 == Simple "BlackHole")|| (isComp t2 && t1 == Simple "BlackHole") then return (a,b)
+  let isCom (Composite _ _) = True
+      isCom (Record _ _) = True
+      isCom (Subroutine _ _ _) = True
+      isCom _ = False
+  if t1 == t2 || (isCom t1 && t2 == Simple "BlackHole")|| (isCom t2 && t1 == Simple "BlackHole") then return (a,b)
   else do
     if t1 /= Err && t2 /= Err then return ()
     else lift $ putStrLn ("Error de tipo: Los tipos  "++(show t1)++" y "++(show t2)++" no son comparables"
@@ -160,12 +160,21 @@ checkInt = checkT (Simple "planet")
 checkBool :: (String, AlexPosn) -> Exp -> Exp -> MonadTablon (Exp, Exp)
 checkBool = checkT (Simple "moon")
 
-checkBool' :: AlexPosn -> Type -> MonadTablon ()
-checkBool' (AlexPn _ m n) t = do
-  if t /= Err && t /= Simple "moon" 
-    then lift $ putStrLn ("Error de tipo: Se esperaba moon, se encontró "++(show t)
+-- checkT pero para una sola
+checkT' :: Type -> AlexPosn -> Type -> MonadTablon Bool
+checkT' t1 (AlexPn _ m n) t2 = do
+  if t2 /= Err && t2 /= t1
+    then do
+    lift $ putStrLn ("Error de tipo: Se esperaba "++(show t1)++", se encontró "++(show t2)
                               ++" en la línea "++(show m)++" columna "++(show n))
-  else return ()
+    return False
+  else return True
+
+checkInt' :: AlexPosn -> Type -> MonadTablon Bool
+checkInt' = checkT' (Simple "planet")
+
+checkBool' :: AlexPosn -> Type -> MonadTablon Bool
+checkBool' = checkT' (Simple "moon")
 
 pushPila :: MonadTablon ()
 pushPila = do

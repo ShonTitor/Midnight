@@ -12,6 +12,22 @@ data Type
       | Err
       deriving (Eq)
 
+isComp :: Type -> Bool
+isComp (Composite _ _) = True
+isComp (Record _ _) = True
+isComp (Subroutine _ _ _) = True
+isComp (Simple "BlackHole") = True
+isComp _ = False
+
+tipoSerio :: Type -> Type -> Type
+tipoSerio Err ti = ti
+tipoSerio ti Err = ti
+tipoSerio NA _ = NA
+tipoSerio _ NA = NA
+tipoSerio (Simple "BlackHole") ti = if isComp ti then ti else NA
+tipoSerio ti (Simple "BlackHole") = if isComp ti then ti else NA
+tipoSerio t1 t2 = if t1 == t2 then t1 else NA
+
 instance Show Type where
   show (Simple s) = s
   show (Composite "Cluster" (Simple "star")) = "Constellation"
