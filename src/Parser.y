@@ -205,10 +205,12 @@ InstrA : Type id
           let AlexPn _ m n = $2
               t1 = snd $1
               t2 = snd $3
-          if t1 /= t2 && t2 /= Err then
+              f (Composite "Quasar" _) = True
+              f _ = False
+          if t1 == t2 || t2 == Err || (f t1 && t2 == (Composite "Quasar" IDK)) || (isComp t1 && t2 == (Simple "BlackHole")) then return ()
+          else
             lift $ putStrLn ("Error de tipo: Se esperaba "++(show t1)++", se encontró "++(show t2)
                       ++" en la línea "++(show m)++" columna "++(show n))
-          else return ()
           return $ Asig $1 $3 }
        | LValue '+=' Exp    { Asig $1 (Suma $1 $3, Err) }
        | LValue '-=' Exp    { Asig $1 (Sub $1 $3, Err) }

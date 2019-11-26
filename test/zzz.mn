@@ -39,6 +39,9 @@ orbit k around perros[1..10] {
 	}
 }
 
+perros = blackhole;
+perros = [];
+
 [blackhole, blackhole, perros];
 [blackhole, blackhole, perros, 24];
 {};
