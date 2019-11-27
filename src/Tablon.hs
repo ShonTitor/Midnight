@@ -109,11 +109,14 @@ getTipo :: Maybe Entry -> Type
 getTipo Nothing = Err
 getTipo (Just (Entry t _ _)) = t
 
+castCloud :: Exp -> Exp
+castCloud e = (Funcall (Var "vaporize", NA) [e], Simple "cloud")
+
 checkNum :: (String, AlexPosn) -> Exp -> Exp -> MonadTablon (Exp, Exp)
 checkNum (op, AlexPn _ m n) a@(e1, t1) b@(e2, t2) = do
   if t1 == t2 && elem t1 [Err, Simple "planet", Simple "cloud"] then return (a,b)
   else do
-    let cast e = (Funcall (Var "vaporize", NA) [e], Simple "cloud")
+    let cast e = castCloud e
     if      (t1, t2) == (Simple "planet", Simple "cloud") then return (cast a, b)
     else if (t2, t1) == (Simple "planet", Simple "cloud") then return (a, cast b)
     else do

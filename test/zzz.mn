@@ -48,6 +48,15 @@ perros = [];
 {"perro" : 1, "gato" : 2, "vaca" : 35};
 {"perro" : 1, "gato" : 2, 35 : 53};
 halley(1,2,3);
-halley(1.2,1.2)
+halley(1.2,1.2);
+
+perro //= 2;
+perro %= "berenjena";
+
+cloud gato = "berenjenal";
+perro += 5;
+gato -= perro;
+perro /= gato;
+gato *= "vaca";
 
 EndofSpace

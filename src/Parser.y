@@ -194,31 +194,108 @@ InstrA : Type id
           let AlexPn _ m n = $3
               t1 = $1
               t2 = snd $4
-          if t1 /= t2 && t2 /= Err then
+              inst = Asig (Var $ fst $2, $1) $4
+              exp = $4
+              f (Composite "Quasar" _) = True
+              f _ = False
+          if t1 == t2 || t1 == Err || t2 == Err || (f t1 && t2 == (Composite "Quasar" IDK)) || (isComp t1 && t2 == (Simple "BlackHole")) then 
+            return inst
+          else if t1 == (Simple "cloud") && t2 == (Simple "planet") then return $ Asig (Var $ fst $2, $1) (castCloud exp)
+          else do 
             lift $ putStrLn ("Error de tipo: Se esperaba "++(show t1)++", se encontró "++(show t2)
                       ++" en la línea "++(show m)++" columna "++(show n))
-          else return ()
-          return (Asig (Var $ fst $2, $1) $4) }
+            return inst
+      }
        | Exp                { Flotando $1 }
        | LValue '=' Exp     
        { % do 
           let AlexPn _ m n = $2
+              inst = Asig $1 $3
+              exp = $3
               t1 = snd $1
               t2 = snd $3
               f (Composite "Quasar" _) = True
               f _ = False
-          if t1 == t2 || t2 == Err || (f t1 && t2 == (Composite "Quasar" IDK)) || (isComp t1 && t2 == (Simple "BlackHole")) then return ()
-          else
+          if t1 == t2 || t1 == Err || t2 == Err || (f t1 && t2 == (Composite "Quasar" IDK)) || (isComp t1 && t2 == (Simple "BlackHole")) then 
+            return inst
+          else if t1 == (Simple "cloud") && t2 == (Simple "planet") then return $ Asig $1 (castCloud exp)
+          else do
             lift $ putStrLn ("Error de tipo: Se esperaba "++(show t1)++", se encontró "++(show t2)
                       ++" en la línea "++(show m)++" columna "++(show n))
-          return $ Asig $1 $3 }
-       | LValue '+=' Exp    { Asig $1 (Suma $1 $3, Err) }
-       | LValue '-=' Exp    { Asig $1 (Sub $1 $3, Err) }
-       | LValue '*=' Exp    { Asig $1 (Mul $1 $3, Err) }
-       | LValue '/=' Exp    { Asig $1 (Div $1 $3, Err) }
-       | LValue '//=' Exp   { Asig $1 (DivE $1 $3, Err) }
-       | LValue '%=' Exp    { Asig $1 (Mod $1 $3, Err) }
-       | LValue '^=' Exp    { Asig $1 (Pow $1 $3, Err) }
+            return inst }
+       | LValue '+=' Exp    
+       { % do
+          (a,b) <- checkNum ("+=", $2) $1 $3
+          let AlexPn _ m n = $2
+              inst = Asig $1 $3
+              t1 = snd $1
+              t2 = snd a
+          if t1 == t2 && t2 /= Err then return $ Asig $1 (Suma a b, t2)
+          else do
+            lift $ putStrLn ("Error de tipo: Se esperaba "++(show t1)++", se encontró "++(show t2)
+                              ++" en la línea "++(show m)++" columna "++(show n))
+            return $ Asig $1 (Suma a b, Err)
+       }
+       | LValue '-=' Exp
+       { % do
+          (a,b) <- checkNum ("-=", $2) $1 $3
+          let AlexPn _ m n = $2
+              inst = Asig $1 $3
+              t1 = snd $1
+              t2 = snd a
+          if t1 == t2 && t2 /= Err then return $ Asig $1 (Sub a b, t2)
+          else do
+            lift $ putStrLn ("Error de tipo: Se esperaba "++(show t1)++", se encontró "++(show t2)
+                              ++" en la línea "++(show m)++" columna "++(show n))
+            return $ Asig $1 (Sub a b, Err)
+       }
+       | LValue '*=' Exp
+       { % do
+          (a,b) <- checkNum ("*=", $2) $1 $3
+          let AlexPn _ m n = $2
+              inst = Asig $1 $3
+              t1 = snd $1
+              t2 = snd a
+          if t1 == t2 && t2 /= Err then return $ Asig $1 (Mul a b, t2)
+          else do
+            lift $ putStrLn ("Error de tipo: Se esperaba "++(show t1)++", se encontró "++(show t2)
+                              ++" en la línea "++(show m)++" columna "++(show n))
+            return $ Asig $1 (Mul a b, Err)
+       }
+       | LValue '/=' Exp
+       { % do
+          (a,b) <- checkNum ("/=", $2) $1 $3
+          let AlexPn _ m n = $2
+              inst = Asig $1 $3
+              t1 = snd $1
+              t2 = snd a
+          if t1 == t2 && t2 /= Err then return $ Asig $1 (Div a b, t2)
+          else do
+            lift $ putStrLn ("Error de tipo: Se esperaba "++(show t1)++", se encontró "++(show t2)
+                              ++" en la línea "++(show m)++" columna "++(show n))
+            return $ Asig $1 (Div a b, Err)
+       }
+       | LValue '^=' Exp
+       { % do
+          (a,b) <- checkNum ("^=", $2) $1 $3
+          let AlexPn _ m n = $2
+              inst = Asig $1 $3
+              t1 = snd $1
+              t2 = snd a
+          if t1 == t2 && t2 /= Err then return $ Asig $1 (Pow a b, t2)
+          else do
+            lift $ putStrLn ("Error de tipo: Se esperaba "++(show t1)++", se encontró "++(show t2)
+                              ++" en la línea "++(show m)++" columna "++(show n))
+            return $ Asig $1 (Pow a b, Err)
+       }
+       | LValue '//=' Exp   
+       { % do
+        (a,b) <- checkInt ("//=", $2) $1 $3
+        return $ Asig $1 (DivE a b, snd a)  }
+       | LValue '%=' Exp
+       { % do
+        (a,b) <- checkInt ("%=", $2) $1 $3
+        return $ Asig $1 (Mod a b, snd a) }
        | break              { Break (IntLit 1, Simple "planet") }
        | break Exp          { Break $2 }
        | continue           { Continue }
