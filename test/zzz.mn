@@ -36,6 +36,8 @@ perro = firulais.edad;
 orbit k around perros[1..10] {
 	orbit kk around range("dog", "cat", "cow") {
 		print(k);
+		break 2;
+		break "asdf"
 	}
 }
 

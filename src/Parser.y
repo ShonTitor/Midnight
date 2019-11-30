@@ -297,7 +297,9 @@ InstrA : Type id
         (a,b) <- checkInt ("%=", $2) $1 $3
         return $ Asig $1 (Mod a b, snd a) }
        | break              { Break (IntLit 1, Simple "planet") }
-       | break Exp          { Break $2 }
+       | break Exp          { % do 
+                              checkInt' $1 (snd $2)
+                              return $ Break $2 }
        | continue           { Continue }
        | return Exp         { Return $2 } 
        | return             { Return (Var "blackhole", Simple "BlackHole") }
@@ -671,7 +673,9 @@ Exp :: { Exp }
                                                                       ++" en la línea "++(show m)++" columna "++(show n))
                                       return (exp, Err)
                                     else return (exp, Composite "Cluster" t) }
-    | cluster '(' Exp ')' Type    { (ArrInit $3 $5, Composite "Cluster" $5) }
+    | cluster '(' Exp ')' Type    { % do
+                                    checkInt' $2 (snd $3)
+                                    return(ArrInit $3 $5, Composite "Cluster" $5) }
     | '{' DictItems '}'           { % do
                                     let (ks, vs) = unzip $2
                                         (_, tks) = unzip ks
@@ -725,7 +729,7 @@ gato f = do
   putStrLn ""
   print arbol
   putStrLn ""
-  --putStrLn $ showTablon tabla
+  --putStrLn $ showTablon tablon
   putStrLn $ showTablon' tablon
   return()
 
