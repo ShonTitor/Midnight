@@ -123,28 +123,28 @@ Defs : DefsAux                        { reverse $1 }
 DefsAux : DefsAux Func                { $2 : $1 }
         | Func                        { [$1] }
 
-FunSig : comet id '(' Params ')' '->' Type
+FunSig : comet id Params '->' Type
         { % do
           (t, pila, n) <- get
           put (t, 1:pila, n)
-          let d = Func (fst $2) $4 $7 []
+          let d = Func (fst $2) $3 $5 []
           insertarSubrutina (d, snd $2)
           popPila
           return $ fst $2
         }
-       | satellite id '(' Params ')' '->' Type
+       | satellite id Params '->' Type
         { % do
           (t, pila, n) <- get
           put (t, 1:pila, n)
-          let d = Iter (fst $2) $4 $7 []
+          let d = Iter (fst $2) $3 $5 []
           insertarSubrutina (d, snd $2) 
           popPila
           return $ fst $2
         }
 
 Func  :: { () }
-      : FunSig '{' Seq '}' Pop               { () }
-      | RegSig '{' Regs Pop '}'              { () }
+      : FunSig '{' Seq LQC Pop               { () }
+      | RegSig '{' Regs Pop LQC              { () }
 
 RegSig : ufo id                              { % insertarReg $2 (fst $1) }
        | galaxy id                           { % insertarReg $2 (fst $1) }
@@ -198,31 +198,35 @@ InstrA : Type id            { () }
 
 InstrB : Push If                                                             { () }
        | Push While                                                          { () }
-       | IterHead '{' Seq '}'                                                { () }
-       | Push orbit '(' Instr ';' Exp ';' Instr ')' '{' SeqAux2 '}'          { () }
+       | IterHead '{' Seq LQC                                                { () }
+       | Push orbit '(' Instr ';' Exp ';' Instr PQC '{' SeqAux2 LQC          { () }
 
 IterHead : Push orbit id around Exp { () }
-         | Push orbit id around range '(' Exp ',' Exp ',' Exp ')' { () }
-         | Push orbit id around range '(' Exp ',' Exp ')' { () }
-         | Push orbit id around range '(' Exp ')' { () }
+         | Push orbit id around range '(' Exp ',' Exp ',' Exp PQC { () }
+         | Push orbit id around range '(' Exp ',' Exp PQC { () }
+         | Push orbit id around range '(' Exp PQC { () }
 
-If : if '(' Exp ')' '{' Seq '}'           { () }
-   | unless '(' Exp ')' '{' Seq '}'       { () }
-   | if '(' Exp ')' '{' Seq '}' Push Elif { () }
+If : if '(' Exp PQC '{' Seq LQC           { () }
+   | unless '(' Exp PQC '{' Seq LQC       { () }
+   | if '(' Exp PQC '{' Seq LQC Push Elif { () }
 
-Elif : elseif '(' Exp ')' '{' Seq '}' Pop { () }
-     | else  '{' Seq '}' Pop                        { () }
-     | elseif '(' Exp ')' '{' Seq '}' Pop Push Elif { () }
-While : orbit while '(' Exp ')' '{' Seq '}' { () }
-      | orbit until '(' Exp ')' '{' Seq '}' { () }
+ElifAux : elseif '(' Exp PQC '{' Seq LQC Pop           { () }
+        | Elif Push elseif '(' Exp PQC '{' Seq LQC Pop { () }
+ 
+Elif : ElifAux                                         { () }
+     | ElifAux Push else  '{' Seq LQC Pop              { () }
+     | else  '{' Seq LQC Pop                      { () }
+
+While : orbit while '(' Exp PQC '{' Seq LQC { () }
+      | orbit until '(' Exp PQC '{' Seq LQC { () }
 
 
-Params : Push ParamsAux                                   
+Params : Push '(' ParamsAux PQC
          { % do 
-           let params = reverse $2
+           let params = reverse $3
            insertarParams params 
            return params }
-       | Push                                             { [] }
+       | Push '('  PQC                                    { [] }
 
 ParamsAux : ParamsAux ',' Type id                         { ($3, $4, False) : $1 }
           | Type id                                       { [($1, $2, False)] }
@@ -242,14 +246,14 @@ Types : TypesAux                  { reverse $1 }
 TypesAux : Type                   { [$1] }
          | TypesAux ',' Type      { $3 : $1 }
 
-TComp : '[' Type ']' cluster      { Composite (fst $4) $2 }
-      | '[' Type ']' quasar       { Composite (fst $4) $2 }
-      | '[' Type ']' nebula       { Composite (fst $4) $2 }
+TComp : '[' Type CQC cluster      { Composite (fst $4) $2 }
+      | '[' Type CQC quasar       { Composite (fst $4) $2 }
+      | '[' Type CQC nebula       { Composite (fst $4) $2 }
       | '~' Type                  { Composite (fst $1) $2 }
       | id galaxy                 { Record (fst $2) (fst $1) }
       | id ufo                    { Record (fst $2) (fst $1) }
-      | '(' Types '->' Type ')' comet      { Subroutine (fst $6) $2 $4 }
-      | '(' Types '->' Type ')' satellite  { Subroutine (fst $6) $2 $4 }
+      | '(' Types '->' Type PQC comet      { Subroutine (fst $6) $2 $4 }
+      | '(' Types '->' Type PQC satellite  { Subroutine (fst $6) $2 $4 }
 
 LValue : id                        { () }
        | Exp '.' id               { () }
@@ -257,23 +261,23 @@ LValue : id                        { () }
 
 
 
-Index :     Exp ']'               { () }
+Index :     Exp CQC               { () }
 
-Slice :     Exp '..' Exp ']'      { () }
-      |     '..' Exp ']'          { () }
-      |     Exp '..' ']'          { () }
+Slice :     Exp '..' Exp CQC      { () }
+      |     '..' Exp CQC          { () }
+      |     Exp '..' CQC          { () }
 
 Exp : LValue                      { () }
-    | '(' Exp ')'                 { () }
+    | '(' Exp PQC                 { () }
     | Exp  '[' Slice              { () }
     | '~' Exp                     { () }
-    | Exp '(' Args ')'            { () }
-    | print '(' Args ')'          { () }
-    | read '(' ')'                { () }
-    | bigbang '(' Type ')'        { () }
-    | scale '(' Exp ')'           { () }
-    | Exp '.' pop '(' Args ')'    { () }
-    | Exp '.' add '(' Args ')'    { () }
+    | Exp '(' Args PQC            { () }
+    | print '(' Args PQC          { () }
+    | read '(' PQC                { () }
+    | bigbang '(' Type PQC        { () }
+    | scale '(' Exp PQC           { () }
+    | Exp '.' pop '(' Args PQC    { () }
+    | Exp '.' add '(' Args PQC    { () }
 
     | int                         { () }
     | float                       { () }
@@ -301,10 +305,10 @@ Exp : LValue                      { () }
     | Exp '||' Exp                { () }
     | Exp '|' Exp                 { () }
     | '¬' Exp                     { () }
-    | '[' Args ']'                { () }
-    | '{' Args '}'                { () }
-    | cluster '(' Exp ')' Type    { () }
-    | '{' DictItems '}'           { () }
+    | '[' Args CQC                { () }
+    | '{' Args LQC                { () }
+    | cluster '(' Exp PQC Type    { () }
+    | '{' DictItems LQC           { () }
 
 
 Args : ArgsAux                       { () }
@@ -315,6 +319,12 @@ ArgsAux  : ArgsAux ',' Exp           { () }
 
 DictItems : Exp ':' Exp ',' DictItems           { () }
            | Exp ':' Exp                        { () }
+
+PQC : ')' { True } | error { False }
+ 
+CQC : ']' { True } | error { False }
+ 
+LQC : '}' { True } | error { False }
 
 Pop :: { () }
     :   {- Lambda -}      { % popPila }

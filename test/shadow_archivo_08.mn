@@ -1,0 +1,41 @@
+Space
+
+moon m = full;
+
+if (m {
+	planet a1;
+    print("perro");
+
+elseif (1==1 {
+	planet a2;
+    print("gato");
+
+else {
+	planet a3;
+    print("vaca");
+
+unless (m {
+    print("sapo");
+
+
+planet i = 0;
+orbit while (i < 6 {
+    print(i);
+    i += 1
+
+
+planet j = 0;
+orbit until (j >= 6 {
+    print(j);
+    j += 1
+
+
+orbit(planet k=0 ; k < 6 ; k+=1 {
+    print(k);
+
+[star Cluster cachicamo;
+{1,2,3 ;
+[1,2,3 ;
+(5 
+
+EndofSpace
