@@ -125,32 +125,24 @@ Defs : DefsAux                        { reverse $1 }
 DefsAux : DefsAux Func                { $2 : $1 }
         | Func                        { [$1] }
 
-FunSig : comet id '(' Params ')' '->' Type
+FunSig : comet id Params '->' Type
         { % do
-          --(t, pila, n) <- get
-          --put (t, 1:pila, n)
-          let d = Func (fst $2) $4 $7 []
-          --insertarSubrutina (d, snd $2)
-          --popPila
           return $ fst $2
         }
-       | satellite id '(' Params ')' '->' Type
+       | satellite id Params '->' Type
         { % do
-          --(t, pila, n) <- get
-          --put (t, 1:pila, n)
-          let d = Iter (fst $2) $4 $7 []
-          --insertarSubrutina (d, snd $2) 
-          --popPila
           return $ fst $2
         }
 
 Func  :: { () }
-      : FunSig '{' Seq '}' Pop    
+      : FunSig '{' Seq LQC Pop    
         { % do 
+          checkCierre $4 "{" $2
           actualizarSubrutina $1 $3 }
           --let d = Func (fst $2) $4 $7 $9
           --insertarSubrutina (d, snd $2) }
-      | RegSig '{' Regs Pop '}'              { () }
+      | RegSig '{' Regs Pop LQC    { % checkCierre $5 "{" $2 }
+
 
 RegSig : ufo id                              { () -- % insertarReg $2 (fst $1) }
        | galaxy id                           { () -- % insertarReg $2 (fst $1) }
@@ -307,8 +299,16 @@ InstrA : Type id
 
 InstrB : Push If                                                             { $2 }
        | Push While                                                          { $2 }
-       | IterHead '{' Seq '}'                                                { $1 $3 }
-       | Push orbit '(' Instr ';' Exp ';' Instr ')' '{' SeqAux2 '}'          { ForC $4 $6 (reverse $ $8 : $11) }
+       | IterHead '{' Seq LQC                                                
+       { % do 
+         checkCierre $4 "{" $2
+         return $ $1 $3 }
+       | Push orbit '(' Instr ';' Exp ';' Instr PQC '{' SeqAux2 LQC          
+        {  % do
+            checkCierre $9 "(" $3
+            checkCierre $12 "{" $10
+            checkBool' $5 (snd $6)
+            return $ ForC $4 $6 (reverse $ $8 : $11) }
 
 IterHead : Push orbit id around Exp
           { % do
@@ -324,67 +324,99 @@ IterHead : Push orbit id around Exp
             insertarVar $3 t2
             let f' seq = Foreach (fst $3) $5 seq
             return f' }
-         | Push orbit id around range '(' Exp ',' Exp ',' Exp ')'
+         | Push orbit id around range '(' Exp ',' Exp ',' Exp PQC
            { % do
+             checkCierre $12 "(" $6
              insertarVar $3 (Simple "planet")
              checkInt' $6 (snd $7)
              checkInt' $8 (snd $9)
              checkInt' $10 (snd $11)
              let f seq = ForRange $7 $9 $11 seq
              return f }
-         | Push orbit id around range '(' Exp ',' Exp ')'
+         | Push orbit id around range '(' Exp ',' Exp PQC
            { % do
+             checkCierre $10 "(" $6
              insertarVar $3 (Simple "planet")
              checkInt' $6 (snd $7)
              checkInt' $8 (snd $9)
              let f seq = ForRange $7 $9 (IntLit 1, Simple "planet") seq
              return f }
-         | Push orbit id around range '(' Exp ')'
+         | Push orbit id around range '(' Exp PQC
            { % do
+             checkCierre $8 "(" $6
              insertarVar $3 (Simple "planet")
              checkInt' $6 (snd $7)
              let f seq = ForRange (IntLit 0, Simple "planet") $7 (IntLit 1, Simple "planet") seq
              return f }
 
-If : if '(' Exp ')' '{' Seq '}'                           
+If : if '(' Exp PQC '{' Seq LQC                           
     { % do
+      checkCierre $4 "(" $2
+      checkCierre $7 "{" $5
       checkBool' $2 (snd $3)
       return $ If [($3, $6)] }
-   | unless '(' Exp ')' '{' Seq '}'                       
+   | unless '(' Exp PQC '{' Seq LQC                       
    {  % do
+      checkCierre $4 "(" $2
+      checkCierre $7 "{" $5
       checkBool' $2 (snd $3)
       return $ If [((Not $3, Err), $6)] }
-   | if '(' Exp ')' '{' Seq '}' Push Elif
+   | if '(' Exp PQC '{' Seq LQC Push Elif
    {  % do
+      checkCierre $4 "(" $2
+      checkCierre $7 "{" $5
       checkBool' $2 (snd $3)
       return $ If (($3, $6) : $9) }
 
-Elif : elseif '(' Exp ')' '{' Seq '}' Pop
-   {  % do
-      checkBool' $2 (snd $3)
-      return [($3, $6)] }
-     | else  '{' Seq '}' Pop                              { [((Var "full", Simple "bool"), $3)] }
-     | elseif '(' Exp ')' '{' Seq '}' Pop Push Elif
-   {  % do
-      checkBool' $2 (snd $3)
-      return $ ($3, $6) : $10 }
+ElifAux : elseif '(' Exp PQC '{' Seq LQC Pop
+        {  % do
+         checkCierre $4 "(" $2
+         checkCierre $7 "{" $5
+         checkBool' $2 (snd $3)
+         return [($3, $6)] }
+        | Elif Push elseif '(' Exp PQC '{' Seq LQC Pop
+        {  % do
+         checkCierre $6 "(" $4
+         checkCierre $9 "{" $7
+         checkBool' $4 (snd $5)
+         return $ ($5, $8) : $1 }
+ 
+Elif : ElifAux                                         { reverse $1 }
+     | ElifAux Push else  '{' Seq LQC Pop              
+     {  % do
+        checkCierre $6 "{" $4
+        return $ reverse $ ((Var "full", Simple "bool"), $5) :  $1 }
+     | else  '{' Seq LQC Pop                           
+     {  % do
+        checkCierre $4 "{" $2
+        return [((Var "full", Simple "bool"), $3)] }
 
-While : orbit while '(' Exp ')' '{' Seq '}'
+
+
+While : orbit while '(' Exp PQC '{' Seq LQC
    {  % do
+      checkCierre $5 "(" $3
+      checkCierre $8 "{" $6
       checkBool' $3 (snd $4)
       return $ While $4 $7 }
-      | orbit until '(' Exp ')' '{' Seq '}'
+      | orbit until '(' Exp PQC '{' Seq LQC
    {  % do
+      checkCierre $5 "(" $3
+      checkCierre $8 "{" $6
       checkBool' $3 (snd $4)
       return $ While (Not $4, Err) $7 }
 
 
-Params : Push ParamsAux                                   
+Params : Push '(' ParamsAux PQC                                   
          { % do 
-           let params = reverse $2
+           checkCierre $4 "(" $2
+           let params = reverse $3
            --insertarParams params 
            return params }
-       | Push                                             { [] }
+       | Push '(' PQC                                          
+        { % do
+          checkCierre $3 "(" $2
+          return [] }
 
 ParamsAux : ParamsAux ',' Type id                         { ($3, $4, False) : $1 }
           | Type id                                       { [($1, $2, False)] }
@@ -404,9 +436,18 @@ Types : TypesAux                  { reverse $1 }
 TypesAux : Type                   { [$1] }
          | TypesAux ',' Type      { $3 : $1 }
 
-TComp : '[' Type ']' cluster      { Composite (fst $4) $2 }
-      | '[' Type ']' quasar       { Composite (fst $4) $2 }
-      | '[' Type ']' nebula       { Composite (fst $4) $2 }
+TComp : '[' Type CQC cluster      
+      { % do
+        checkCierre $3 "[" $1
+        return $ Composite (fst $4) $2 }
+      | '[' Type CQC quasar       
+      { % do
+        checkCierre $3 "[" $1
+        return $ Composite (fst $4) $2 }
+      | '[' Type CQC nebula
+      { % do
+        checkCierre $3 "[" $1
+        return $ Composite (fst $4) $2 }
       | '~' Type                  { Composite (fst $1) $2 }
       | id galaxy                 { % do
                                       lookupExists $1
@@ -414,8 +455,14 @@ TComp : '[' Type ']' cluster      { Composite (fst $4) $2 }
       | id ufo                    { % do
                                       lookupExists $1
                                       return $ Record (fst $2) (fst $1) }
-      | '(' Types '->' Type ')' comet      { Subroutine (fst $6) $2 $4 }
-      | '(' Types '->' Type ')' satellite  { Subroutine (fst $6) $2 $4 }
+      | '(' Types '->' Type PQC comet      
+      { % do
+        checkCierre $5 "(" $1
+        return $ Subroutine (fst $6) $2 $4 }
+      | '(' Types '->' Type PQC satellite  
+      { % do
+        checkCierre $5 "(" $1
+        return $ Subroutine (fst $6) $2 $4 }
 
 LValue :: { Exp }
       : id                       { % do
@@ -470,9 +517,16 @@ LValue :: { Exp }
 
 
 
-Index :     Exp ']'               { Index $1 }
+Index :     Exp CQC               
+          { % do
+            if $2 then return ()
+            else lift $ putStrLn("Error de sintaxis: parece que le falto un corchete buen hombre.")
+            return $ Index $1 }
 
-Slice :     Exp '..' Exp ']'      { % do
+
+Slice :     Exp '..' Exp CQC      { % do
+                                    if $4 then return ()
+                                    else lift $ putStrLn("Error de sintaxis: parece que le falto un corchete buen hombre.")
                                     let exp = Interval $1 $3
                                         t1 = snd $1
                                         t2 = snd $3
@@ -495,7 +549,9 @@ Slice :     Exp '..' Exp ']'      { % do
                                             return $ Interval $1 (fst $3, Err)
                                         else return exp
                                      }
-      |     '..' Exp ']'          { % do
+      |     '..' Exp CQC          { % do
+                                    if $3 then return ()
+                                    else lift $ putStrLn("Error de sintaxis: parece que le falto un corchete buen hombre.")
                                     let exp = Interval e0 $2
                                         e0 = (IntLit 0, Simple "planet")
                                         t = snd $2
@@ -507,7 +563,9 @@ Slice :     Exp '..' Exp ']'      { % do
                                             return $ Interval e0 (fst $2, Err)
                                     else return exp
                                     }
-      |     Exp '..' ']'          { % do
+      |     Exp '..' CQC          { % do
+                                    if $3 then return ()
+                                    else lift $ putStrLn("Error de sintaxis: parece que le falto un corchete buen hombre.")
                                     let exp = Begin $1
                                         t = snd $1
                                         AlexPn _ m n = $2
@@ -521,7 +579,10 @@ Slice :     Exp '..' Exp ']'      { % do
 
 Exp :: { Exp }
     : LValue                      { $1 }
-    | '(' Exp ')'                 { $2 }
+    | '(' Exp PQC                 
+      { % do
+        checkCierre $3 "(" $1
+        return $2 }
     | Exp  '[' Slice                   { % do
                                         let g sl@(Interval _ _) = sl
                                             g (Begin a) = Interval a (Scale $1, Simple "planet")
@@ -553,7 +614,8 @@ Exp :: { Exp }
                                                              ++" en la línea "++(show m)++" columna "++(show n))
                                             return (exp, Err)
                                         else return (exp, t) }
-    | Exp '(' Args ')'            { % do
+    | Exp '(' Args PQC            { % do
+                                    checkCierre $4 "(" $2
                                     let isSub (Subroutine _ _ _) = True
                                         isSub _ = False
                                         exp = Funcall $1 $3
@@ -583,12 +645,40 @@ Exp :: { Exp }
                                         return (exp, Err)
                                     else return (exp, Err)
                                   }
-    | print '(' Args ')'          { (Print $3, Composite "Cluster" (Simple "star")) }
-    | read '(' ')'                { (Read, Composite "Cluster" (Simple "star")) }
-    | bigbang '(' Type ')'        { (Bigbang, Composite "~" $3) }
-    | scale '(' Exp ')'           { (Scale $3, Err) }
-    | Exp '.' pop '(' Args ')'    { (Pop $1 $5, Err) }
-    | Exp '.' add '(' Args ')'    { (Add $1 $5, Err) }
+    | print '(' Args PQC          
+      { % do
+        checkCierre $4 "(" $2
+        return (Print $3, Composite "Cluster" (Simple "star")) }
+    | read '(' PQC                
+      { % do
+        checkCierre $3 "(" $2
+        return (Read, Composite "Cluster" (Simple "star")) }
+    | bigbang '(' Type PQC        
+      { % do
+        checkCierre $4 "(" $2
+        return (Bigbang, Composite "~" $3) }
+    | scale '(' Exp PQC           
+      { % do
+        let f (Composite "~" _ ) = False
+            f (Composite _ _ ) = True
+            f Err = True
+            f _ = False
+            t = snd $3
+            AlexPn _ m n = $2
+        if f (snd $3) then return ()
+        else lift $ putStrLn ("Error de tipo: esa vaina no tiene longitud "++(show t)
+                             ++" en la línea "++(show m)++" columna "++(show n))
+
+        checkCierre $4 "(" $2
+        return (Scale $3, Err)  }
+    | Exp '.' pop '(' Args PQC    
+      { % do
+        checkCierre $6 "(" $4
+        return (Pop $1 $5, Err)  }
+    | Exp '.' add '(' Args PQC    
+      { % do
+        checkCierre $6 "(" $4
+        return (Add $1 $5, Err)  }
 
     | int                         { (IntLit (fst $1), Simple "planet") }
     | float                       { (FloLit (fst $1), Simple "cloud") }
@@ -653,7 +743,8 @@ Exp :: { Exp }
                                     let t = if (snd $2) == Simple "moon" then (snd $2) else Err
                                     checkBool' $1 (snd $2)
                                     return (Not $2, t) }
-    | '[' Args ']'                { % do
+    | '[' Args CQC                { % do
+                                    checkCierre $3 "[" $1
                                     let (_, ts) = unzip $2
                                         exp = ListLit $2
                                         AlexPn _ m n = $1
@@ -663,7 +754,8 @@ Exp :: { Exp }
                                                                       ++" en la línea "++(show m)++" columna "++(show n))
                                       return (exp, Err)
                                     else return (exp, Composite "Quasar" t) }
-    | '{' Args '}'                { % do
+    | '{' Args LQC                { % do
+                                    checkCierre $3 "{" $1
                                     let (_, ts) = unzip $2
                                         exp = ArrLit $2
                                         AlexPn _ m n = $1
@@ -673,10 +765,12 @@ Exp :: { Exp }
                                                                       ++" en la línea "++(show m)++" columna "++(show n))
                                       return (exp, Err)
                                     else return (exp, Composite "Cluster" t) }
-    | cluster '(' Exp ')' Type    { % do
+    | cluster '(' Exp PQC Type    { % do
+                                    checkCierre $4 "(" $2
                                     checkInt' $2 (snd $3)
                                     return(ArrInit $3 $5, Composite "Cluster" $5) }
-    | '{' DictItems '}'           { % do
+    | '{' DictItems LQC           { % do
+                                    checkCierre $3 "{" $1
                                     let (ks, vs) = unzip $2
                                         (_, tks) = unzip ks
                                         (_, tvs) = unzip vs
@@ -704,6 +798,12 @@ ArgsAux  : ArgsAux ',' Exp           { $3 : $1 }
 DictItems : Exp ':' Exp ',' DictItems           { ($1, $3) : $5 }
            | Exp ':' Exp                        { [($1, $3)] }
 
+PQC : ')' { True } | error { False }
+ 
+CQC : ']' { True } | error { False }
+ 
+LQC : '}' { True } | error { False }
+
 Pop :: { () }
     :   {- Lambda -}      { % popPila }
 
@@ -719,7 +819,14 @@ parseError _ = error "Final inesperado del archivo."
 
 midny = parser.alexScanTokens
 
-type Tablon  = Map.Map String [Entry]
+type Tablon  = Map.Map String [Entry]  
+
+checkCierre :: Bool -> String -> AlexPosn -> MonadTablon ()
+checkCierre b s pos = do
+                      let (AlexPn _ m n) = pos
+                      if b then return () 
+                      else lift $ putStrLn ("Error de sintaxis: No se pudo emparejar "++s 
+                          ++" en la línea "++(show m)++" columna "++(show n))
 
 gato f = do
   putStrLn ""
