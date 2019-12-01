@@ -114,7 +114,9 @@ import qualified Data.Map as Map
 S : Push Programa Pop  { () }
 
 Programa : space end                  { () }
+      | space Defs Seq end            { () }
       | space Defs end                { () }
+      | space Seq end                 { () }
 
 Defs : DefsAux                        { reverse $1 }
 

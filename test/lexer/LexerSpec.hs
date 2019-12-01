@@ -12,12 +12,11 @@ spec = describe "Lexer" $ do
 
       case tokens of
         [TkChar (char, _)] -> char `shouldBe` 'a'
-        _ -> error $ show tokens ++ "rechazado como literal de caracter"
+        _ -> error $ show tokens ++ "rechaza 'a' como literal de caracter"
 
-  describe "caracteres" $ do
     it "acepta 'Z' como un literal de caracter válido" $ do
       let tokens = alexScanTokens "'Z'"
 
       case tokens of
         [TkChar (char, _)] -> char `shouldBe` 'Z'
-        _ -> error $ show tokens ++ "rechazado como literal de caracter"
+        _ -> error $ show tokens ++ "rechaza 'a' como literal de caracter"
