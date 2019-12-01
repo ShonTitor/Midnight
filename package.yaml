@@ -27,6 +27,7 @@ dependencies:
 - containers
 - transformers
 - mtl
+- hspec
 
 ghc-options:
 - -Wall
@@ -60,3 +61,17 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+
+tests:
+  lexer-tests:
+    main:                Spec.hs
+    source-dirs:         test/lexer
+    ghc-options:
+    - -Wall
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - midnight
+    - hspec
+    - hspec-discover
