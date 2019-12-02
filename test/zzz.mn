@@ -11,6 +11,12 @@ Comet halley(planet n, planet k) -> BlackHole {
     print(n);
 }
 
+Comet cloudian(cloud x) -> BlackHole {
+    print("SHOOTING QUASAR DRAGON");
+    print(x);
+}
+
+
 
 planet perro = "perro";
 perro = 2.72;
@@ -51,6 +57,7 @@ perros = [];
 {"perro" : 1, "gato" : 2, 35 : 53};
 halley(1,2,3);
 halley(1.2,1.2);
+cloudian(79);
 
 perro //= 2;
 perro %= "berenjena";

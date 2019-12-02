@@ -185,36 +185,18 @@ InstrA : Type id
           insertarVar $2 $1
           let AlexPn _ m n = $3
               t1 = $1
-              t2 = snd $4
-              inst = Asig (Var $ fst $2, $1) $4
               exp = $4
-              f (Composite "Quasar" _) = True
-              f _ = False
-          if t1 == t2 || t1 == Err || t2 == Err || (f t1 && t2 == (Composite "Quasar" IDK)) || (isComp t1 && t2 == (Simple "BlackHole")) then 
-            return inst
-          else if t1 == (Simple "cloud") && t2 == (Simple "planet") then return $ Asig (Var $ fst $2, $1) (castCloud exp)
-          else do 
-            lift $ putStrLn ("Error de tipo: Se esperaba "++(show t1)++", se encontró "++(show t2)
-                      ++" en la línea "++(show m)++" columna "++(show n))
-            return inst
+          rval <- checkAsig $3 t1 exp
+          return $ Asig (Var $ fst $2, $1) rval
       }
        | Exp                { Flotando $1 }
        | LValue '=' Exp     
        { % do 
           let AlexPn _ m n = $2
-              inst = Asig $1 $3
               exp = $3
               t1 = snd $1
-              t2 = snd $3
-              f (Composite "Quasar" _) = True
-              f _ = False
-          if t1 == t2 || t1 == Err || t2 == Err || (f t1 && t2 == (Composite "Quasar" IDK)) || (isComp t1 && t2 == (Simple "BlackHole")) then 
-            return inst
-          else if t1 == (Simple "cloud") && t2 == (Simple "planet") then return $ Asig $1 (castCloud exp)
-          else do
-            lift $ putStrLn ("Error de tipo: Se esperaba "++(show t1)++", se encontró "++(show t2)
-                      ++" en la línea "++(show m)++" columna "++(show n))
-            return inst }
+          rval <- checkAsig $2 t1 exp
+          return $ Asig $1 rval }
        | LValue '+=' Exp    
        { % do
           (a,b) <- checkNum ("+=", $2) $1 $3
@@ -498,7 +480,7 @@ LValue :: { Exp }
                                         f (Composite _ t) = t
                                         f _ = NA
                                         g (Composite s _) = s
-                                        g _ = "???"
+                                        g _ = ""
                                         AlexPn _ m n = $2
                                     if t1 == Err || t2 == Err || (f t1) == Err then
                                         return (exp, Err) 
@@ -631,7 +613,7 @@ Exp :: { Exp }
                                             f :: [(Type, Type)] -> Int -> MonadTablon Bool
                                             f [] _ = return True
                                             f ((t1, t2):xs) k = do
-                                              if t1 == t2 || (isComp t1 && t2 == (Simple "BlackHole")) then do
+                                              if tipoAsig t1 t2 || (t1 == Simple "cloud" && t2 == Simple "planet") then do
                                                 b <- f xs (k+1)
                                                 return b
                                               else do 
@@ -639,8 +621,11 @@ Exp :: { Exp }
                                                           " en en argumento #"++(show k)++" en la línea "++(show m)++" columna "++(show n))
                                                 b <- f xs (k+1)
                                                 return False
+                                            g (tt, (e, ot)) = if ot == Simple "planet" && tt == Simple "cloud" then castCloud (e, ot)
+                                                              else (e, ot)
+                                            kchicamo = zip tps $3
                                         b <- f ts 1
-                                        if b then return (exp, t) else return (exp, Err)
+                                        if b then return (exp, t) else return (Funcall $1 (map g kchicamo), Err)
                                       else do
                                         lift $ putStrLn ("Error de tipo: El número de argumentos no coincide con el de parámetros"
                                                              ++" en la línea "++(show m)++" columna "++(show n))
@@ -750,7 +735,7 @@ Exp :: { Exp }
                                     let (_, ts) = unzip $2
                                         exp = ListLit $2
                                         AlexPn _ m n = $1
-                                        t = if null ts then IDK else foldl tipoSerio Err ts
+                                        t = if null ts then IDK else foldl tipoSerio IDK ts
                                     if t == NA then do
                                       lift $ putStrLn ("Error de tipo: Quasar no homogeneo"
                                                                       ++" en la línea "++(show m)++" columna "++(show n))
@@ -761,7 +746,7 @@ Exp :: { Exp }
                                     let (_, ts) = unzip $2
                                         exp = ArrLit $2
                                         AlexPn _ m n = $1
-                                        t = if null ts then IDK else foldl tipoSerio Err ts
+                                        t = if null ts then IDK else foldl tipoSerio IDK ts
                                     if t == NA then do
                                       lift $ putStrLn ("Error de tipo: Cluster no homogeneo"
                                                                       ++" en la línea "++(show m)++" columna "++(show n))
@@ -777,7 +762,7 @@ Exp :: { Exp }
                                         (_, tks) = unzip ks
                                         (_, tvs) = unzip vs
                                         exp = DictLit $2
-                                        t = if null tvs then IDK else foldl tipoSerio Err tvs
+                                        t = if null tvs then IDK else foldl tipoSerio IDK tvs
                                         AlexPn _ m n = $1
                                     if all (\ti -> elem ti [Composite "Cluster" (Simple "star"), Err]) tks then
                                       if t == NA then do

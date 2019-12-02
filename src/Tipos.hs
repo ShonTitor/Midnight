@@ -20,17 +20,31 @@ isComp (Simple "BlackHole") = True
 isComp _ = False
 
 tipoSerio :: Type -> Type -> Type
-tipoSerio Err ti = ti
-tipoSerio ti Err = ti
+tipoSerio (Composite s1 t1) (Composite s2 t2) = if s1 == s2 && tipoSerio t1 t2 /= NA then 
+                                                  Composite s1 (tipoSerio t1 t2)
+                                                else NA
+tipoSerio IDK ti = ti
+tipoSerio ti IDK = ti                                                
 tipoSerio NA _ = NA
 tipoSerio _ NA = NA
+tipoSerio Err _ = Err
+tipoSerio _ Err = Err
 tipoSerio (Simple "BlackHole") ti = if isComp ti then ti else NA
 tipoSerio ti (Simple "BlackHole") = if isComp ti then ti else NA
 tipoSerio t1 t2 = if t1 == t2 then t1 else NA
 
+tipoCompa :: Type -> Type -> Bool
+tipoCompa t1 t2 = tipoSerio t1 t2 /= NA
+
+tipoAsig :: Type -> Type -> Bool
+tipoAsig t1 t2 = tipoSerio t1 t2 == t1
+
 instance Show Type where
   show (Simple s) = s
   show (Composite "Cluster" (Simple "star")) = "Constellation"
+  show (Composite "Cluster" IDK) = "VoidCluster"
+  show (Composite "Quasar" IDK) = "VoidQuasar"
+  show (Composite "Nebula" IDK) = "VoidNebula"
   show (Composite s t) = '[' : (show t) ++ ']' : s
   show (Record s z) = s ++  ' ' : z
   show (Subroutine s pt rt) = (show pt) ++ '-' : '>' : (show rt) ++ ' ' : s

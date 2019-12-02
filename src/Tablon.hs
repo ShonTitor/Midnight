@@ -71,7 +71,7 @@ initTablon = (t,[0],0)
                    (Entry (Subroutine "Comet" [IDK] (Simple "BlackHole") ) (Subrutina []) 0),
                    (Entry (Subroutine "Comet" [IDK] (Simple "BlackHole") ) (Subrutina []) 0),
                    (Entry (Subroutine "Comet" [IDK] (Simple "planet") ) (Subrutina []) 0),
-                   (Entry (Subroutine "Comet" [IDK] (Simple "cloud") ) (Subrutina []) 0),
+                   (Entry (Subroutine "Comet" [Simple "planet"] (Simple "cloud") ) (Subrutina []) 0),
                    (Entry (Subroutine "Comet" [IDK] (Composite "Cluster" (Simple "star")) ) (Subrutina []) 0),
                    (Entry (Subroutine "Comet" [IDK] (Simple "planet") ) (Subrutina []) 0),
                    (Entry (Subroutine "Comet" [IDK] (Composite "~" NA)) (Subrutina []) 0)
@@ -132,16 +132,23 @@ checkNum (op, AlexPn _ m n) a@(e1, t1) b@(e2, t2) = do
 
 checkSame :: AlexPosn -> Exp -> Exp -> MonadTablon (Exp, Exp)
 checkSame (AlexPn _ m n) a@(e1, t1) b@(e2, t2) = do
-  let isCom (Composite _ _) = True
-      isCom (Record _ _) = True
-      isCom (Subroutine _ _ _) = True
-      isCom _ = False
-  if t1 == t2 || (isCom t1 && t2 == Simple "BlackHole")|| (isCom t2 && t1 == Simple "BlackHole") then return (a,b)
+  if tipoCompa t1 t2 then return (a,b)
+  else if t1 == Simple "cloud" && t2 == Simple "planet" then return (a, castCloud b)
   else do
-    if t1 /= Err && t2 /= Err then return ()
+    if t1 == Err || t2 == Err then return ()
     else lift $ putStrLn ("Error de tipo: Los tipos  "++(show t1)++" y "++(show t2)++" no son comparables"
                       ++" en la línea "++(show m)++" columna "++(show n))
     return ((e1, Err), (e2, Err))
+
+checkAsig :: AlexPosn -> Type -> Exp -> MonadTablon Exp
+checkAsig (AlexPn _ m n) t1 b@(e2, t2) = do
+  if tipoAsig t1 t2 then return b
+  else if t1 == Simple "cloud" && t2 == Simple "planet" then return $ castCloud b
+  else do
+    if t1 == Err || t2 == Err then return ()
+    else lift $ putStrLn ("Error de tipo: Se esperaba "++(show t1)++", se encontró "++(show t2)
+                      ++" en la línea "++(show m)++" columna "++(show n))
+    return (e2, Err)
 
 checkT :: Type -> (String, AlexPosn) -> Exp -> Exp -> MonadTablon (Exp, Exp)
 checkT t (op, AlexPn _ m n) a@(e1, t1) b@(e2, t2) = do
