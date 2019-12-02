@@ -828,16 +828,24 @@ checkCierre b s pos = do
                       else lift $ putStrLn ("Error de sintaxis: No se pudo emparejar "++s 
                           ++" en la línea "++(show m)++" columna "++(show n))
 
-gato f = do
-  putStrLn ""
-  s <- getTokens f
+neko :: [Token] -> IO (Program, (Tipos.Tablon, [Integer], Integer), ())
+neko s = do
   (_, (pretablon, _, _), _) <- runRWST (preparser s) () initTablon
-  (arbol, (tablon, _, _), _) <- runRWST (parser s) () (pretablon, [0], 0)
+  nya <- runRWST (parser s) () (pretablon, [0], 0)
+  return nya
+
+cat :: Program -> Tipos.Tablon -> IO ()
+cat arbol tablon = do
   putStrLn ""
   print arbol
   putStrLn ""
   --putStrLn $ showTablon tablon
   putStrLn $ showTablon' tablon
-  return()
 
+gato :: String -> IO ()
+gato f = do
+  putStrLn ""
+  s <- getTokens f
+  (arbol, (tablon, _, _), _) <- neko s
+  cat arbol tablon
 }

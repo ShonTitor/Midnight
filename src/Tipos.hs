@@ -46,20 +46,20 @@ data Category = Tipo
               | Registro Type Integer
               | Campo
               | Subrutina [Instr]
-    deriving Show
+    deriving (Show, Eq)
 
 data Entry = Entry {
     tipo :: Type,
     categoria :: Category,
     alcance :: Integer
     }
-    deriving Show
+    deriving (Show, Eq)
 
 type Tablon  = Map.Map String [Entry]
 
 data Program
       = Root [Instr] 
-      deriving Show
+      deriving (Show, Eq)
 
 data Def
       = Func String [(Type, (String, AlexPosn) , Bool)] Type [Instr]
@@ -81,7 +81,7 @@ data Instr
       | Continue
       | Return Exp
       | Yield Exp
-      deriving Show
+      deriving (Show, Eq)
 
 isDeclar :: Instr -> Bool
 isDeclar (Declar _ _) = True
@@ -91,7 +91,7 @@ data Slice
       = Index Exp
       | Interval Exp Exp
       | Begin Exp
-      deriving Show
+      deriving (Show, Eq)
 
 type Exp = (Expr, Type)
 
@@ -142,4 +142,4 @@ data Expr
       | ArrInit Exp Type
       | ListLit [Exp]
       | DictLit [(Exp, Exp)]
-      deriving Show
+      deriving (Show, Eq)

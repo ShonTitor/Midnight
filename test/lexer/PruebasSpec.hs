@@ -2,6 +2,9 @@ module PruebasSpec where
 
 import Test.Hspec
 import Lexer
+import Parser
+import Tipos
+import Tablon
 
 spec :: SpecWith ()
 spec = describe "Pruebas" $ do
@@ -342,3 +345,24 @@ spec = describe "Pruebas" $ do
       case tokens of
         [TkFloat (num,_)] -> num `shouldBe` 3.1415
         _ -> error $ show tokens ++ "rechaza 3.1415 como token valido"
+
+  describe "Parser" $ do
+    let nyaa s = neko (fst $ perro s)
+
+    it "acepta un programa vacío" $ do
+      (arbol, _, _) <- nyaa "Space EndofSpace"
+
+      arbol `shouldBe` Root []
+
+    it "acepta un perro flotando" $ do
+      (arbol, _, _) <- nyaa "Space \"perro\" EndofSpace"
+
+      arbol `shouldBe` Root [Flotando (StrLit "perro", Composite "Cluster" (Simple "star")) ]
+
+  describe "Tablon" $ do
+    let nyaa s = neko (fst $ perro s)
+
+    it "acepta un planeta perro" $ do
+      (_, (tablon, _, _), _) <- nyaa "Space planet perro; EndofSpace"
+
+      buscar "perro" tablon `shouldBe` [Entry (Simple "planet") Variable 1]

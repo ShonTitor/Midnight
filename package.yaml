@@ -63,7 +63,7 @@ executables:
     - -with-rtsopts=-N
 
 tests:
-  lexer-tests:
+  pruebas:
     main:                Spec.hs
     source-dirs:         test/lexer
     ghc-options:
