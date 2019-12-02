@@ -496,7 +496,9 @@ LValue :: { Exp }
                                         isCom (Composite t _) = elem t ["Cluster", "Quasar", "Nebula"]
                                         isCom _ = False
                                         f (Composite _ t) = t
+                                        f _ = NA
                                         g (Composite s _) = s
+                                        g _ = "???"
                                         AlexPn _ m n = $2
                                     if t1 == Err || t2 == Err || (f t1) == Err then
                                         return (exp, Err) 

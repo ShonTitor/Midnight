@@ -22,13 +22,13 @@ Comet perroJoven(Perro Galaxy a, Perro Galaxy b) -> moon {
 Comet perrosort([Perro Galaxy]Cluster @prros,
                 (Perro Galaxy, Perro Galaxy -> moon) Comet compare)
                 -> BlackHole { 
-    n = scale(prros);
+    planet n = scale(prros);
     orbit i around range(n-1) {
         orbit j around range(i+1, n) {
             if (compare(prros[i], prros[j])) {
-                planet prro = prros[i];
+                Perro Galaxy prro = prros[i];
                 prros[i] = prros[j];
-                prros[j] = prro[i]
+                prros[j] = prro
             }
         }
     }
