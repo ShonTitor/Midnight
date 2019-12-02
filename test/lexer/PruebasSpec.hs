@@ -1,12 +1,12 @@
-module LexerSpec where
+module PruebasSpec where
 
 import Test.Hspec
 import Lexer
 
 spec :: SpecWith ()
-spec = describe "Lexer" $ do
+spec = describe "Pruebas" $ do
   
-  describe "caracteres" $ do
+  describe "Lexer" $ do
     it "acepta 'a' como un literal de caracter válido" $ do
       let tokens = alexScanTokens "'a'"
 
