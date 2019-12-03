@@ -113,10 +113,10 @@ import qualified Data.Map as Map
 
 S : Push Programa Pop  { () }
 
-Programa : space end                  { () }
-      | space Defs Seq end            { () }
-      | space Defs end                { () }
-      | space Seq end                 { () }
+Programa : space END                  { () }
+      | space Defs Seq END            { () }
+      | space Defs END                { () }
+      | space Seq END                 { () }
 
 Defs : DefsAux                        { reverse $1 }
 
@@ -201,10 +201,10 @@ InstrB : Push If                                                             { (
        | IterHead '{' Seq LQC                                                { () }
        | Push orbit '(' Instr ';' Exp ';' Instr PQC '{' SeqAux2 LQC          { () }
 
-IterHead : Push orbit id around Exp { () }
-         | Push orbit id around range '(' Exp ',' Exp ',' Exp PQC { () }
-         | Push orbit id around range '(' Exp ',' Exp PQC { () }
-         | Push orbit id around range '(' Exp PQC { () }
+IterHead : Push orbit id AROUND Exp { () }
+         | Push orbit id AROUND range '(' Exp ',' Exp ',' Exp PQC { () }
+         | Push orbit id AROUND range '(' Exp ',' Exp PQC { () }
+         | Push orbit id AROUND range '(' Exp PQC { () }
 
 If : if '(' Exp PQC '{' Seq LQC           { () }
    | unless '(' Exp PQC '{' Seq LQC       { () }
@@ -325,6 +325,10 @@ PQC : ')' { True } | error { False }
 CQC : ']' { True } | error { False }
  
 LQC : '}' { True } | error { False }
+
+END : end { True } | error { False }
+
+AROUND : around { True } | error { False }
 
 Pop :: { () }
     :   {- Lambda -}      { % popPila }

@@ -115,10 +115,10 @@ import qualified Data.Map as Map
 S :: { Program } : Push Programa Pop  { $2 }
 
 Programa :: { Program }    
-      : space end                     { % return $ Root [] }
-      | space Defs Seq end            { % return $ Root $3 }
-      | space Defs end                { % return $ Root [] }
-      | space Seq end                 { % return $ Root $2 }
+      : space END                     { % return $ Root [] }
+      | space Defs Seq END            { % return $ Root $3 }
+      | space Defs END                { % return $ Root [] }
+      | space Seq END                 { % return $ Root $2 }
 
 Defs : DefsAux                        { reverse $1 }
 
@@ -292,14 +292,18 @@ InstrB : Push If                                                             { $
             checkBool' $5 (snd $6)
             return $ ForC $4 $6 (reverse $ $8 : $11) }
 
-IterHead : Push orbit id around Exp
+IterHead : Push orbit id AROUND Exp
           { % do
+            let AlexPn _ a b = snd $3
+            if not $4 then do lift $ putStrLn ("Error de sintaxis: Falta la palabra clave around"
+                                           ++" en la línea "++(show a)++" columna "++(show b))
+            else return ()
             let f (Composite "Quasar" t) = t
                 f (Subroutine "Satellite" _ t) = t
                 f _ = Err
                 t1 = snd $5
                 t2 = f t1
-                AlexPn _ m n = $4
+                AlexPn _ m n = $2
             if t1 /= Err && t2 == Err then
               lift $ putStrLn ("Error de tipo: El tipo  "++(show t1)++" no es iterable"
                                 ++" en la línea "++(show m)++" columna "++(show n))
@@ -307,7 +311,7 @@ IterHead : Push orbit id around Exp
             insertarVar $3 t2
             let f' seq = Foreach (fst $3) $5 seq
             return f' }
-         | Push orbit id around range '(' Exp ',' Exp ',' Exp PQC
+         | Push orbit id AROUND range '(' Exp ',' Exp ',' Exp PQC
            { % do
              checkCierre $12 "(" $6
              insertarVar $3 (Simple "planet")
@@ -316,7 +320,7 @@ IterHead : Push orbit id around Exp
              checkInt' $10 (snd $11)
              let f seq = ForRange $7 $9 $11 seq
              return f }
-         | Push orbit id around range '(' Exp ',' Exp PQC
+         | Push orbit id AROUND range '(' Exp ',' Exp PQC
            { % do
              checkCierre $10 "(" $6
              insertarVar $3 (Simple "planet")
@@ -324,7 +328,7 @@ IterHead : Push orbit id around Exp
              checkInt' $8 (snd $9)
              let f seq = ForRange $7 $9 (IntLit 1, Simple "planet") seq
              return f }
-         | Push orbit id around range '(' Exp PQC
+         | Push orbit id AROUND range '(' Exp PQC
            { % do
              checkCierre $8 "(" $6
              insertarVar $3 (Simple "planet")
@@ -796,6 +800,10 @@ PQC : ')' { True } | error { False }
 CQC : ']' { True } | error { False }
  
 LQC : '}' { True } | error { False }
+
+END : end { True } | error { % do lift $ putStrLn "No se encontró el marcador de final del programa 'EndofSpace'" ; return False }
+
+AROUND : around { True } | error { False }
 
 Pop :: { () }
     :   {- Lambda -}      { % popPila }

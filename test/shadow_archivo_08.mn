@@ -33,9 +33,11 @@ orbit until (j >= 6 {
 orbit(planet k=0 ; k < 6 ; k+=1 {
     print(k);
 
+orbit iaround [] {
+
 [star Cluster cachicamo;
 {1,2,3 ;
 [1,2,3 ;
 (5 
 
-EndofSpace
+
