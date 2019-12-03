@@ -2,7 +2,7 @@ Space
 
 print("Introduzca un número");
 Constellation input = read();
-planet n = terraform(n);
+planet n = terraform(input);
 print(2^n)
 
 EndofSpace

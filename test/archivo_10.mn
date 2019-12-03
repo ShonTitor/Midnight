@@ -19,7 +19,7 @@ Satellite Primos(planet with) -> planet {
 }
 
 print("esto no va a parar jaja salu2");
-orbit p around Primos() {
+orbit p around Primos(1) {
     print(p);
 }
 EndofSpace

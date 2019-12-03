@@ -295,6 +295,7 @@ InstrB : Push If                                                             { $
 IterHead : Push orbit id around Exp
           { % do
             let f (Composite "Quasar" t) = t
+                f (Subroutine "Satellite" _ t) = t
                 f _ = Err
                 t1 = snd $5
                 t2 = f t1
@@ -628,7 +629,9 @@ Exp :: { Exp }
                                                               else (e, ot)
                                             kchicamo = zip tps $3
                                         b <- f ts 1
-                                        if b then return (exp, t) else return (Funcall $1 (map g kchicamo), Err)
+                                        if b then do
+                                          return (Funcall $1 (map g kchicamo), t) 
+                                        else return (exp, Err)
                                       else do
                                         lift $ putStrLn ("Error de tipo: El número de argumentos no coincide con el de parámetros"
                                                              ++" en la línea "++(show m)++" columna "++(show n))
