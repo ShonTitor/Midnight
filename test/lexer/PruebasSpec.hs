@@ -122,7 +122,7 @@ spec = describe "Pruebas" $ do
         [TkStar (string, _)] -> string `shouldBe` "star"
         _ -> error $ show tokens ++ "rechaza star como token valido"
 
-    it "acepta BlackHole como un token BlackHole válido" $ do
+    it "acepta BlackHole como un token Blackhole válido" $ do
       let tokens = alexScanTokens "BlackHole"
 
       case tokens of
