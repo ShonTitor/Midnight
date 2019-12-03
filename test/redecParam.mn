@@ -1,7 +1,8 @@
 Space
 
-Comet Texas(planet x, planet x) -> planet {
-	return x
+Comet Texas(planet Sora, cloud Sora) -> planet {
+	star Sora;
+	return Sora
 }
 
 planet Texas;

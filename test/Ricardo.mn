@@ -5,7 +5,7 @@ Comet n(planet n) -> planet {
 	return n+2
 }
 
-orbit while (n) {
+orbit while (n(211) <= 422) {
 	star n = 'n';
 	n = n(n)
 }

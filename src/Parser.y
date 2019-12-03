@@ -455,16 +455,19 @@ LValue :: { Exp }
                                         isRecord _ = False
                                         getR (Record _ r) = r
                                         getS (Entry _ (Registro _ sc) _) = [sc]
+                                        getS _ = []
                                         t1 = snd $1
                                         AlexPn _ m n = $2
                                     if isRecord t1 then do
-                                        e1 <- lookupTablon $ getR t1
-                                        e2 <- lookupScope (fst $3) (getS $ fromJust e1)
-                                        if isNothing e2 then do
-                                          lift $ putStrLn ("Error de tipo: "++(show t1)++" no tiene un atributo "++(show $ fst $3)
-                                                            ++" en la línea "++(show m)++" columna "++(show n))
-                                          return (Attr $1 (fst $3), Err)
-                                        else return (Attr $1 (fst $3), getTipo e2)
+                                        e1 <- lookupScope (getR t1) [1]
+                                        if isNothing e1 then return (Attr $1 (fst $3), Err)
+                                        else do
+                                          e2 <- lookupScope (fst $3) (getS $ fromJust e1)
+                                          if isNothing e2 then do
+                                            lift $ putStrLn ("Error de tipo: "++(show t1)++" no tiene un atributo "++(show $ fst $3)
+                                                              ++" en la línea "++(show m)++" columna "++(show n))
+                                            return (Attr $1 (fst $3), Err)
+                                          else return (Attr $1 (fst $3), getTipo e2)
                                     else if t1 == Err then return (Attr $1 (fst $3), Err)
                                     else do 
                                         lift $ putStrLn ("Error de tipo: "++(show t1)++" no tiene un atributo "++(show $ fst $3)

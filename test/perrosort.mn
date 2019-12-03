@@ -1,10 +1,5 @@
 Space
 
-Galaxy Perro{
-    planet edad;
-    Constellation nombre;
-}
-
 Comet perroViejo(Perro Galaxy a, Perro Galaxy b) -> moon {
     if (a.edad > b.edad) {
         return full;
@@ -32,6 +27,11 @@ Comet perrosort([Perro Galaxy]Cluster @prros,
             }
         }
     }
+}
+
+Galaxy Perro{
+    planet edad;
+    Constellation nombre;
 }
 
 Perro Galaxy a;
