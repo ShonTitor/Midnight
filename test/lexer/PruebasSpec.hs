@@ -612,6 +612,13 @@ spec = describe "Pruebas" $ do
         [TkFloat (num,_)] -> num `shouldBe` 3.1415
         _ -> error $ show tokens ++ "rechaza 3.1415 como token valido"
 
+    it "acepta perro como un token Id válido" $ do
+      let tokens = alexScanTokens "perro"
+
+      case tokens of
+        [TkId (string, _)] -> string `shouldBe` "perro"
+        _ -> error $ show tokens ++ "rechaza perro como token valido"
+
   describe "Parser" $ do
     let nyaa s = neko (fst $ perro s)
 
