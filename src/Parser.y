@@ -206,8 +206,7 @@ InstrA : Type id
               t2 = snd a
           if t1 == t2 && t2 /= Err then return $ Asig $1 (Suma a b, t2)
           else do
-            lift $ putStrLn ("Error de tipo: Se esperaba "++(show t1)++", se encontró "++(show t2)
-                              ++" en la línea "++(show m)++" columna "++(show n))
+            printError m n ("Error de tipo: Se esperaba "++(show t1)++", se encontró "++(show t2))
             return $ Asig $1 (Suma a b, Err)
        }
        | LValue '-=' Exp
@@ -219,8 +218,7 @@ InstrA : Type id
               t2 = snd a
           if t1 == t2 && t2 /= Err then return $ Asig $1 (Sub a b, t2)
           else do
-            lift $ putStrLn ("Error de tipo: Se esperaba "++(show t1)++", se encontró "++(show t2)
-                              ++" en la línea "++(show m)++" columna "++(show n))
+            printError m n ("Error de tipo: Se esperaba "++(show t1)++", se encontró "++(show t2))
             return $ Asig $1 (Sub a b, Err)
        }
        | LValue '*=' Exp
@@ -232,8 +230,7 @@ InstrA : Type id
               t2 = snd a
           if t1 == t2 && t2 /= Err then return $ Asig $1 (Mul a b, t2)
           else do
-            lift $ putStrLn ("Error de tipo: Se esperaba "++(show t1)++", se encontró "++(show t2)
-                              ++" en la línea "++(show m)++" columna "++(show n))
+            printError m n ("Error de tipo: Se esperaba "++(show t1)++", se encontró "++(show t2))
             return $ Asig $1 (Mul a b, Err)
        }
        | LValue '/=' Exp
@@ -245,8 +242,7 @@ InstrA : Type id
               t2 = snd a
           if t1 == t2 && t2 /= Err then return $ Asig $1 (Div a b, t2)
           else do
-            lift $ putStrLn ("Error de tipo: Se esperaba "++(show t1)++", se encontró "++(show t2)
-                              ++" en la línea "++(show m)++" columna "++(show n))
+            printError m n ("Error de tipo: Se esperaba "++(show t1)++", se encontró "++(show t2))
             return $ Asig $1 (Div a b, Err)
        }
        | LValue '^=' Exp
@@ -258,8 +254,7 @@ InstrA : Type id
               t2 = snd a
           if t1 == t2 && t2 /= Err then return $ Asig $1 (Pow a b, t2)
           else do
-            lift $ putStrLn ("Error de tipo: Se esperaba "++(show t1)++", se encontró "++(show t2)
-                              ++" en la línea "++(show m)++" columna "++(show n))
+            printError m n ("Error de tipo: Se esperaba "++(show t1)++", se encontró "++(show t2))
             return $ Asig $1 (Pow a b, Err)
        }
        | LValue '//=' Exp   
@@ -295,8 +290,7 @@ InstrB : Push If                                                             { $
 IterHead : Push orbit id AROUND Exp
           { % do
             let AlexPn _ a b = snd $3
-            if not $4 then do lift $ putStrLn ("Error de sintaxis: Falta la palabra clave around"
-                                           ++" en la línea "++(show a)++" columna "++(show b))
+            if not $4 then do printError a b ("Error de sintaxis: Falta la palabra clave around")
             else return ()
             let f (Composite "Quasar" t) = t
                 f (Subroutine "Satellite" _ t) = t
@@ -305,8 +299,7 @@ IterHead : Push orbit id AROUND Exp
                 t2 = f t1
                 AlexPn _ m n = $2
             if t1 /= Err && t2 == Err then
-              lift $ putStrLn ("Error de tipo: El tipo  "++(show t1)++" no es iterable"
-                                ++" en la línea "++(show m)++" columna "++(show n))
+              printError m n ("Error de tipo: El tipo  "++(show t1)++" no es iterable")
             else return ()
             insertarVar $3 t2
             let f' seq = Foreach (fst $3) $5 seq
@@ -469,14 +462,12 @@ LValue :: { Exp }
                                         else do
                                           e2 <- lookupScope (fst $3) (getS $ fromJust e1)
                                           if isNothing e2 then do
-                                            lift $ putStrLn ("Error de tipo: "++(show t1)++" no tiene un atributo "++(show $ fst $3)
-                                                              ++" en la línea "++(show m)++" columna "++(show n))
+                                            printError m n ("Error de tipo: "++(show t1)++" no tiene un atributo "++(show $ fst $3))
                                             return (Attr $1 (fst $3), Err)
                                           else return (Attr $1 (fst $3), getTipo e2)
                                     else if t1 == Err then return (Attr $1 (fst $3), Err)
                                     else do 
-                                        lift $ putStrLn ("Error de tipo: "++(show t1)++" no tiene un atributo "++(show $ fst $3)
-                                                          ++" en la línea "++(show m)++" columna "++(show n))
+                                        printError m n ("Error de tipo: "++(show t1)++" no tiene un atributo "++(show $ fst $3))
                                         return (Attr $1 (fst $3), Err) }
        | Exp '[' Index            { % do
                                     let exp = Access $1 $3
@@ -493,16 +484,13 @@ LValue :: { Exp }
                                     if t1 == Err || t2 == Err || (f t1) == Err then
                                         return (exp, Err) 
                                     else if (not.isCom) t1 then do
-                                        lift $ putStrLn ("Error de tipo: "++(show t1)++" no es indexable "
-                                                          ++" en la línea "++(show m)++" columna "++(show n))
+                                        printError m n ("Error de tipo: "++(show t1)++" no es indexable ")
                                         return (exp, Err)
                                     else if (g t1) == "Nebula" && t2 /= (Composite "Cluster" (Simple "star")) then do
-                                        lift $ putStrLn ("Error de tipo: Nebula acepta claves de tipo Constellation, no "++(show t2)
-                                                          ++" en la línea "++(show m)++" columna "++(show n))
+                                        printError m n ("Error de tipo: Nebula acepta claves de tipo Constellation, no "++(show t2))
                                         return (exp, Err)
                                     else if ((g t1) == "Cluster" || (g t1) == "Quasar") && t2 /= (Simple "planet") then do
-                                        lift $ putStrLn ("Error de tipo: Los índices deben ser enteros, no "++(show t2)
-                                                          ++" en la línea "++(show m)++" columna "++(show n))
+                                        printError m n ("Error de tipo: Los índices deben ser enteros, no "++(show t2))
                                         return (exp, Err)
                                     else return (exp, f t1)
                                     }
@@ -526,18 +514,14 @@ Slice :     Exp '..' Exp CQC      { % do
                                     if t1 == Err && t2 == Err then return exp
                                     else do
                                         if t1 /= (Simple "planet") && t2 /= (Simple "planet") then do
-                                            lift $ putStrLn ("Error de tipo: Los límites de slices deben ser enteros, no "++(show t1)
-                                                              ++" en la línea "++(show m)++" columna "++(show n))
-                                            lift $ putStrLn ("Error de tipo: Los límites de slices deben ser enteros, no "++(show t2)
-                                                              ++" en la línea "++(show m)++" columna "++(show n))
+                                            printError m n ("Error de tipo: Los límites de slices deben ser enteros, no "++(show t1))
+                                            printError m n ("Error de tipo: Los límites de slices deben ser enteros, no "++(show t2))
                                             return $ Interval (fst $1, Err) (fst $3, Err)
                                         else if t1 /= (Simple "planet") then do
-                                            lift $ putStrLn ("Error de tipo: Los límites de slices deben ser enteros, no "++(show t1)
-                                                              ++" en la línea "++(show m)++" columna "++(show n))
+                                            printError m n ("Error de tipo: Los límites de slices deben ser enteros, no "++(show t1))
                                             return $ Interval (fst $1, Err) $3
                                         else if t2 /= (Simple "planet") then do
-                                            lift $ putStrLn ("Error de tipo: Los límites de slices deben ser enteros, no "++(show t2)
-                                                              ++" en la línea "++(show m)++" columna "++(show n))
+                                            printError m n ("Error de tipo: Los límites de slices deben ser enteros, no "++(show t2))
                                             return $ Interval $1 (fst $3, Err)
                                         else return exp
                                      }
@@ -550,8 +534,7 @@ Slice :     Exp '..' Exp CQC      { % do
                                         AlexPn _ m n = $1
                                     if t == Err then return exp
                                     else if t /= (Simple "planet") then do
-                                            lift $ putStrLn ("Error de tipo: Los límites de slices deben ser enteros, no "++(show t)
-                                                              ++" en la línea "++(show m)++" columna "++(show n))
+                                            printError m n ("Error de tipo: Los límites de slices deben ser enteros, no "++(show t))
                                             return $ Interval e0 (fst $2, Err)
                                     else return exp
                                     }
@@ -563,8 +546,7 @@ Slice :     Exp '..' Exp CQC      { % do
                                         AlexPn _ m n = $2
                                     if t == Err then return exp
                                     else if t /= (Simple "planet") then do
-                                            lift $ putStrLn ("Error de tipo: Los límites de slices deben ser enteros, no "++(show t)
-                                                              ++" en la línea "++(show m)++" columna "++(show n))
+                                            printError m n ("Error de tipo: Los límites de slices deben ser enteros, no "++(show t))
                                             return $ Begin (fst $1, Err)
                                     else return exp
                                     }
@@ -589,8 +571,7 @@ Exp :: { Exp }
                                         if (snd $1) == Err then return (exp, Err)
                                         else do
                                             if t == Err then do
-                                                lift $ putStrLn ("Error de tipo: El tipo " ++ (show $ snd $1) ++ " no admite slices"
-                                                                ++" en la línea "++(show m)++" columna "++(show n))
+                                                printError m n ("Error de tipo: El tipo " ++ (show $ snd $1) ++ " no admite slices")
                                                 return (exp, Err)
                                             else return (exp, t) }
     | '~' Exp                     { % do
@@ -602,8 +583,7 @@ Exp :: { Exp }
                                             t = f (snd $2)
                                             AlexPn _ m n = snd $1
                                         if t == Err then do
-                                            lift $ putStrLn ("No se puede desreferenciar el tipo " ++ (show $ snd $2)
-                                                             ++" en la línea "++(show m)++" columna "++(show n))
+                                            printError m n ("No se puede desreferenciar el tipo " ++ (show $ snd $2))
                                             return (exp, Err)
                                         else return (exp, t) }
     | Exp '(' Args PQC            { % do
@@ -625,8 +605,8 @@ Exp :: { Exp }
                                                 b <- f xs (k+1)
                                                 return b
                                               else do 
-                                                lift $ putStrLn ("Error de tipo: Se esperaba "++(show t1)++" se encontró "++(show t2)++
-                                                          " en en argumento #"++(show k)++" en la línea "++(show m)++" columna "++(show n))
+                                                printError m n ("Error de tipo: Se esperaba "++(show t1)++" se encontró "++(show t2)++
+                                                          " en en argumento #"++(show k))
                                                 b <- f xs (k+1)
                                                 return False
                                             g (tt, (e, ot)) = if ot == Simple "planet" && tt == Simple "cloud" then castCloud (e, ot)
@@ -637,8 +617,7 @@ Exp :: { Exp }
                                           return (Funcall $1 (map g kchicamo), t) 
                                         else return (exp, Err)
                                       else do
-                                        lift $ putStrLn ("Error de tipo: El número de argumentos no coincide con el de parámetros"
-                                                             ++" en la línea "++(show m)++" columna "++(show n))
+                                        printError m n ("Error de tipo: El número de argumentos no coincide con el de parámetros")
                                         return (exp, Err)
                                     else return (exp, Err)
                                   }
@@ -663,8 +642,7 @@ Exp :: { Exp }
             t = snd $3
             AlexPn _ m n = $2
         if f (snd $3) then return ()
-        else lift $ putStrLn ("Error de tipo: esa vaina no tiene longitud "++(show t)
-                             ++" en la línea "++(show m)++" columna "++(show n))
+        else printError m n ("Error de tipo: esa vaina no tiene longitud "++(show t))
 
         checkCierre $4 "(" $2
         return (Scale $3, Err)  }
@@ -747,8 +725,7 @@ Exp :: { Exp }
                                         AlexPn _ m n = $1
                                         t = if null ts then IDK else foldl tipoSerio IDK ts
                                     if t == NA then do
-                                      lift $ putStrLn ("Error de tipo: Quasar no homogeneo"
-                                                                      ++" en la línea "++(show m)++" columna "++(show n))
+                                      printError m n ("Error de tipo: Quasar no homogeneo")
                                       return (exp, Err)
                                     else return (exp, Composite "Quasar" t) }
     | '{' Args LQC                { % do
@@ -758,8 +735,7 @@ Exp :: { Exp }
                                         AlexPn _ m n = $1
                                         t = if null ts then IDK else foldl tipoSerio IDK ts
                                     if t == NA then do
-                                      lift $ putStrLn ("Error de tipo: Cluster no homogeneo"
-                                                                      ++" en la línea "++(show m)++" columna "++(show n))
+                                      printError m n ("Error de tipo: Cluster no homogeneo")
                                       return (exp, Err)
                                     else return (exp, Composite "Cluster" t) }
     | cluster '(' Exp PQC Type    { % do
@@ -776,13 +752,11 @@ Exp :: { Exp }
                                         AlexPn _ m n = $1
                                     if all (\ti -> elem ti [Composite "Cluster" (Simple "star"), Err]) tks then
                                       if t == NA then do
-                                        lift $ putStrLn ("Error de tipo: Nebula no homogenea"
-                                                                        ++" en la línea "++(show m)++" columna "++(show n))
+                                        printError m n ("Error de tipo: Nebula no homogenea")
                                         return (exp, Err)
                                       else return (exp, Composite "Nebula" t)
                                     else do
-                                      lift $ putStrLn ("Error de tipo: las claves de Nebula solo pueden ser de tipo Constellation"
-                                                        ++" en la línea "++(show m)++" columna "++(show n))
+                                      printError m n ("Error de tipo: las claves de Nebula solo pueden ser de tipo Constellation")
                                       return (exp, Err) }
 
 
@@ -801,7 +775,7 @@ CQC : ']' { True } | error { False }
  
 LQC : '}' { True } | error { False }
 
-END : end { True } | error { % do lift $ putStrLn "No se encontró el marcador de final del programa 'EndofSpace'" ; return False }
+END : end { True } | error { % do printError 0 0 "No se encontró el marcador de final del programa 'EndofSpace'" ; return False }
 
 AROUND : around { True } | error { False }
 
@@ -826,13 +800,12 @@ checkCierre :: Bool -> String -> AlexPosn -> MonadTablon ()
 checkCierre b s pos = do
                       let (AlexPn _ m n) = pos
                       if b then return () 
-                      else lift $ putStrLn ("Error de sintaxis: No se pudo emparejar "++s 
-                          ++" en la línea "++(show m)++" columna "++(show n))
+                      else printError m n ("Error de sintaxis: No se pudo emparejar "++s )
 
-neko :: [Token] -> IO (Program, (Tipos.Tablon, [Integer], Integer), ())
+neko :: [Token] -> IO (Program, (Tipos.Tablon, [Integer], Integer, Bool), ())
 neko s = do
-  (_, (pretablon, _, _), _) <- runRWST (preparser s) () initTablon
-  nya <- runRWST (parser s) () (pretablon, [0], 0)
+  (_, (pretablon, _, _, b), _) <- runRWST (preparser s) () initTablon
+  nya <- runRWST (parser s) () (pretablon, [0], 0, b)
   return nya
 
 cat :: Program -> Tipos.Tablon -> IO ()
@@ -847,6 +820,6 @@ gato :: String -> IO ()
 gato f = do
   putStrLn ""
   s <- getTokens f
-  (arbol, (tablon, _, _), _) <- neko s
-  cat arbol tablon
+  (arbol, (tablon, _, _, b), _) <- neko s
+  if b then cat arbol tablon else return ()
 }
