@@ -636,6 +636,6 @@ spec = describe "Pruebas" $ do
     let nyaa s = neko (fst $ perro s)
 
     it "acepta un planeta perro" $ do
-      (_, (tablon, _, _), _) <- nyaa "Space planet perro; EndofSpace"
+      (_, (tablon, _, _, _), _) <- nyaa "Space planet perro; EndofSpace"
 
       buscar "perro" tablon `shouldBe` [Entry (Simple "planet") Variable 1]
