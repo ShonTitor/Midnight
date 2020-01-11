@@ -2,7 +2,7 @@
 
 ![alt text](https://i.imgur.com/YmgZF5V.png "Stars")
 
-Es un lenguaje imperativo, compilado, fuertemente tipado, con alcance estático. Se enfoca en ofrecer varias alternativas para expresar las mismas estructuras y soluciones. Midnight es el lenguaje de programación donde el cielo es el límite.
+Es un lenguaje imperativo, compilado, fuertemente tipado, con alcance estático y modelo de valor. Se enfoca en ofrecer varias alternativas para expresar las mismas estructuras y soluciones. Midnight es el lenguaje de programación donde el cielo es el límite.
 
 ## Estructura
 
@@ -11,7 +11,14 @@ El programa más simple (vacío) que se puede escribir es:
 Space
 EndofSpace
 ```
-Dentro, se pueden escribir instrucciones. El signo de secuaciación (Colocar una instrucción para que se ejecute a continuación de otra) es `;`. La última instrucción admite ser escrita con o sin ´;´.
+La estructura de un programa es la siguiente:
+```
+Space
+< Definiciones del UFO, Galaxy, Comet, Satellite >
+< Instrucciones >
+EndofSpace
+```
+Dentro, se pueden escribir instrucciones. El signo de secuaciación (Colocar una instrucción para que se ejecute a continuación de otra) es `;`. La última instrucción admite ser escrita con o sin `;`.
 ```
 Space
 
@@ -25,7 +32,7 @@ EndofSpace
 No puede ser una palabra reservada. Debe empezar con una letra ya sea mayúscula o minúscula seguida por cualquier cantidad de caracteres alfanuméricos o `_`.
 
 ## Tipos
-Hay tipos escalares y compuestos. Las variables pueden ser declaradas en cualquier parte del código siempre que no hayan sido declaradas previamente dentro del mismo alcance. Todos los tipos escalares tienen un valor por defecto predefinido. Los tipos compuestos tienen valor por defecto `blackhole`. Las palabras clave para tipos simples se escriben en minúscula mientras que las de tipos compuestos van con la primera letra mayúscula.
+Hay tipos escalares y tipos compuestos. Las variables pueden ser declaradas en cualquier parte del código siempre que no hayan sido declaradas previamente dentro del mismo alcance. Todos los tipos escalares tienen un valor por defecto predefinido. Las palabras clave para tipos simples se escriben en minúscula mientras que las de tipos compuestos van con la primera letra mayúscula.
 
 ### Escalares
 
@@ -34,7 +41,7 @@ Hay tipos escalares y compuestos. Las variables pueden ser declaradas en cualqui
 - `cloud`: Número de punto flotante con precisión simple. Default: `0.0`.
 - `star` : Caracter ASCII de 1 byte. Default: `'A'`. Admite los caracteres especiales `\n` `\t` `\\` `\"` `\'`.
 - `cosmos` : el tipo tipo.
-- `BlackHole` : Tipo con valor único `blackhole`. Se escribe con mayúscula por ser un tipo especial. Equivalente al null de otros lenguajes.
+- `vacuum` : Tipo con valor único `vac`.
 
 ```
 Space
@@ -72,9 +79,11 @@ EndofSpace
 ```
 ### Funciones de Conversión
 
- funciones para convertir algunos tipos a otros: como por ejemplo terraform(n) donde n es una Contellation y retorna un Planet con el contenido de Constellation:
-- `terraform` : De `cloud` o `Constellation` a `planet`.
-- `vaporize` : De `cloud` o `Constellation` a `cloud`.
+ funciones para convertir algunos tipos a otros: como por ejemplo terraform(n) donde n es un Contellation y retorna un Planet con el contenido de Constellation:  
+- `terraform` : De `Constellation` a `planet`.
+- `recombine` : De `Constellation` a `cloud`.
+- `vaporize` : De `planet` a `cloud`.
+- `collapse` : De `cloud` a `planet`.
 - `astral` : De cualquier tipo a `Constellation`.
 
 ```
@@ -151,11 +160,12 @@ EndofSpace
 ```
 
 ### Apuntadores
-El signo `~` se coloca antes de un tipo para indicar que es un apuntador a ese tipo. Por ejemplo, una variable de tipo `~planet` es un apuntador a una de tipo `planet`. La función `bigbang` recibe un tipo y retorna un apuntador a ese tipo. `~` también sirve para desreferenciar.
+El signo `~` se coloca antes de un tipo para indicar que es un apuntador a ese tipo. Por ejemplo, una variable de tipo `~planet` es un apuntador a una de tipo `planet`. La función `bigbang` recibe un tipo y retorna un apuntador a ese tipo. `~` también sirve para desreferenciar. `blackhole` es el apuntador nulo, equivalente al `null` de otros lenguajes.
 ```
 Space
 ~planet z = bigbang(planet);
 planet x = ~z;
+z = blackhole;
 EndofSpace
 ```
 
@@ -188,8 +198,6 @@ n.int = 42;
 n.float = 2.72
 EndofSpace
 ```
-
-Tanto los `UFO` como los `Galaxy` deben ser definidos al principio del archivo junto con las definiciones de funciones e iteradores.
 
 ## Control de flujo
 
@@ -236,7 +244,7 @@ EndofSpace
 ```
 
 ### Repetición Determinada
-La notación para la repetición determinada es`orbit i around X` donde i es la variable de la repetición y X un `Quasar`, o `Satellite` sobre el cual se desea iterar (para constellation estaríamos iterando sobre los `star` que lo conforman). También está `orbit i around range(begin, end, step)` que admite entre 1 y 3 argumentos enteros (en caso de dar menos de 3, se comporta igual que los slices).
+La notación para la repetición determinada es `orbit i around X` donde i es la variable de la repetición y X un `Quasar`, o `Satellite` sobre el cual se desea iterar. También está `orbit i around range(begin, end, step)` que admite entre 1 y 3 argumentos enteros (en caso de dar menos de 3, se comporta igual que los slices). Las variables de iteración pueden ser modificadas por el programador pero se les automáticamente asigna el valor siguiente al final de cada iteración, garantizado así que sea determinada (similar a Python).
 ```
 Space
 [cloud]Quasar L = [0.1, 0.15, 0.2, 0.25, 0.3]
@@ -267,10 +275,10 @@ EndofSpace
 ```
 
 ### Subrutinas
-Midnight tiene subrutinas (`Comet`) de segunda clase, lo que quiere decir que se pueden guardar en una variable y pasar como parámetro pero no retornarlas en una función. Un procedimiento es una función que retorna `blackhole` (en caso de colocarse un `return` solo, se interpreta como como `return blackhole`). Para indicar que se quiere pasar en parámetro por referencia en lugar de por valor se debe poner un `@`.
+Midnight tiene subrutinas (`Comet`) de segunda clase, lo que quiere decir que se pueden guardar en una variable y pasar como parámetro pero no retornarlas en una función. Un procedimiento es una función que retorna `vac` (en caso de colocarse un `return` solo, se interpreta como como `return vac` y en caso de no haber return, la subrutina siempre retorna `vac`). Para indicar que se quiere pasar un parámetro por referencia en lugar de por valor se debe poner un `@`.
 ```
 Space
-Comet halley(planet n) -> blackhole {
+Comet halley(planet n) -> vacuum {
     print("Este es un procedimiento");
     print(n);
 }
