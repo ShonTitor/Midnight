@@ -122,13 +122,6 @@ spec = describe "Pruebas" $ do
         [TkStar (string, _)] -> string `shouldBe` "star"
         _ -> error $ show tokens ++ "rechaza star como token valido"
 
-    it "acepta BlackHole como un token Blackhole válido" $ do
-      let tokens = alexScanTokens "BlackHole"
-
-      case tokens of
-        [TkBlackhole (string, _)] -> string `shouldBe` "BlackHole"
-        _ -> error $ show tokens ++ "rechaza BlackHole como token valido"
-
     it "acepta cosmos como un token Cosmos  válido" $ do
       let tokens = alexScanTokens "cosmos"
 
@@ -636,6 +629,6 @@ spec = describe "Pruebas" $ do
     let nyaa s = neko (fst $ perro s)
 
     it "acepta un planeta perro" $ do
-      (_, (tablon, _, _, _), _) <- nyaa "Space planet perro; EndofSpace"
+      (_, (tablon, _, _, _, _), _) <- nyaa "Space planet perro; EndofSpace"
 
       buscar "perro" tablon `shouldBe` [Entry (Simple "planet") Variable 1]

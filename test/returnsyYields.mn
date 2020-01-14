@@ -1,0 +1,38 @@
+Space
+
+Comet halley(planet n) -> vacuum {
+    print("Este es un procedimiento");
+    print(n);
+    yield 2;
+    return 2;
+}
+
+Satellite Primos(planet with) -> planet {
+    [planet]Quasar L = [];
+    planet p = 2;
+    orbit while(full) {
+        moon esprimo = full;
+        orbit q around L {
+            if (p%q == 0) {
+                esprimo = new;
+                break;
+            }
+        }
+        if (esprimo) {
+            return p;
+            yield 2;
+            L.add(p);
+        }
+        p += 1
+    }
+}
+
+Comet double(planet @n) -> vacuum {
+    n *= 2
+}
+
+(planet -> planet) Comet f = twice;
+planet z = f(2);
+
+
+EndofSpace

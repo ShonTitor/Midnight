@@ -154,3 +154,18 @@ data Expr
       | ListLit [Exp]
       | DictLit [(Exp, Exp)]
       deriving (Show, Eq)
+
+
+--data ThreeAdressCode = ThreeAdressCode
+--  { tacOperand :: Operation,
+--  , tacLvalue :: Maybe Operand,
+--  , tacRvalue1 :: Maybe Operand,
+--  , tacRvalue2 :: Maybe Operand
+--  }
+
+--data SymEntryCompatible a => Operand a = Variable a | Constant a
+
+--data Operation = Addi | Mul | ...
+
+--class SymEntryCompatible where
+--  getSymID :: a -> String

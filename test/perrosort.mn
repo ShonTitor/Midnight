@@ -16,7 +16,7 @@ Comet perroJoven(Perro Galaxy a, Perro Galaxy b) -> moon {
 
 Comet perrosort([Perro Galaxy]Cluster @prros,
                 (Perro Galaxy, Perro Galaxy -> moon) Comet compare)
-                -> BlackHole { 
+                -> vacuum { 
     planet n = scale(prros);
     orbit i around range(n-1) {
         orbit j around range(i+1, n) {

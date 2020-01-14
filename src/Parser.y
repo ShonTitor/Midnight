@@ -128,10 +128,14 @@ DefsAux : DefsAux Func                { $2 : $1 }
 
 FunSig : comet id Params '->' Type
         { % do
+          (tablonActual, pila, n, b, _) <- get
+          put (tablonActual, pila, n, b, Just (True, $5))
           return $ fst $2
         }
        | satellite id Params '->' Type
         { % do
+          (tablonActual, pila, n, b, _) <- get
+          put (tablonActual, pila, n, b, Just (False, $5))
           return $ fst $2
         }
 
@@ -139,7 +143,9 @@ Func  :: { () }
       : FunSig '{' Seq LQC Pop    
         { % do 
           checkCierre $4 "{" $2
-          actualizarSubrutina $1 $3 }
+          actualizarSubrutina $1 $3 
+          (tablonActual, pila, n, b, _) <- get
+          put (tablonActual, pila, n, b, Nothing)}
           --let d = Func (fst $2) $4 $7 $9
           --insertarSubrutina (d, snd $2) }
       | RegSig '{' Regs Pop LQC    { % checkCierre $5 "{" $2 }
@@ -271,9 +277,51 @@ InstrA : Type id
                               checkInt' $1 (snd $2)
                               return $ Break $2 }
        | continue           { Continue }
-       | return Exp         { Return $2 } 
-       | return             { Return (Var "vac", Simple "Vacuum") }
-       | yield Exp          { Yield $2 }
+       | return Exp         { % do
+                              (_,_,_,_,tipo) <- get
+                              let AlexPn _ m n = $1
+                                  (exp, _) = $2
+                              if isNothing tipo then do
+                                printError m n ("Error: return fuera de una subrutina")
+                                return $ Return (exp, Err)
+                              else do
+                                let (b, t) = fromJust tipo
+                                if not b then do
+                                  printError m n ("Error: return fuera de una subrutina")
+                                  return $ Return (exp, Err)
+                                else do
+                                  desu <- checkAsig $1 t $2
+                                  return $ Return desu}
+       | return             { % do
+                              (_,_,_,_,tipo) <- get
+                              let AlexPn _ m n = $1
+                                  exp = Var "vac"
+                              if isNothing tipo then do
+                                printError m n ("Error: return fuera de una subrutina")
+                                return $ Return (exp, Err)
+                              else do
+                                let (b, t) = fromJust tipo
+                                if not b then do
+                                  printError m n ("Error: return fuera de una subrutina")
+                                  return $ Return (exp, Err)
+                                else do
+                                  desu <- checkAsig $1 t (exp, Simple "vacuum")
+                                  return $ Return desu }
+       | yield Exp          { % do
+                              (_,_,_,_,tipo) <- get
+                              let AlexPn _ m n = $1
+                                  (exp, _) = $2
+                              if isNothing tipo then do
+                                printError m n ("Error: yield fuera de un iterador")
+                                return $ Yield  (exp, Err)
+                              else do
+                                let (b, t) = fromJust tipo
+                                if b then do
+                                  printError m n ("Error: yield fuera de un iterador")
+                                  return $ Yield  (exp, Err)
+                                else do
+                                  desu <- checkAsig $1 t $2
+                                  return $ Yield desu }
 
 InstrB : Push If                                                             { $2 }
        | Push While                                                          { $2 }
@@ -804,10 +852,10 @@ checkCierre b s pos = do
                       if b then return () 
                       else printError m n ("Error de sintaxis: No se pudo emparejar "++s )
 
-neko :: [Token] -> IO (Program, (Tipos.Tablon, [Integer], Integer, Bool), ())
+neko :: [Token] -> IO (Program, (Tipos.Tablon, [Integer], Integer, Bool, Maybe (Bool,Type)), ())
 neko s = do
-  (_, (pretablon, _, _, b), _) <- runRWST (preparser s) () initTablon
-  nya <- runRWST (parser s) () (pretablon, [0], 0, b)
+  (_, (pretablon, _, _, b, _), _) <- runRWST (preparser s) () initTablon
+  nya <- runRWST (parser s) () (pretablon, [0], 0, b, Nothing)
   return nya
 
 cat :: Program -> Tipos.Tablon -> IO ()
@@ -822,6 +870,6 @@ gato :: String -> IO ()
 gato f = do
   putStrLn ""
   s <- getTokens f
-  (arbol, (tablon, _, _, b), _) <- neko s
+  (arbol, (tablon, _, _, b, _), _) <- neko s
   if b then cat arbol tablon else return ()
 }

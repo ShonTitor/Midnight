@@ -18,9 +18,9 @@ buscar s t = lis $ Map.lookup s t
 
 printError :: Int -> Int -> String -> MonadTablon ()
 printError m n msg = do
-  (tab, pila, x, _) <- get 
+  (tab, pila, x, _, r) <- get 
   lift $ putStrLn $ msg++" en la línea "++(show m)++" columna "++(show n)
-  put (tab, pila, x, False)
+  put (tab, pila, x, False, r)
 
 clash :: Entry -> Entry -> Bool
 clash (Entry _ _ a) (Entry _ _ b) = a == b || b == 0
@@ -47,10 +47,10 @@ insertarV xs ys t = foldr (uncurry insertar') t (zip xs ys)
 insertarV' :: [(String,Entry)] -> Tablon -> Tablon
 insertarV' xs t = foldr (uncurry insertar') t xs
 
-type MonadTablon a = RWST () () (Tablon, [Integer], Integer, Bool) IO a
+type MonadTablon a = RWST () () (Tablon, [Integer], Integer, Bool, Maybe (Bool, Type)) IO a
 
-initTablon :: (Tablon,[Integer], Integer, Bool)
-initTablon = (t,[0],0, True)
+initTablon :: (Tablon,[Integer], Integer, Bool, Maybe (Bool,Type))
+initTablon = (t,[0],0, True, Nothing)
     where
         t = insertarV claves valores vacio
         --t = insertarV [] [] vacio
@@ -88,13 +88,13 @@ initTablon = (t,[0],0, True)
 
 lookupTablon :: String -> MonadTablon (Maybe Entry)
 lookupTablon s = do
-    (_, pila, _, _) <- get
+    (_, pila, _, _, _) <- get
     e <- lookupScope s pila
     return e
 
 lookupScope :: String -> [Integer] -> MonadTablon (Maybe Entry)
 lookupScope s pila = do
-    (tablonActual, _, _, _) <- get
+    (tablonActual, _, _, _, _) <- get
     let match n (Entry _ _ m) = n == m
         pervasive entry = match 0 entry
         entries = buscar s tablonActual
@@ -190,46 +190,50 @@ checkBool' = checkT' (Simple "moon")
 
 pushPila :: MonadTablon ()
 pushPila = do
-    (tablonActual, pila, n, b) <- get
+    (tablonActual, pila, n, b, r) <- get
     let m = n + 1
-    put (tablonActual, m:pila, m, b)
+    put (tablonActual, m:pila, m, b, r)
 
 popPila :: MonadTablon ()
 popPila = do
-    (tablonActual, pila, n, b) <- get
-    put (tablonActual, tail pila, n, b)
+    (tablonActual, pila, n, b, r) <- get
+    put (tablonActual, tail pila, n, b, r)
 
 insertarCampos :: [(Type, (String, AlexPosn))] -> MonadTablon ()
 insertarCampos xs = do
-    (tablonActual, pila@(tope:_), n, bb) <- get
+    (tablonActual, pila@(tope:_), n, _, _) <- get
     let tuplas = [ (snd x, (Entry (fst x) Campo tope)) | x <- xs ]
     tab <- foldlM (flip $ uncurry insertar) tablonActual tuplas
-    put (tab, pila, n, bb)
+    (_, _, _, bb, r) <- get
+    put (tab, pila, n, bb, r)
 
 insertarVar :: (String, AlexPosn) -> Type -> MonadTablon ()
 insertarVar s t = do
-    (tablonActual, pila@(tope:_), n, bb) <- get
+    (tablonActual, pila@(tope:_), n, _, _) <- get
     tab <- insertar s (Entry t Variable tope) tablonActual
-    put (tab, pila, n, bb)
+    (_, _, _, bb, r) <- get
+    put (tab, pila, n, bb, r)
 
 insertarSubrutina :: (Def, AlexPosn) -> MonadTablon ()
 insertarSubrutina ((Func s params tret sequ), pos) = do
-    (tablonActual, pila@(tope:_), n, b) <- get
+    (tablonActual, pila@(tope:_), n, _, _) <- get
     let tparams = [ t | (t, _, _) <- params ]
         ti = Subroutine "Comet" tparams tret
-    tab <- insertar (s, pos) (Entry ti (Subrutina sequ) tope) tablonActual
-    put (tab, pila, n, b)
+    tab <- insertar (s,pos) (Entry ti (Subrutina sequ) tope) tablonActual
+    (_, _, _, b, r) <- get
+    put (tab, pila, n, b, r)
 insertarSubrutina ((Iter s params tret sequ), pos) = do
-    (tablonActual, pila@(tope:_), n, b) <- get
+    (tablonActual, pila@(tope:_), n, _, _) <- get
     let tparams = [ t | (t, _, _) <- params ]
         ti = Subroutine "Satellite" tparams tret
     tab <- insertar (s, pos) (Entry ti (Subrutina sequ) tope) tablonActual
-    put (tab, pila, n, b)
+    (_, _, _, b, r) <- get
+    put (tab, pila, n, b, r)
 insertarSubrutina _ = error "No es una Subrutina"
 
 actualizarSubrutina :: String -> [Instr] -> MonadTablon ()
 actualizarSubrutina s sequ = do
-    (tablonActual, pila, n, b) <- get
+    (tablonActual, pila, n, b, r) <- get
     let f (Entry _ _ k) = k == 1 
         entries = buscar s tablonActual
         g (l,x:xs) = if f x then (x, l++xs)
@@ -240,21 +244,23 @@ actualizarSubrutina s sequ = do
         e = Entry t (Subrutina sequ) 1
         updated = e : (snd gg)
         tab = Map.insert s updated tablonActual
-    put (tab, pila, n, b)
+    put (tab, pila, n, b, r)
 
 
 insertarParams :: [(Type, (String, AlexPosn), Bool)] -> MonadTablon ()
 insertarParams params = do
-    (tablonActual, pila@(tope:_), n, bb) <- get
+    (tablonActual, pila@(tope:_), n, _, _) <- get
     let tuplas = [ (s, (Entry t (Parametro b) tope)) | (t, s, b) <- params ]
     tab <- foldlM (flip $ uncurry insertar) tablonActual tuplas
-    put (tab, pila, n, bb)
+    (_, _, _, bb, r) <- get
+    put (tab, pila, n, bb, r)
 
 insertarReg :: (String, AlexPosn) -> String -> MonadTablon ()
 insertarReg (s, pos) tr = do
-    (tablonActual, pila@(tope:_), n, b) <- get
+    (tablonActual, pila@(tope:_), n, _, _) <- get
     tab <- insertar (s, pos) (Entry (Simple "cosmos") (Registro (Record tr s)  (n+1)) tope) tablonActual
-    put (tab, pila, n, b)
+    (_, _, _, b, r) <- get
+    put (tab, pila, n, b, r)
 
 showTablon :: Tablon -> String
 showTablon t = fst (Map.mapAccumWithKey f "" t) where

@@ -6,12 +6,12 @@ Galaxy Perro{
     Constellation raza;
 }
 
-Comet halley(planet n, planet k) -> BlackHole {
+Comet halley(planet n, planet k) -> vacuum {
     print("Este es un procedimiento");
     print(n);
 }
 
-Comet cloudian(cloud x) -> BlackHole {
+Comet cloudian(cloud x) -> vacuum {
     print("SHOOTING QUASAR DRAGON");
     print(x);
 }

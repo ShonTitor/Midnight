@@ -1,6 +1,6 @@
 Space
 
-Comet cloudian(cloud nimbusman) -> BlackHole {
+Comet cloudian(cloud nimbusman) -> vacuum {
     print(nimbusman);
 }
 
