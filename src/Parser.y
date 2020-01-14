@@ -26,7 +26,8 @@ import qualified Data.Map as Map
       planet          { TkPlanet    $$ }
       cloud           { TkCloud     $$ }
       star            { TkStar      $$ }
-      blackhole       { TkBlackhole $$ }
+      vacuum          { TkVacuum    $$ }
+      vac             { TkVac       $$ }
       constellation   { TkConstellation $$ }
       cluster         { TkCluster   $$ }
       quasar          { TkQuasar    $$ }
@@ -271,7 +272,7 @@ InstrA : Type id
                               return $ Break $2 }
        | continue           { Continue }
        | return Exp         { Return $2 } 
-       | return             { Return (Var "blackhole", Simple "BlackHole") }
+       | return             { Return (Var "vac", Simple "Vacuum") }
        | yield Exp          { Yield $2 }
 
 InstrB : Push If                                                             { $2 }
@@ -407,7 +408,7 @@ Type  : planet                    { Simple $ fst $1 }
       | cloud                     { Simple $ fst $1 }
       | star                      { Simple $ fst $1 }
       | moon                      { Simple $ fst $1 }
-      | blackhole                 { Simple $ fst $1 }
+      | vacuum                    { Simple $ fst $1 }
       | constellation             { Composite "Cluster" (Simple "star") }
       | TComp                     { $1 }
 
@@ -659,7 +660,8 @@ Exp :: { Exp }
     | float                       { (FloLit (fst $1), Simple "cloud") }
     | new                         { (Var $ fst $1, Simple "moon") }
     | full                        { (Var $ fst $1, Simple "moon") }
-    | bh                          { (Var $ fst $1, Simple "BlackHole") }
+    | bh                          { (Var $ fst $1, Composite "~" IDK) }
+    | vac                         { (Var $ fst $1, Simple "vacuum") }
     | str                         { (StrLit (fst $1), Composite "Cluster" (Simple "star")) }
     | chr                         { (CharLit (fst $1), Simple "star") }
     | Exp '+' Exp                 { % do

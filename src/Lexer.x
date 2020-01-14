@@ -19,7 +19,8 @@ tokens :-
   planet        {\pos s -> TkPlanet (s,  pos)}
   cloud         {\pos s -> TkCloud (s,  pos)}
   star          {\pos s -> TkStar (s,  pos)}
-  BlackHole     {\pos s -> TkBlackhole (s,  pos)}
+  vacuum        {\pos s -> TkVacuum (s,  pos)}
+  vac           {\pos s -> TkVac (s,  pos)}
   cosmos        {\pos s -> TkCosmos (s,  pos)}
   Constellation {\pos s -> TkConstellation (s,  pos)}
   Cluster       {\pos s -> TkCluster (s,  pos)}
@@ -111,7 +112,8 @@ data Token =
   TkPlanet    (String, AlexPosn) |
   TkCloud     (String, AlexPosn) |
   TkStar      (String, AlexPosn) |
-  TkBlackhole (String, AlexPosn) |
+  TkVacuum    (String, AlexPosn) |
+  TkVac       (String, AlexPosn) |
   TkCosmos    (String, AlexPosn) |
   TkConstellation (String, AlexPosn) |
   TkCluster   (String, AlexPosn) |
@@ -198,7 +200,8 @@ getPos (TkMoon       (_,  p)) = p
 getPos (TkPlanet     (_,  p)) = p
 getPos (TkCloud      (_,  p)) = p
 getPos (TkStar       (_,  p)) = p
-getPos (TkBlackhole  (_,  p)) = p
+getPos (TkVacuum     (_,  p)) = p
+getPos (TkVac        (_,  p)) = p
 getPos (TkCosmos     (_,  p)) = p
 getPos (TkConstellation  (_,  p)) = p
 getPos (TkCluster    (_,  p)) = p

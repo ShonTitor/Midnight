@@ -16,7 +16,6 @@ isComp :: Type -> Bool
 isComp (Composite _ _) = True
 isComp (Record _ _) = True
 isComp (Subroutine _ _ _) = True
-isComp (Simple "BlackHole") = True
 isComp _ = False
 
 tipoSerio :: Type -> Type -> Type
@@ -29,8 +28,6 @@ tipoSerio NA _ = NA
 tipoSerio _ NA = NA
 tipoSerio Err _ = Err
 tipoSerio _ Err = Err
-tipoSerio (Simple "BlackHole") ti = if isComp ti then ti else NA
-tipoSerio ti (Simple "BlackHole") = if isComp ti then ti else NA
 tipoSerio t1 t2 = if t1 == t2 then t1 else NA
 
 tipoCompa :: Type -> Type -> Bool

@@ -25,7 +25,8 @@ import qualified Data.Map as Map
       planet          { TkPlanet    $$ }
       cloud           { TkCloud     $$ }
       star            { TkStar      $$ }
-      blackhole       { TkBlackhole $$ }
+      vacuum          { TkVacuum    $$ }
+      vac             { TkVac       $$ }
       constellation   { TkConstellation $$ }
       cluster         { TkCluster   $$ }
       quasar          { TkQuasar    $$ }
@@ -237,7 +238,7 @@ Type  : planet                    { Simple $ fst $1 }
       | cloud                     { Simple $ fst $1 }
       | star                      { Simple $ fst $1 }
       | moon                      { Simple $ fst $1 }
-      | blackhole                 { Simple $ fst $1 }
+      | vacuum                    { Simple $ fst $1 }
       | constellation             { Composite "Cluster" (Simple "star") }
       | TComp                     { $1 }
 
@@ -284,6 +285,7 @@ Exp : LValue                      { () }
     | new                         { () }
     | full                        { () }
     | bh                          { () }
+    | vac                          { () }
     | str                         { () }
     | chr                         { () }
     | Exp '+' Exp                 { () }

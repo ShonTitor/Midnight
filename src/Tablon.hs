@@ -54,10 +54,11 @@ initTablon = (t,[0],0, True)
     where
         t = insertarV claves valores vacio
         --t = insertarV [] [] vacio
-        claves = ["new", "full", "blackhole", "moon", "planet", "cloud", "star", "BlackHole", "cosmos",
+        claves = ["vac", "new", "full", "blackhole", "moon", "planet", "cloud", "star", "vacuum", "cosmos",
                   "Cluster", "Quasar", "Nebula", "~", "Galaxy", "UFO",
-                  "read", "print", "push", "pop", "terraform", "vaporize", "astral", "scale", "bigbang"]
-        valores = [(Entry (Simple "moon") Literal 0),
+                  "read", "print", "push", "pop", "terraform", "vaporize", "astral", "recombine", "collapse", "scale", "bigbang"]
+        valores = [(Entry (Simple "vacuum") Literal 0),
+                   (Entry (Simple "moon") Literal 0),
                    (Entry (Simple "moon") Literal 0),
                    (Entry (Simple "BlackHole") Literal 0),
                    (Entry (Simple "cosmos") Tipo 0),
@@ -76,8 +77,10 @@ initTablon = (t,[0],0, True)
                    (Entry (Subroutine "Comet" [IDK] (Simple "BlackHole") ) (Subrutina []) 0),
                    (Entry (Subroutine "Comet" [IDK] (Simple "BlackHole") ) (Subrutina []) 0),
                    (Entry (Subroutine "Comet" [IDK] (Simple "BlackHole") ) (Subrutina []) 0),
-                   (Entry (Subroutine "Comet" [IDK] (Simple "planet") ) (Subrutina []) 0),
+                   (Entry (Subroutine "Comet" [Composite "Cluster" (Simple "star")] (Simple "planet") ) (Subrutina []) 0),
                    (Entry (Subroutine "Comet" [Simple "planet"] (Simple "cloud") ) (Subrutina []) 0),
+                   (Entry (Subroutine "Comet" [Composite "Cluster" (Simple "star")] (Simple "cloud") ) (Subrutina []) 0),
+                   (Entry (Subroutine "Comet" [Simple "cloud"] (Simple "planet") ) (Subrutina []) 0),
                    (Entry (Subroutine "Comet" [IDK] (Composite "Cluster" (Simple "star")) ) (Subrutina []) 0),
                    (Entry (Subroutine "Comet" [IDK] (Simple "planet") ) (Subrutina []) 0),
                    (Entry (Subroutine "Comet" [IDK] (Composite "~" NA)) (Subrutina []) 0)
