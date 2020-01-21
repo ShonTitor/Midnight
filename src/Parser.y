@@ -733,7 +733,13 @@ Exp :: { Exp }
     | Exp '^' Exp                 { % do
                                     (a,b) <- checkNum ("^", $2) $1 $3
                                     return (Pow a b, snd a) }
-    | '-' Exp         %prec NEG   { (Neg $2, Err) }
+    | '-' Exp         %prec NEG   { %do 
+                                    let (exp, t) = $2
+                                        AlexPn _ m n = $1
+                                    if elem t [Simple "planet", Simple "cloud", Err] then return (Neg $2, t)
+                                    else do
+                                      printError m n ("Error de tipo: El operador - solo admite los tipos planet y cloud, se encontró "++(show t))
+                                      return (Neg $2, Err) }
     | Exp '==' Exp                { % do
                                     (a,b) <- checkSame $2 $1 $3
                                     return (Eq a b, if snd a == Err then Err else Simple "moon") }
@@ -866,10 +872,15 @@ cat arbol tablon = do
   --putStrLn $ showTablon tablon
   putStrLn $ showTablon' tablon
 
+gatto :: String -> IO (Program, (Tipos.Tablon, [Integer], Integer, Bool, Maybe (Bool,Type)), ())
+gatto f = do
+  s <- getTokens f
+  nya <- neko s
+  return nya
+
 gato :: String -> IO ()
 gato f = do
   putStrLn ""
-  s <- getTokens f
-  (arbol, (tablon, _, _, b, _), _) <- neko s
+  (arbol, (tablon, _, _, b, _), _) <- gatto f
   if b then cat arbol tablon else return ()
 }

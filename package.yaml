@@ -49,6 +49,7 @@ library:
     - Preparser
     - Tipos
     - Tablon
+    - Intermediate
 
 executables:
   midnight-exe:
