@@ -1,0 +1,6 @@
+Space
+	planet perro;
+	orbit (2+2; perro < 5 ; perro + 1) {
+		1+1;
+	}
+EndofSpace
