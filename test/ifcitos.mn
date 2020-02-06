@@ -1,15 +1,15 @@
 Space
 	planet perro;
-	if (perro == 0) {
+	if (perro > 0) {
 		0+0
 	}
-	elseif (perro == 1) {
+	elseif (perro < 1) {
 		1+1
 	}
-	elseif (perro == 2) {
+	elseif (perro >= 2) {
 		2+2
 	}
 	else {
-		42+42
+		42+42 <= 420
 	}
 EndofSpace

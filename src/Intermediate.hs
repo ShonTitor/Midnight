@@ -160,36 +160,18 @@ genCodeExp (Bitor (e1,_) (e2,_)) = do
     op2 <- getOperand e2
     t <- newTemp
     return [T.ThreeAddressCode T.Or (Just t) (Just op1) (Just op2)]
-genCodeExp (Mayor (e1,_) (e2,_)) = do
-    op1 <- getOperand e1
-    op2 <- getOperand e2
-    t <- newTemp
-    return [T.ThreeAddressCode T.Gt (Just t) (Just op1) (Just op2)]
-genCodeExp (MayorI (e1,_) (e2,_)) = do
-    op1 <- getOperand e1
-    op2 <- getOperand e2
-    t <- newTemp
-    return [T.ThreeAddressCode T.Gte (Just t) (Just op1) (Just op2)]
-genCodeExp (Menor (e1,_) (e2,_)) = do
-    op1 <- getOperand e1
-    op2 <- getOperand e2
-    t <- newTemp
-    return [T.ThreeAddressCode T.Lt (Just t) (Just op1) (Just op2)]
-genCodeExp (MenorI (e1,_) (e2,_)) = do
-    op1 <- getOperand e1
-    op2 <- getOperand e2
-    t <- newTemp
-    return [T.ThreeAddressCode T.Lte (Just t) (Just op1) (Just op2)]
-genCodeExp (Eq (e1,_) (e2,_)) = do
-    op1 <- getOperand e1
-    op2 <- getOperand e2
-    t <- newTemp
-    return [T.ThreeAddressCode T.Eq (Just t) (Just op1) (Just op2)]
-genCodeExp (Neq (e1,_) (e2,_)) = do
-    op1 <- getOperand e1
-    op2 <- getOperand e2
-    t <- newTemp
-    return [T.ThreeAddressCode T.Neq (Just t) (Just op1) (Just op2)]
+genCodeExp e@(Mayor _ _) = do
+    genCodeExpB' e
+genCodeExp e@(MayorI _ _) = do
+    genCodeExpB' e
+genCodeExp e@(Menor _ _) = do
+    genCodeExpB' e
+genCodeExp e@(MenorI _ _) = do
+    genCodeExpB' e
+genCodeExp e@(Eq _ _) = do
+    genCodeExpB' e
+genCodeExp e@(Neq _ _) = do
+    genCodeExpB' e
 -- RIP
 genCodeExp _ = do
     _ <- newTemp
@@ -236,30 +218,30 @@ genCodeExpB ((Or (e1,_) (e2,_)), btrue, bfalse) = do
     code2 <- genCodeExpB (e2, btrue, bfalse)
     return $ code1 ++ (T.ThreeAddressCode T.NewLabel Nothing (Just b1false) Nothing) : code2
 -- Comparaciones
-genCodeExpB (e@(Eq _ _), btrue, bfalse) = do
-    code <- genCodeExp e
-    t <- lastTemp
-    return $ code ++ [T.ThreeAddressCode T.If Nothing (Just t) (Just btrue), T.ThreeAddressCode T.GoTo Nothing Nothing (Just bfalse)]
-genCodeExpB (e@(Neq _ _), btrue, bfalse) = do
-    code <- genCodeExp e
-    t <- lastTemp
-    return $ code ++ [T.ThreeAddressCode T.If Nothing (Just t) (Just btrue), T.ThreeAddressCode T.GoTo Nothing Nothing (Just bfalse)]
-genCodeExpB (e@(Mayor _ _), btrue, bfalse) = do
-    code <- genCodeExp e
-    t <- lastTemp
-    return $ code ++ [T.ThreeAddressCode T.If Nothing (Just t) (Just btrue), T.ThreeAddressCode T.GoTo Nothing Nothing (Just bfalse)]
-genCodeExpB (e@(MayorI _ _), btrue, bfalse) = do
-    code <- genCodeExp e
-    t <- lastTemp
-    return $ code ++ [T.ThreeAddressCode T.If Nothing (Just t) (Just btrue), T.ThreeAddressCode T.GoTo Nothing Nothing (Just bfalse)]
-genCodeExpB (e@(Menor _ _), btrue, bfalse) = do
-    code <- genCodeExp e
-    t <- lastTemp
-    return $ code ++ [T.ThreeAddressCode T.If Nothing (Just t) (Just btrue), T.ThreeAddressCode T.GoTo Nothing Nothing (Just bfalse)]
-genCodeExpB (e@(MenorI _ _), btrue, bfalse) = do
-    code <- genCodeExp e
-    t <- lastTemp
-    return $ code ++ [T.ThreeAddressCode T.If Nothing (Just t) (Just btrue), T.ThreeAddressCode T.GoTo Nothing Nothing (Just bfalse)]
+genCodeExpB ((Eq (e1,_) (e2,_)), btrue, bfalse) = do
+    op1 <- getOperand e1
+    op2 <- getOperand e2
+    return [T.ThreeAddressCode T.Eq (Just op1) (Just op2) (Just btrue), T.ThreeAddressCode T.GoTo Nothing Nothing (Just bfalse)]
+genCodeExpB ((Neq (e1,_) (e2,_)), btrue, bfalse) = do
+    op1 <- getOperand e1
+    op2 <- getOperand e2
+    return [T.ThreeAddressCode T.Neq (Just op1) (Just op2) (Just btrue), T.ThreeAddressCode T.GoTo Nothing Nothing (Just bfalse)]
+genCodeExpB ((Mayor (e1,_) (e2,_)), btrue, bfalse) = do
+    op1 <- getOperand e1
+    op2 <- getOperand e2
+    return [T.ThreeAddressCode T.Gt (Just op1) (Just op2) (Just btrue), T.ThreeAddressCode T.GoTo Nothing Nothing (Just bfalse)]
+genCodeExpB ((MayorI (e1,_) (e2,_)), btrue, bfalse) = do
+    op1 <- getOperand e1
+    op2 <- getOperand e2
+    return [T.ThreeAddressCode T.Gte (Just op1) (Just op2) (Just btrue), T.ThreeAddressCode T.GoTo Nothing Nothing (Just bfalse)]
+genCodeExpB ((Menor (e1,_) (e2,_)), btrue, bfalse) = do
+    op1 <- getOperand e1
+    op2 <- getOperand e2
+    return [T.ThreeAddressCode T.Lt (Just op1) (Just op2) (Just btrue), T.ThreeAddressCode T.GoTo Nothing Nothing (Just bfalse)]
+genCodeExpB ((MenorI (e1,_) (e2,_)), btrue, bfalse) = do
+    op1 <- getOperand e1
+    op2 <- getOperand e2
+    return [T.ThreeAddressCode T.Lte (Just op1) (Just op2) (Just btrue), T.ThreeAddressCode T.GoTo Nothing Nothing (Just bfalse)]
 genCodeExpB _ = error "no c nada"
 
 getOperand :: Expr -> InterMonad Operand
