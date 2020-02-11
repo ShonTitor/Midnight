@@ -86,7 +86,7 @@ data Instr
       | If [(Exp, [Instr])]
       | While Exp [Instr]
       | Foreach String Exp [Instr]
-      | ForRange Exp Exp Exp [Instr]
+      | ForRange Exp Exp Exp Exp [Instr]
       | ForC Instr Exp [Instr]
       | Break Exp
       | Continue
@@ -109,7 +109,7 @@ type Exp = (Expr, Type)
 data Expr
       = Funcall Exp [Exp]
       -- LValues
-      | Var String
+      | Var String Entry
       | Access Exp Slice
       | Attr Exp String
       -- funciones de preludio
@@ -154,18 +154,3 @@ data Expr
       | ListLit [Exp]
       | DictLit [(Exp, Exp)]
       deriving (Show, Eq)
-
-
---data ThreeAdressCode = ThreeAdressCode
---  { tacOperand :: Operation,
---  , tacLvalue :: Maybe Operand,
---  , tacRvalue1 :: Maybe Operand,
---  , tacRvalue2 :: Maybe Operand
---  }
-
---data SymEntryCompatible a => Operand a = Variable a | Constant a
-
---data Operation = Addi | Mul | ...
-
---class SymEntryCompatible where
---  getSymID :: a -> String

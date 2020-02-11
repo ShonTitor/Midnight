@@ -20,14 +20,10 @@ import qualified Data.Map as Map
       space           { TkSpace     $$ }
       end             { TkEndofSpace $$ }
       moon            { TkMoon      $$ }
-      new             { TkNew       $$ }
-      full            { TkFull      $$ }
-      bh              { TkNull      $$ }
       planet          { TkPlanet    $$ }
       cloud           { TkCloud     $$ }
       star            { TkStar      $$ }
       vacuum          { TkVacuum    $$ }
-      vac             { TkVac       $$ }
       constellation   { TkConstellation $$ }
       cluster         { TkCluster   $$ }
       quasar          { TkQuasar    $$ }
@@ -189,12 +185,12 @@ InstrA : Type id
           return (Declar $1 (fst $2)) }
        | Type id '=' Exp    
        { % do 
-          insertarVar $2 $1
+          entry <- insertarVar $2 $1
           let AlexPn _ m n = $3
               t1 = $1
               exp = $4
           rval <- checkAsig $3 t1 exp
-          return $ Asig (Var $ fst $2, $1) rval
+          return $ Asig (Var (fst $2) entry, $1) rval
       }
        | Exp                { Flotando $1 }
        | LValue '=' Exp     
@@ -295,7 +291,7 @@ InstrA : Type id
        | return             { % do
                               (_,_,_,_,tipo) <- get
                               let AlexPn _ m n = $1
-                                  exp = Var "vac"
+                                  exp = Var "vac" (Entry (Simple "vacuum") Literal 0)
                               if isNothing tipo then do
                                 printError m n ("Error: return fuera de una subrutina")
                                 return $ Return (exp, Err)
@@ -356,26 +352,26 @@ IterHead : Push orbit id AROUND Exp
          | Push orbit id AROUND range '(' Exp ',' Exp ',' Exp PQC
            { % do
              checkCierre $12 "(" $6
-             insertarVar $3 (Simple "planet")
+             entry <- insertarVar $3 (Simple "planet")
              checkInt' $6 (snd $7)
              checkInt' $8 (snd $9)
              checkInt' $10 (snd $11)
-             let f seq = ForRange $7 $9 $11 seq
+             let f seq = ForRange (Var (fst $3) entry, getTipo (Just entry)) $7 $9 $11 seq
              return f }
          | Push orbit id AROUND range '(' Exp ',' Exp PQC
            { % do
              checkCierre $10 "(" $6
-             insertarVar $3 (Simple "planet")
+             entry <- insertarVar $3 (Simple "planet")
              checkInt' $6 (snd $7)
              checkInt' $8 (snd $9)
-             let f seq = ForRange $7 $9 (IntLit 1, Simple "planet") seq
+             let f seq = ForRange (Var (fst $3) entry, getTipo (Just entry)) $7 $9 (IntLit 1, Simple "planet") seq
              return f }
          | Push orbit id AROUND range '(' Exp PQC
            { % do
              checkCierre $8 "(" $6
-             insertarVar $3 (Simple "planet")
+             entry <- insertarVar $3 (Simple "planet")
              checkInt' $6 (snd $7)
-             let f seq = ForRange (IntLit 0, Simple "planet") $7 (IntLit 1, Simple "planet") seq
+             let f seq = ForRange (Var (fst $3) entry, getTipo (Just entry)) (IntLit 0, Simple "planet") $7 (IntLit 1, Simple "planet") seq
              return f }
 
 If : if '(' Exp PQC '{' Seq LQC                           
@@ -414,11 +410,11 @@ Elif : ElifAux                                         { reverse $1 }
      | ElifAux Push else  '{' Seq LQC Pop              
      {  % do
         checkCierre $6 "{" $4
-        return $ reverse $ ((Var "full", Simple "bool"), $5) :  $1 }
+        return $ reverse $ ((Var "full" (Entry (Simple "moon") Literal 0), Simple "bool"), $5) :  $1 }
      | else  '{' Seq LQC Pop                           
      {  % do
         checkCierre $4 "{" $2
-        return [((Var "full", Simple "bool"), $3)] }
+        return [((Var "full" (Entry (Simple "moon") Literal 0), Simple "bool"), $3)] }
 
 
 
@@ -496,7 +492,10 @@ TComp : '[' Type CQC cluster
 LValue :: { Exp }
       : id                       { % do
                                     e <- lookupExists $1
-                                    return (Var (fst $1), getTipo e) }
+                                    if isNothing e then
+                                      return (Var (fst $1) (Entry Err Variable (-1)), getTipo e)
+                                    else
+                                      return (Var (fst $1) (fromJust e), getTipo e) }
        | Exp '.' id               { %do 
                                     let isRecord (Record _ _) = True
                                         isRecord _ = False
@@ -706,10 +705,6 @@ Exp :: { Exp }
 
     | int                         { (IntLit (fst $1), Simple "planet") }
     | float                       { (FloLit (fst $1), Simple "cloud") }
-    | new                         { (Var $ fst $1, Simple "moon") }
-    | full                        { (Var $ fst $1, Simple "moon") }
-    | bh                          { (Var $ fst $1, Composite "~" IDK) }
-    | vac                         { (Var $ fst $1, Simple "vacuum") }
     | str                         { (StrLit (fst $1), Composite "Cluster" (Simple "star")) }
     | chr                         { (CharLit (fst $1), Simple "star") }
     | Exp '+' Exp                 { % do

@@ -12,15 +12,11 @@ $alpha = [a-zA-Z]   -- alfabéticos
 tokens :-
   Space         {\pos _ -> TkSpace pos}
   EndofSpace    {\pos _ -> TkEndofSpace pos}
-  new           {\pos s -> TkNew (s,  pos)}
-  full          {\pos s -> TkFull (s,  pos)}
-  blackhole     {\pos s -> TkNull (s,  pos)}
   moon          {\pos s -> TkMoon (s,  pos)}
   planet        {\pos s -> TkPlanet (s,  pos)}
   cloud         {\pos s -> TkCloud (s,  pos)}
   star          {\pos s -> TkStar (s,  pos)}
   vacuum        {\pos s -> TkVacuum (s,  pos)}
-  vac           {\pos s -> TkVac (s,  pos)}
   cosmos        {\pos s -> TkCosmos (s,  pos)}
   Constellation {\pos s -> TkConstellation (s,  pos)}
   Cluster       {\pos s -> TkCluster (s,  pos)}
@@ -105,15 +101,11 @@ tokens :-
 data Token =
   TkSpace     AlexPosn |
   TkEndofSpace AlexPosn |
-  TkNew       (String, AlexPosn) |
-  TkFull      (String, AlexPosn) |
-  TkNull      (String, AlexPosn) |
   TkMoon      (String, AlexPosn) |
   TkPlanet    (String, AlexPosn) |
   TkCloud     (String, AlexPosn) |
   TkStar      (String, AlexPosn) |
   TkVacuum    (String, AlexPosn) |
-  TkVac       (String, AlexPosn) |
   TkCosmos    (String, AlexPosn) |
   TkConstellation (String, AlexPosn) |
   TkCluster   (String, AlexPosn) |
@@ -193,15 +185,11 @@ data Token =
 getPos :: Token -> AlexPosn
 getPos (TkSpace      p) = p
 getPos (TkEndofSpace  p) = p
-getPos (TkNew        (_,  p)) = p
-getPos (TkFull       (_,  p)) = p
-getPos (TkNull       (_,  p)) = p
 getPos (TkMoon       (_,  p)) = p
 getPos (TkPlanet     (_,  p)) = p
 getPos (TkCloud      (_,  p)) = p
 getPos (TkStar       (_,  p)) = p
 getPos (TkVacuum     (_,  p)) = p
-getPos (TkVac        (_,  p)) = p
 getPos (TkCosmos     (_,  p)) = p
 getPos (TkConstellation  (_,  p)) = p
 getPos (TkCluster    (_,  p)) = p

@@ -19,14 +19,10 @@ import qualified Data.Map as Map
       space           { TkSpace     $$ }
       end             { TkEndofSpace $$ }
       moon            { TkMoon      $$ }
-      new             { TkNew       $$ }
-      full            { TkFull      $$ }
-      bh              { TkNull      $$ }
       planet          { TkPlanet    $$ }
       cloud           { TkCloud     $$ }
       star            { TkStar      $$ }
       vacuum          { TkVacuum    $$ }
-      vac             { TkVac       $$ }
       constellation   { TkConstellation $$ }
       cluster         { TkCluster   $$ }
       quasar          { TkQuasar    $$ }
@@ -282,10 +278,6 @@ Exp : LValue                      { () }
 
     | int                         { () }
     | float                       { () }
-    | new                         { () }
-    | full                        { () }
-    | bh                          { () }
-    | vac                          { () }
     | str                         { () }
     | chr                         { () }
     | Exp '+' Exp                 { () }

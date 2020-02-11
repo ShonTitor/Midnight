@@ -16,6 +16,7 @@ buscar s t = lis $ Map.lookup s t
       lis Nothing = []
       lis (Just lista) = lista
 
+
 printError :: Int -> Int -> String -> MonadTablon ()
 printError m n msg = do
   (tab, pila, x, _, r) <- get 
@@ -119,7 +120,7 @@ getTipo Nothing = Err
 getTipo (Just (Entry t _ _)) = t
 
 castCloud :: Exp -> Exp
-castCloud e = (Funcall (Var "vaporize", NA) [e], Simple "cloud")
+castCloud e = (Funcall (Var "vaporize" (Entry (Subroutine "Comet" [Simple "planet"] (Simple "cloud") ) (Subrutina []) 0), NA) [e], Simple "cloud")
 
 checkNum :: (String, AlexPosn) -> Exp -> Exp -> MonadTablon (Exp, Exp)
 checkNum (op, AlexPn _ m n) a@(e1, t1) b@(e2, t2) = do
@@ -207,12 +208,14 @@ insertarCampos xs = do
     (_, _, _, bb, r) <- get
     put (tab, pila, n, bb, r)
 
-insertarVar :: (String, AlexPosn) -> Type -> MonadTablon ()
+insertarVar :: (String, AlexPosn) -> Type -> MonadTablon Entry
 insertarVar s t = do
     (tablonActual, pila@(tope:_), n, _, _) <- get
-    tab <- insertar s (Entry t Variable tope) tablonActual
+    let entry = (Entry t Variable tope)
+    tab <- insertar s entry tablonActual
     (_, _, _, bb, r) <- get
     put (tab, pila, n, bb, r)
+    return entry
 
 insertarSubrutina :: (Def, AlexPosn) -> MonadTablon ()
 insertarSubrutina ((Func s params tret sequ), pos) = do
