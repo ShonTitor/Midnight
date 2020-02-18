@@ -122,14 +122,16 @@ genCodeInstr (ForRange k e1 e2 e3 sequ) = do
     tell [T.ThreeAddressCode T.Add (Just iter) (Just iter) (Just step),
           T.ThreeAddressCode T.GoTo Nothing Nothing (Just begin),
           T.ThreeAddressCode T.NewLabel Nothing (Just bfalse) Nothing]
-
 -- Asignaciones
+genCodeInstr (Asig (e1@(Access _ _),_) e2) = do
+    a <- getAddress e1
+    b <- getOperand e2
+    tell [T.ThreeAddressCode T.Set (Just a) (Just $ T.Constant ("0", Simple "planet")) (Just b)]
 genCodeInstr (Asig e1 e2) = do
     lvalue <- getOperand e1
     rvalue <- getOperand e2
     tell [T.ThreeAddressCode T.Assign (Just lvalue) (Just rvalue) Nothing]
-
-
+--
 genCodeInstr (Declar _ _) = return ()
 genCodeInstr _ = error "no c nada"
 
@@ -198,6 +200,11 @@ genCodeExp e@(Eq _ _) = do
     genCodeExpB' e
 genCodeExp e@(Neq _ _) = do
     genCodeExpB' e
+-- Accesos
+genCodeExp e@(Access _ _) = do
+    a <- getAddress e 
+    t <- newTemp
+    return [T.ThreeAddressCode T.Deref (Just t) (Just a) Nothing]
 -- RIP
 genCodeExp _ = do
     _ <- newTemp
@@ -270,10 +277,53 @@ genCodeExpB ((MenorI e1 e2), btrue, bfalse) = do
     return [T.ThreeAddressCode T.Lte (Just op1) (Just op2) (Just btrue), T.ThreeAddressCode T.GoTo Nothing Nothing (Just bfalse)]
 genCodeExpB _ = error "no c nada"
 
+getAddress :: Expr -> InterMonad Operand
+getAddress (Var s entry) = return $ T.Variable $ SymEntry s entry
+getAddress (Access (e, ti) (Index (n, ta))) = do
+    let f (Composite s _) = s
+        f _ = error "esto no deberia pasar"
+        g (Composite _ t) = t
+        g _ = error "esto no deberia pasar"
+        fti = f ti
+        te = g ti
+    a <- getAddress e
+    if fti == "Cluster" then do
+        i <- getOperand (n, ta)
+        t0 <- newTemp
+        t1 <- newTemp
+        tell [T.ThreeAddressCode T.Deref (Just t0) (Just a) Nothing,
+              T.ThreeAddressCode T.Mult (Just t1) (Just i) (Just $ T.Constant (show $ anchura te, Simple "planet")),
+              T.ThreeAddressCode T.Add (Just t0) (Just t0) (Just t1)]
+        return t0
+    else if fti == "Quasar" then do
+        i <- getOperand (n, ta)
+        btrue <- newLabel
+        bfalse <- newLabel
+        t0 <- newTemp
+        t1 <- newTemp
+        t2 <- newTemp
+        tell [T.ThreeAddressCode T.Assign (Just t0) (Just $ T.Constant ("0", Simple "planet")) Nothing,
+              T.ThreeAddressCode T.Assign (Just t1) (Just a) Nothing,
+              T.ThreeAddressCode T.Eq (Just i) (Just $ T.Constant ("0", Simple "planet")) (Just btrue),
+              T.ThreeAddressCode T.NewLabel Nothing (Just bfalse) Nothing, 
+              T.ThreeAddressCode T.Deref (Just t1) (Just t1) Nothing,
+              T.ThreeAddressCode T.Add (Just t0) (Just t0) (Just $ T.Constant ("1", Simple "planet")),
+              T.ThreeAddressCode T.Neq (Just t0) (Just i) (Just bfalse),
+              T.ThreeAddressCode T.NewLabel Nothing (Just btrue) Nothing,
+              T.ThreeAddressCode T.Add (Just t2) (Just t1) (Just $ T.Constant (show $ anchura (Composite "~" te), Simple "planet"))]
+        return t2
+    else error "no c"
+getAddress e = do
+    c <- genCodeExp e
+    tell c
+    lastTemp
+
+
 getOperand :: Exp -> InterMonad Operand
 getOperand (Var s entry,_) = return $ T.Variable $ SymEntry s entry
 getOperand (IntLit n, t) = return $ T.Constant (show n, t)
 getOperand (FloLit x, t) = return $ T.Constant (show x, t)
+getOperand (CharLit c,t) = return $ T.Constant (show c, t)
 getOperand (e,_) = do
     c <- genCodeExp e
     tell c

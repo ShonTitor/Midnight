@@ -12,6 +12,9 @@ data Type
       | Err
       deriving (Eq)
 
+anchura :: Type -> Int
+anchura _ = 4
+
 isComp :: Type -> Bool
 isComp (Composite _ _) = True
 isComp (Record _ _) = True
