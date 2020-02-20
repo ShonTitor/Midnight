@@ -122,8 +122,8 @@ DefsAux : DefsAux Func                { $2 : $1 }
 
 FunSig : comet id Params '->' Type
         { % do
-          (t, pila, n, b, r) <- get
-          put (t, 1:pila, n, b, r)
+          (t, pila, n, b, r, off) <- get
+          put (t, 1:pila, n, b, r, off)
           let d = Func (fst $2) $3 $5 []
           insertarSubrutina (d, snd $2)
           popPila
@@ -131,8 +131,8 @@ FunSig : comet id Params '->' Type
         }
        | satellite id Params '->' Type
         { % do
-          (t, pila, n, b, r) <- get
-          put (t, 1:pila, n, b, r)
+          (t, pila, n, b, r, off) <- get
+          put (t, 1:pila, n, b, r, off)
           let d = Iter (fst $2) $3 $5 []
           insertarSubrutina (d, snd $2) 
           popPila
@@ -335,16 +335,5 @@ parseError :: [Token] -> a
 parseError (x:_) = error $ "Error de sintaxis en la línea " ++ (show m) ++ " columna " ++ (show n)
                    where (AlexPn _ m n) = getPos x
 parseError _ = error "Final inesperado del archivo."
-
-pregato f = do
-  putStrLn ""
-  s <- getTokens f
-  (arbol, (tabla, _, _, _, _), _) <- runRWST (preparser s) () initTablon
-  putStrLn ""
-  print arbol
-  putStrLn ""
-  --putStrLn $ showTablon tabla
-  putStrLn $ showTablon' tabla
-  return()
 
 }

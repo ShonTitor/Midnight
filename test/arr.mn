@@ -1,0 +1,7 @@
+Space
+planet n = 39;
+[[planet]Quasar]Cluster A;
+A[0][n+2] = 62;
+n = A[2][2]
+
+EndofSpace

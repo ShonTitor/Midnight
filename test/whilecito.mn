@@ -1,6 +1,15 @@
 Space
 	planet perro;
 	orbit while (perro < 5) {
-		perro + 1
+		perro = 1;
+		orbit while (perro < 5) {
+		perro = 2;
+			orbit while (perro < 5) {
+				continue;
+				perro = 3;
+				break perro;
+			}
+		}
+		perro + 1;
 	}
 EndofSpace

@@ -1,0 +1,10 @@
+Space
+
+[planet]Quasar L;
+
+orbit i around L {
+    i = 24;
+    break
+}
+
+EndofSpace

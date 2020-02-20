@@ -124,14 +124,14 @@ DefsAux : DefsAux Func                { $2 : $1 }
 
 FunSig : comet id Params '->' Type
         { % do
-          (tablonActual, pila, n, b, _) <- get
-          put (tablonActual, pila, n, b, Just (True, $5))
+          (tablonActual, pila, n, b, _, off) <- get
+          put (tablonActual, pila, n, b, Just (True, $5), off)
           return $ fst $2
         }
        | satellite id Params '->' Type
         { % do
-          (tablonActual, pila, n, b, _) <- get
-          put (tablonActual, pila, n, b, Just (False, $5))
+          (tablonActual, pila, n, b, _, off) <- get
+          put (tablonActual, pila, n, b, Just (False, $5), off)
           return $ fst $2
         }
 
@@ -140,8 +140,8 @@ Func  :: { () }
         { % do 
           checkCierre $4 "{" $2
           actualizarSubrutina $1 $3 
-          (tablonActual, pila, n, b, _) <- get
-          put (tablonActual, pila, n, b, Nothing)}
+          (tablonActual, pila, n, b, _, off) <- get
+          put (tablonActual, pila, n, b, Nothing, off)}
           --let d = Func (fst $2) $4 $7 $9
           --insertarSubrutina (d, snd $2) }
       | RegSig '{' Regs Pop LQC    { % checkCierre $5 "{" $2 }
@@ -274,7 +274,7 @@ InstrA : Type id
                               return $ Break $2 }
        | continue           { Continue }
        | return Exp         { % do
-                              (_,_,_,_,tipo) <- get
+                              (_,_,_,_,tipo,_) <- get
                               let AlexPn _ m n = $1
                                   (exp, _) = $2
                               if isNothing tipo then do
@@ -289,9 +289,9 @@ InstrA : Type id
                                   desu <- checkAsig $1 t $2
                                   return $ Return desu}
        | return             { % do
-                              (_,_,_,_,tipo) <- get
+                              (_,_,_,_,tipo,_) <- get
                               let AlexPn _ m n = $1
-                                  exp = Var "vac" (Entry (Simple "vacuum") Literal 0)
+                                  exp = Var "vac" (Entry (Simple "vacuum") Literal 0 (-1))
                               if isNothing tipo then do
                                 printError m n ("Error: return fuera de una subrutina")
                                 return $ Return (exp, Err)
@@ -304,7 +304,7 @@ InstrA : Type id
                                   desu <- checkAsig $1 t (exp, Simple "vacuum")
                                   return $ Return desu }
        | yield Exp          { % do
-                              (_,_,_,_,tipo) <- get
+                              (_,_,_,_,tipo,_) <- get
                               let AlexPn _ m n = $1
                                   (exp, _) = $2
                               if isNothing tipo then do
@@ -330,7 +330,7 @@ InstrB : Push If                                                             { $
             checkCierre $9 "(" $3
             checkCierre $12 "{" $10
             checkBool' $5 (snd $6)
-            return $ ForC $4 $6 (reverse $ $8 : $11) }
+            return $ ForC $4 $6 $8 (reverse $11) }
 
 IterHead : Push orbit id AROUND Exp
           { % do
@@ -346,8 +346,8 @@ IterHead : Push orbit id AROUND Exp
             if t1 /= Err && t2 == Err then
               printError m n ("Error de tipo: El tipo  "++(show t1)++" no es iterable")
             else return ()
-            insertarVar $3 t2
-            let f' seq = Foreach (fst $3) $5 seq
+            entry <- insertarVar $3 t2
+            let f' seq = Foreach (Var (fst $3) entry, getTipo (Just entry)) $5 seq
             return f' }
          | Push orbit id AROUND range '(' Exp ',' Exp ',' Exp PQC
            { % do
@@ -410,11 +410,11 @@ Elif : ElifAux                                         { reverse $1 }
      | ElifAux Push else  '{' Seq LQC Pop              
      {  % do
         checkCierre $6 "{" $4
-        return $ reverse $ ((Var "full" (Entry (Simple "moon") Literal 0), Simple "bool"), $5) :  $1 }
+        return $ reverse $ ((Var "full" (Entry (Simple "moon") Literal 0 (-1)), Simple "bool"), $5) :  $1 }
      | else  '{' Seq LQC Pop                           
      {  % do
         checkCierre $4 "{" $2
-        return [((Var "full" (Entry (Simple "moon") Literal 0), Simple "bool"), $3)] }
+        return [((Var "full" (Entry (Simple "moon") Literal 0 (-1)), Simple "bool"), $3)] }
 
 
 
@@ -493,30 +493,31 @@ LValue :: { Exp }
       : id                       { % do
                                     e <- lookupExists $1
                                     if isNothing e then
-                                      return (Var (fst $1) (Entry Err Variable (-1)), getTipo e)
+                                      return (Var (fst $1) (Entry Err Variable (-1) (-1)), getTipo e)
                                     else
                                       return (Var (fst $1) (fromJust e), getTipo e) }
        | Exp '.' id               { %do 
                                     let isRecord (Record _ _) = True
                                         isRecord _ = False
                                         getR (Record _ r) = r
-                                        getS (Entry _ (Registro _ sc) _) = [sc]
+                                        getS (Entry _ (Registro _ sc) _ _) = [sc]
                                         getS _ = []
                                         t1 = snd $1
                                         AlexPn _ m n = $2
+                                        errentry = Entry Err Variable (-1) (-1)
                                     if isRecord t1 then do
                                         e1 <- lookupScope (getR t1) [1]
-                                        if isNothing e1 then return (Attr $1 (fst $3), Err)
+                                        if isNothing e1 then return (Attr $1 (fst $3, errentry), Err)
                                         else do
                                           e2 <- lookupScope (fst $3) (getS $ fromJust e1)
                                           if isNothing e2 then do
                                             printError m n ("Error de tipo: "++(show t1)++" no tiene un atributo "++(show $ fst $3))
-                                            return (Attr $1 (fst $3), Err)
-                                          else return (Attr $1 (fst $3), getTipo e2)
-                                    else if t1 == Err then return (Attr $1 (fst $3), Err)
+                                            return (Attr $1 (fst $3, errentry), Err)
+                                          else return (Attr $1 (fst $3, fromJust e2), getTipo e2)
+                                    else if t1 == Err then return (Attr $1 (fst $3, errentry), Err)
                                     else do 
                                         printError m n ("Error de tipo: "++(show t1)++" no tiene un atributo "++(show $ fst $3))
-                                        return (Attr $1 (fst $3), Err) }
+                                        return (Attr $1 (fst $3, errentry), Err) }
        | Exp '[' Index            { % do
                                     let exp = Access $1 $3
                                         t1 = snd $1
@@ -853,10 +854,10 @@ checkCierre b s pos = do
                       if b then return () 
                       else printError m n ("Error de sintaxis: No se pudo emparejar "++s )
 
-neko :: [Token] -> IO (Program, (Tipos.Tablon, [Integer], Integer, Bool, Maybe (Bool,Type)), ())
+neko :: [Token] -> IO (Program, (Tipos.Tablon, [Integer], Integer, Bool, Maybe (Bool,Type), [Integer]), ())
 neko s = do
-  (_, (pretablon, _, _, b, _), _) <- runRWST (preparser s) () initTablon
-  nya <- runRWST (parser s) () (pretablon, [0], 0, b, Nothing)
+  (_, (pretablon, _, _, b, _, off), _) <- runRWST (preparser s) () initTablon
+  nya <- runRWST (parser s) () (pretablon, [0], 0, b, Nothing, off)
   return nya
 
 cat :: Program -> Tipos.Tablon -> IO ()
@@ -867,7 +868,7 @@ cat arbol tablon = do
   --putStrLn $ showTablon tablon
   putStrLn $ showTablon' tablon
 
-gatto :: String -> IO (Program, (Tipos.Tablon, [Integer], Integer, Bool, Maybe (Bool,Type)), ())
+gatto :: String -> IO (Program, (Tipos.Tablon, [Integer], Integer, Bool, Maybe (Bool,Type), [Integer]), ())
 gatto f = do
   s <- getTokens f
   nya <- neko s
@@ -876,6 +877,6 @@ gatto f = do
 gato :: String -> IO ()
 gato f = do
   putStrLn ""
-  (arbol, (tablon, _, _, b, _), _) <- gatto f
+  (arbol, (tablon, _, _, b, _, _), _) <- gatto f
   if b then cat arbol tablon else return ()
 }

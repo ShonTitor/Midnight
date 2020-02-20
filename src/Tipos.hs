@@ -12,7 +12,7 @@ data Type
       | Err
       deriving (Eq)
 
-anchura :: Type -> Int
+anchura :: Type -> Integer
 anchura _ = 4
 
 isComp :: Type -> Bool
@@ -65,7 +65,8 @@ data Category = Tipo
 data Entry = Entry {
     tipo :: Type,
     categoria :: Category,
-    alcance :: Integer
+    alcance :: Integer,
+    offset :: Integer
     }
     deriving (Show, Eq)
 
@@ -88,9 +89,9 @@ data Instr
       | Asig Exp Exp
       | If [(Exp, [Instr])]
       | While Exp [Instr]
-      | Foreach String Exp [Instr]
+      | Foreach Exp Exp [Instr]
       | ForRange Exp Exp Exp Exp [Instr]
-      | ForC Instr Exp [Instr]
+      | ForC Instr Exp Instr [Instr]
       | Break Exp
       | Continue
       | Return Exp
@@ -114,7 +115,7 @@ data Expr
       -- LValues
       | Var String Entry
       | Access Exp Slice
-      | Attr Exp String
+      | Attr Exp (String, Entry)
       -- funciones de preludio
       | Print [Exp]
       | Read
@@ -122,7 +123,6 @@ data Expr
       | Scale Exp
       | Pop Exp [Exp]
       | Add Exp [Exp]
-      | Terraform Exp
 
       | Desref Exp
       -- Numericas

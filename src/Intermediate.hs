@@ -6,43 +6,73 @@ import qualified TACType as T
 
 data VarType = Temp Int
              | SymEntry String Entry
+             | Base
 type Operand = T.Operand VarType Type
 type InterCode = [T.ThreeAddressCode VarType Type]
-type InterMonad a = RWST () InterCode (Int, Int) IO a
+type InterMonad a = RWST () InterCode (Int, Int, [[Operand]], [[Operand]]) IO a
 
 instance T.SymEntryCompatible VarType where
   getSymID (Temp n) = "_t"++(show n)
   getSymID (SymEntry s _) = s
+  getSymID Base = "_base"
 
 instance Show VarType where
     show x = T.getSymID x
 
 vaca :: String -> IO InterCode
 vaca f = do
-    (arbol, (tablon, _, _, ok, _), _) <- gatto f
+    (arbol, (tablon, _, _, ok, _, _), _) <- gatto f
     cow arbol tablon ok
 
 cow :: Program -> Tablon -> Bool -> IO InterCode
 cow (Root lis) _ ok = if ok then do
-                            (_,_,c) <- runRWST (genCode lis) () (0,0)
+                            (_,_,c) <- runRWST (genCode lis) () (0,0,[[]],[[]])
                             return c
                         else return []
 
+base :: Operand
+base = T.Variable Base
+
+popVaina :: InterMonad ()
+popVaina = do
+    (n, m, _:p1, _:p2) <- get
+    put (n, m, p1, p2)
+
+pushVaina :: InterMonad ()
+pushVaina = do
+    (n, m, p1, p2) <- get
+    put (n, m, []:p1, []:p2)
+
+popLoop :: InterMonad ()
+popLoop = do
+    (n, m, s1, s2) <- get
+    put (n, m, tail $ head s1 : tail s1, tail $ head s2 : tail s2)
+
+lookLoop :: InterMonad ([Operand], [Operand])
+lookLoop = do
+    (_, _, s1, s2) <- get
+    return (head s1, head s2)
+
+pushLoop :: Operand -> Operand -> InterMonad ()
+pushLoop a b = do
+    (n, m, p1:s1, p2:s2) <- get
+    put (n, m, (a:p1):s1, (b:p2):s2)
+
 newTemp :: InterMonad Operand
 newTemp = do
-    (n,m) <- get
-    put (n+1,m)
+    (n,m,a,b) <- get
+    put (n+1,m,a,b)
     return $ T.Variable (Temp n)
 
 lastTemp :: InterMonad Operand
 lastTemp = do
-    (n,_) <- get
+    (n,_,_,_) <- get
     return $ T.Variable (Temp (n-1))
 
 newLabel :: InterMonad Operand
 newLabel = do 
-    (n,m) <- get
-    put (n,m+1)
+    (n,m,a,b) <- get
+    put (n,m+1,a,b)
     return $ T.Label m
 
 genCode :: [Instr] -> InterMonad ()
@@ -79,7 +109,6 @@ genCodeInstr (If xs) = do
     next <- newLabel
     genCodeIf xs next
     tell [T.ThreeAddressCode T.NewLabel Nothing (Just next) Nothing]
-
 -- Repetición
 genCodeInstr (While (b,_) sequ) = do
     begin <- newLabel
@@ -88,25 +117,32 @@ genCodeInstr (While (b,_) sequ) = do
     c1 <- genCodeExpB (b, btrue, bfalse)
     tell $ (T.ThreeAddressCode T.NewLabel Nothing (Just begin) Nothing) : c1
     tell [T.ThreeAddressCode T.NewLabel Nothing (Just btrue) Nothing]
+    pushLoop bfalse begin
     genCode sequ
+    popLoop
     tell [T.ThreeAddressCode T.GoTo Nothing Nothing (Just begin),
           T.ThreeAddressCode T.NewLabel Nothing (Just bfalse) Nothing]
-genCodeInstr (ForC instr (b,_) sequ) = do
+genCodeInstr (ForC instr (b,_) instrf sequ) = do
     begin <- newLabel
     btrue <- newLabel
     bfalse <- newLabel
+    continue <- newLabel
     c1 <- genCodeExpB (b, btrue, bfalse)
     genCodeInstr instr
     tell $ (T.ThreeAddressCode T.NewLabel Nothing (Just begin) Nothing) : c1
     tell [T.ThreeAddressCode T.NewLabel Nothing (Just btrue) Nothing]
+    pushLoop bfalse continue
     genCode sequ
+    tell [T.ThreeAddressCode T.NewLabel Nothing (Just continue) Nothing]
+    genCodeInstr instrf
+    popLoop
     tell [T.ThreeAddressCode T.GoTo Nothing Nothing (Just begin),
           T.ThreeAddressCode T.NewLabel Nothing (Just bfalse) Nothing]
-
 genCodeInstr (ForRange k e1 e2 e3 sequ) = do
     begin <- newLabel
     btrue <- newLabel
     bfalse <- newLabel
+    continue <- newLabel
     start <- getOperand e1
     end <- getOperand e2
     step <- getOperand e3
@@ -118,16 +154,71 @@ genCodeInstr (ForRange k e1 e2 e3 sequ) = do
           T.ThreeAddressCode T.GoTo Nothing Nothing (Just bfalse),
           T.ThreeAddressCode T.NewLabel Nothing (Just btrue) Nothing,
           T.ThreeAddressCode T.Assign (Just i) (Just iter) Nothing]
+    pushLoop bfalse continue
     genCode sequ
+    popLoop
+    tell [T.ThreeAddressCode T.NewLabel Nothing (Just continue) Nothing]
     tell [T.ThreeAddressCode T.Add (Just iter) (Just iter) (Just step),
           T.ThreeAddressCode T.GoTo Nothing Nothing (Just begin),
           T.ThreeAddressCode T.NewLabel Nothing (Just bfalse) Nothing]
+genCodeInstr (Foreach k e sequ) = do
+    let f (_, Composite "Quasar" _) = True
+        f _ = False
+    if f e then do
+        btrue <- newLabel
+        bfalse <- newLabel
+        continue <- newLabel
+        t0 <- getAddress $ fst e
+        t1 <- newTemp
+        t2 <- newTemp
+        iter <- newTemp
+        i <- getOperand k
+        tell [T.ThreeAddressCode T.Add (Just t1) (Just t0) (Just $ T.Constant ("4", Simple "planet")),
+              T.ThreeAddressCode T.Deref (Just t1) (Just t1) Nothing,
+              T.ThreeAddressCode T.Assign (Just t2) (Just $ T.Constant ("0", Simple "planet")) Nothing,
+              T.ThreeAddressCode T.Eq (Just t1) (Just $ T.Constant ("0", Simple "planet")) (Just bfalse),
+              T.ThreeAddressCode T.NewLabel Nothing (Just btrue) Nothing,
+              T.ThreeAddressCode T.Deref (Just t0) (Just t0) Nothing,
+              T.ThreeAddressCode T.Add (Just iter) (Just t0) (Just $ T.Constant ("4", Simple "planet")), 
+              T.ThreeAddressCode T.Deref (Just iter) (Just iter) Nothing,
+              T.ThreeAddressCode T.Assign (Just i) (Just iter) Nothing]
+        pushLoop bfalse continue
+        genCode sequ
+        popLoop
+        tell [T.ThreeAddressCode T.NewLabel Nothing (Just continue) Nothing]
+        tell [T.ThreeAddressCode T.Add (Just t2) (Just t2) (Just $ T.Constant ("1", Simple "planet")),
+              T.ThreeAddressCode T.Lt (Just t2) (Just t1) (Just btrue),
+              T.ThreeAddressCode T.NewLabel Nothing (Just bfalse) Nothing]
+    else error "no implementado"
+-- break y continue
+genCodeInstr (Break b) = do
+    let f :: Operand -> Int -> [Operand] -> InterMonad ()
+        f _ _ [] = return ()
+        f _ _ [l] = do
+            tell [T.ThreeAddressCode T.GoTo Nothing Nothing (Just l)]
+        f n acum (l:ls) = do
+            tell [T.ThreeAddressCode T.Eq (Just n) (Just $ T.Constant (show acum, Simple "planet")) (Just l)]
+            f n (acum+1) ls
+    n <- getOperand b
+    labels <- lookLoop
+    f n 1 (fst labels)
+genCodeInstr (Continue) = do
+    labels <- lookLoop
+    tell [T.ThreeAddressCode T.GoTo Nothing Nothing (Just $ head $ snd labels)]
+    (_,_,a,b) <- get
+    lift $ putStrLn (show a)
+    lift $ putStrLn (show b)
 -- Asignaciones
+genCodeInstr (Asig (e1@(Attr _ _),_) e2) = do
+    a <- getAddress e1
+    b <- getOperand e2
+    tell [T.ThreeAddressCode T.Set (Just a) (Just $ T.Constant ("0", Simple "planet")) (Just b)]
 genCodeInstr (Asig (e1@(Access _ _),_) e2) = do
     a <- getAddress e1
     b <- getOperand e2
     tell [T.ThreeAddressCode T.Set (Just a) (Just $ T.Constant ("0", Simple "planet")) (Just b)]
 genCodeInstr (Asig e1 e2) = do
+    -- faltan copias profundas
     lvalue <- getOperand e1
     rvalue <- getOperand e2
     tell [T.ThreeAddressCode T.Assign (Just lvalue) (Just rvalue) Nothing]
@@ -205,6 +296,21 @@ genCodeExp e@(Access _ _) = do
     a <- getAddress e 
     t <- newTemp
     return [T.ThreeAddressCode T.Deref (Just t) (Just a) Nothing]
+genCodeExp e@(Attr _ _) = do
+    a <- getAddress e
+    t <- newTemp
+    return [T.ThreeAddressCode T.Deref (Just t) (Just a) Nothing]
+-- Desreferenciacion
+genCodeExp (Desref e1) = do
+    pointer <- getOperand e1
+    t0 <- newTemp
+    return [T.ThreeAddressCode T.Deref (Just t0) (Just pointer) Nothing]
+-- Scale
+genCodeExp (Scale e1) = do
+    n <- getAddress $ fst e1
+    tam <- newTemp
+    return [T.ThreeAddressCode T.Add (Just tam) (Just n) (Just $ T.Constant ("4", Simple "planet")),
+          T.ThreeAddressCode T.Deref (Just tam) (Just tam) Nothing]
 -- RIP
 genCodeExp _ = do
     _ <- newTemp
@@ -278,7 +384,15 @@ genCodeExpB ((MenorI e1 e2), btrue, bfalse) = do
 genCodeExpB _ = error "no c nada"
 
 getAddress :: Expr -> InterMonad Operand
-getAddress (Var s entry) = return $ T.Variable $ SymEntry s entry
+getAddress (Var s entry) = do
+    t0 <- newTemp
+    tell [T.ThreeAddressCode T.Add (Just t0) (Just base) (Just $ T.Constant (show $ offset entry, Simple "planet"))]
+    return t0
+getAddress (Attr (e, ti) (s, entry)) = do
+    a <- getAddress e
+    t0 <- newTemp
+    tell [T.ThreeAddressCode T.Add (Just t0) (Just a) (Just $ T.Constant (show $ offset entry, Simple "planet"))]
+    return t0
 getAddress (Access (e, ti) (Index (n, ta))) = do
     let f (Composite s _) = s
         f _ = error "esto no deberia pasar"

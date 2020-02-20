@@ -73,27 +73,6 @@ spec = describe "Pruebas" $ do
         [TkEndofSpace (_)] -> True
         _ -> error $ show tokens ++ "rechaza Space como token valido"
 
-    it "acepta new como un token New válido" $ do
-      let tokens = alexScanTokens "new"
-
-      case tokens of
-        [TkNew (string, _)] -> string `shouldBe` "new"
-        _ -> error $ show tokens ++ "rechaza new como token valido"
-
-    it "acepta full como un token Full válido" $ do
-      let tokens = alexScanTokens "full"
-
-      case tokens of
-        [TkFull (string, _)] -> string `shouldBe` "full"
-        _ -> error $ show tokens ++ "rechaza full como token valido"
-
-    it "acepta blackhole como un token Null válido" $ do
-      let tokens = alexScanTokens "blackhole"
-
-      case tokens of
-        [TkNull (string, _)] -> string `shouldBe` "blackhole"
-        _ -> error $ show tokens ++ "rechaza blackhole como token valido"
-
     it "acepta moon como un token Moon válido" $ do
       let tokens = alexScanTokens "moon"
 
@@ -629,6 +608,6 @@ spec = describe "Pruebas" $ do
     let nyaa s = neko (fst $ perro s)
 
     it "acepta un planeta perro" $ do
-      (_, (tablon, _, _, _, _), _) <- nyaa "Space planet perro; EndofSpace"
+      (_, (tablon, _, _, _, _, _), _) <- nyaa "Space planet perro; EndofSpace"
 
       buscar "perro" tablon `shouldBe` [Entry (Simple "planet") Variable 1]
