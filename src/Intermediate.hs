@@ -1,5 +1,7 @@
 module Intermediate where
 import Control.Monad.RWS
+import Data.Map
+import Data.Foldable
 import Tipos
 import Parser (gatto)
 import qualified TACType as T
@@ -25,13 +27,28 @@ vaca f = do
     cow arbol tablon ok
 
 cow :: Program -> Tablon -> Bool -> IO InterCode
-cow (Root lis) _ ok = if ok then do
-                            (_,_,c) <- runRWST (genCode lis) () (0,0,[[]],[[]])
-                            return c
-                        else return []
+cow (Root lis) tab ok = do
+    let moo' :: (Int, Int, InterCode) -> String -> Entry -> IO (Int, Int, InterCode)
+        moo' (n, m, code) s entry = do
+            (_, (a,b,_,_), c) <- runRWST (genCodeSub s entry) () (n,m,[[]],[[]])
+            return (a, b, code++c)
+        moo :: IO (Int, Int, InterCode) -> String -> [Entry] -> IO (Int, Int, InterCode)
+        moo b s entries = do
+            a <- b
+            foldlM (\x y -> moo' x s y) a entries
+        moo'' :: IO (Int, Int, InterCode) -> String -> [Entry] -> (IO (Int, Int, InterCode), ())
+        moo'' b s entries = (moo b s entries, ())
+        mu :: IO (Int, Int, InterCode)
+        mu = return (0,0,[])
+    if ok then do
+        let (cc,_) = mapAccumWithKey moo'' mu tab
+        (i,j,sc) <- cc
+        (_,(_,_,_,_),c) <- runRWST (genCode lis) () (i,j,[[]],[[]])
+        return (sc++(T.ThreeAddressCode T.NewLabel Nothing (Just $ T.Label "_main") Nothing):c)
+    else return []
 
 base :: Operand
-base = T.Variable Base
+base = T.Id Base
 
 popVaina :: InterMonad ()
 popVaina = do
@@ -62,24 +79,31 @@ newTemp :: InterMonad Operand
 newTemp = do
     (n,m,a,b) <- get
     put (n+1,m,a,b)
-    return $ T.Variable (Temp n)
+    return $ T.Id (Temp n)
 
 lastTemp :: InterMonad Operand
 lastTemp = do
     (n,_,_,_) <- get
-    return $ T.Variable (Temp (n-1))
+    return $ T.Id (Temp (n-1))
 
 newLabel :: InterMonad Operand
 newLabel = do 
     (n,m,a,b) <- get
     put (n,m+1,a,b)
-    return $ T.Label m
+    return $ T.Label (show m)
 
 genCode :: [Instr] -> InterMonad ()
 genCode [] = return ()
 genCode (x:xs) = do
     genCodeInstr x
     genCode xs
+
+genCodeSub :: String -> Entry -> InterMonad ()
+genCodeSub s (Entry _ (Subrutina sequ) 1 _) = do
+    tell [T.ThreeAddressCode T.NewLabel Nothing (Just $ T.Label s) Nothing]
+    genCode sequ
+genCodeSub _ _ = return ()
+
 
 genCodeInstr :: Instr -> InterMonad ()
 -- Expresiones flotando
@@ -205,9 +229,6 @@ genCodeInstr (Break b) = do
 genCodeInstr (Continue) = do
     labels <- lookLoop
     tell [T.ThreeAddressCode T.GoTo Nothing Nothing (Just $ head $ snd labels)]
-    (_,_,a,b) <- get
-    lift $ putStrLn (show a)
-    lift $ putStrLn (show b)
 -- Asignaciones
 genCodeInstr (Asig (e1@(Attr _ _),_) e2) = do
     a <- getAddress e1
@@ -222,9 +243,16 @@ genCodeInstr (Asig e1 e2) = do
     lvalue <- getOperand e1
     rvalue <- getOperand e2
     tell [T.ThreeAddressCode T.Assign (Just lvalue) (Just rvalue) Nothing]
+-- Return y Yield
+genCodeInstr (Return e1) = do
+    o <- getOperand e1
+    tell [T.ThreeAddressCode T.Return Nothing (Just o) Nothing]
+genCodeInstr (Yield e1) = do
+    o <- getOperand e1
+    tell [T.ThreeAddressCode T.Return Nothing (Just o) Nothing]
 --
 genCodeInstr (Declar _ _) = return ()
-genCodeInstr _ = error "no c nada"
+--genCodeInstr _ = return ()
 
 genCodeExp :: Expr -> InterMonad InterCode
 -- Aritmeticas
@@ -311,6 +339,13 @@ genCodeExp (Scale e1) = do
     tam <- newTemp
     return [T.ThreeAddressCode T.Add (Just tam) (Just n) (Just $ T.Constant ("4", Simple "planet")),
           T.ThreeAddressCode T.Deref (Just tam) (Just tam) Nothing]
+-- Llamada a subrutina
+genCodeExp (Funcall f a) = do
+    let g op = T.ThreeAddressCode T.Param Nothing (Just op) Nothing
+    args <- mapM getOperand a
+    fun <- getOperand f
+    t <- newTemp
+    return $ Prelude.map g args ++ [T.ThreeAddressCode T.Call (Just t) (Just fun) (Just $ T.Constant (show $ length args, Simple "planet"))]
 -- RIP
 genCodeExp _ = do
     _ <- newTemp
@@ -384,11 +419,11 @@ genCodeExpB ((MenorI e1 e2), btrue, bfalse) = do
 genCodeExpB _ = error "no c nada"
 
 getAddress :: Expr -> InterMonad Operand
-getAddress (Var s entry) = do
+getAddress (Var _ entry) = do
     t0 <- newTemp
     tell [T.ThreeAddressCode T.Add (Just t0) (Just base) (Just $ T.Constant (show $ offset entry, Simple "planet"))]
     return t0
-getAddress (Attr (e, ti) (s, entry)) = do
+getAddress (Attr (e, _) (_, entry)) = do
     a <- getAddress e
     t0 <- newTemp
     tell [T.ThreeAddressCode T.Add (Just t0) (Just a) (Just $ T.Constant (show $ offset entry, Simple "planet"))]
@@ -434,7 +469,7 @@ getAddress e = do
 
 
 getOperand :: Exp -> InterMonad Operand
-getOperand (Var s entry,_) = return $ T.Variable $ SymEntry s entry
+getOperand (Var s entry,_) = return $ T.Id $ SymEntry s entry
 getOperand (IntLit n, t) = return $ T.Constant (show n, t)
 getOperand (FloLit x, t) = return $ T.Constant (show x, t)
 getOperand (CharLit c,t) = return $ T.Constant (show c, t)

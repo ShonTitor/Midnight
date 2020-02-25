@@ -698,11 +698,11 @@ Exp :: { Exp }
     | Exp '.' pop '(' Args PQC    
       { % do
         checkCierre $6 "(" $4
-        return (Pop $1 $5, Err)  }
+        return (Funcall $1 $5, Err)  }
     | Exp '.' add '(' Args PQC    
       { % do
         checkCierre $6 "(" $4
-        return (Add $1 $5, Err)  }
+        return (Funcall $1 $5, Err)  }
 
     | int                         { (IntLit (fst $1), Simple "planet") }
     | float                       { (FloLit (fst $1), Simple "cloud") }
