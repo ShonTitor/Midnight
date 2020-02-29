@@ -3,6 +3,6 @@ Space
 [Constellation]Cluster perro;
 [Constellation]Cluster gato;
 
-perro = gato;
+perro[0][0] = gato[2][0];
 
 EndofSpace

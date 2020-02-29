@@ -230,14 +230,28 @@ genCodeInstr (Continue) = do
     labels <- lookLoop
     tell [T.ThreeAddressCode T.GoTo Nothing Nothing (Just $ head $ snd labels)]
 -- Asignaciones
-genCodeInstr (Asig (e1@(Attr _ _),_) e2) = do
-    a <- getAddress e1
-    b <- getOperand e2
-    tell [T.ThreeAddressCode T.Set (Just a) (Just $ T.Constant ("0", Simple "planet")) (Just b)]
-genCodeInstr (Asig (e1@(Access _ _),_) e2) = do
-    a <- getAddress e1
-    b <- getOperand e2
-    tell [T.ThreeAddressCode T.Set (Just a) (Just $ T.Constant ("0", Simple "planet")) (Just b)]
+genCodeInstr (Asig (e1@(Attr _ _),t) e2) = do
+    let f (Composite s _) = elem s ["Cluster", "Quasar", "Nebula"] 
+        f _ = False
+    if f t then do
+        a1 <- getAddress e1
+        a2 <- getAddress $ fst e2
+        genCodeCopy t a1 a2
+    else do
+        a <- getAddress e1
+        b <- getOperand e2
+        tell [T.ThreeAddressCode T.Set (Just a) (Just $ T.Constant ("0", Simple "planet")) (Just b)]
+genCodeInstr (Asig (e1@(Access _ _),t) e2) = do
+    let f (Composite s _) = elem s ["Cluster", "Quasar", "Nebula"] 
+        f _ = False
+    if f t then do
+        a1 <- getAddress e1
+        a2 <- getAddress $ fst e2
+        genCodeCopy t a1 a2
+    else do
+        a <- getAddress e1
+        b <- getOperand e2
+        tell [T.ThreeAddressCode T.Set (Just a) (Just $ T.Constant ("0", Simple "planet")) (Just b)]
 genCodeInstr (Asig e1 e2) = do
     let f (_,Composite s _) = elem s ["Cluster", "Quasar", "Nebula"] 
         f _ = False
