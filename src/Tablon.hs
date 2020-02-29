@@ -202,14 +202,14 @@ popPila = do
     (tablonActual, pila, n, b, r, off) <- get
     put (tablonActual, tail pila, n, b, r, tail off)
 
-insertarCampos :: [(Type, (String, AlexPosn))] -> MonadTablon ()
-insertarCampos xs = do
+insertarCampos :: [(Type, (String, AlexPosn))] -> String -> MonadTablon ()
+insertarCampos xs ts = do
     (tablonActual, pila@(tope:_), n, _, _, o:_) <- get
     let tuplas = [ (snd x, (Entry (fst x) Campo tope y)) | (x, y) <- (zip xs (f $ o:anchuras)) ]
         anchuras = map (anchura.fst) xs
         f [] = []
         f [x] = [x]
-        f (x:y:zs) = x:(f $ (x+y):zs)
+        f (x:y:zs) = if ts == "UFO" then repeat x else x:(f $ (x+y):zs)
         ancho = sum anchuras
     tab <- foldlM (flip $ uncurry insertar) tablonActual tuplas
     (_, _, _, bb, r, toff:off) <- get
@@ -257,6 +257,23 @@ actualizarSubrutina s sequ = do
         tab = Map.insert s updated tablonActual
     put (tab, pila, n, b, r, off)
 
+actualizarRegistro :: String -> [Type] -> MonadTablon ()
+actualizarRegistro s tipos = do
+    (tablonActual, pila, n, b, r, off) <- get
+    let f (Entry _ _ k _) = k == 1 
+        entries = buscar s tablonActual
+        g (l,x:xs) = if f x then (x, l++xs)
+                     else g (x:l, xs)
+        g (_,_) = error "error raro"
+        gg = g ([],entries)
+        Entry t kt _ _ = fst gg
+        h (Registro (Record q w _) i) = Registro (Record q w tipos) i
+        h _ = error "error raro"
+        e = Entry t (h kt) 1 (-1)
+        updated = e : (snd gg)
+        tab = Map.insert s updated tablonActual
+    put (tab, pila, n, b, r, off)
+
 insertarParams :: [(Type, (String, AlexPosn), Bool)] -> MonadTablon ()
 insertarParams params = do
     (tablonActual, pila@(tope:_), n, _, _, o:_) <- get
@@ -274,7 +291,7 @@ insertarParams params = do
 insertarReg :: (String, AlexPosn) -> String -> MonadTablon ()
 insertarReg (s, pos) tr = do
     (tablonActual, pila@(tope:_), n, _, _, _) <- get
-    tab <- insertar (s, pos) (Entry (Simple "cosmos") (Registro (Record tr s)  (n+1)) tope (-1)) tablonActual
+    tab <- insertar (s, pos) (Entry (Simple "cosmos") (Registro (Record tr s [])  (n+1)) tope (-1)) tablonActual
     (_, _, _, b, r, off) <- get
     put (tab, pila, n, b, r, off)
 

@@ -5,7 +5,7 @@ import Lexer (AlexPosn)
 data Type
       = Simple String
       | Composite String Type
-      | Record String String
+      | Record String String [Type]
       | Subroutine String [Type] Type
       | NA
       | IDK
@@ -13,11 +13,15 @@ data Type
       deriving (Eq)
 
 anchura :: Type -> Integer
+anchura (Record "Galaxy" _ ts) = sum $ map anchura ts
+anchura (Record "UFO" _ ts) = maximum $ map anchura ts
+anchura (Composite "~" _) = anchura $ Simple "planet"
+anchura (Composite _ _) = (anchura $ Composite "~" IDK)+(anchura $ Simple "planet")
 anchura _ = 4
 
 isComp :: Type -> Bool
 isComp (Composite _ _) = True
-isComp (Record _ _) = True
+isComp (Record _ _ _) = True
 isComp (Subroutine _ _ _) = True
 isComp _ = False
 
@@ -46,7 +50,7 @@ instance Show Type where
   show (Composite "Quasar" IDK) = "VoidQuasar"
   show (Composite "Nebula" IDK) = "VoidNebula"
   show (Composite s t) = '[' : (show t) ++ ']' : s
-  show (Record s z) = s ++  ' ' : z
+  show (Record s z _) = s ++  ' ' : z
   show (Subroutine s pt rt) = (show pt) ++ '-' : '>' : (show rt) ++ ' ' : s
   show NA = "NA"
   show IDK = "IDK"
@@ -119,7 +123,7 @@ data Expr
       -- funciones de preludio
       | Print [Exp]
       | Read
-      | Bigbang
+      | Bigbang Type
       | Scale Exp
       | Pop Exp [Exp]
       | Add Exp [Exp]

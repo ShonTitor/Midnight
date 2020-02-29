@@ -14,10 +14,11 @@ data (SymEntryCompatible a) => ThreeAddressCode a b = ThreeAddressCode
 instance (SymEntryCompatible a, Show a, Show b) => Show (ThreeAddressCode a b) where
   show (ThreeAddressCode Assign (Just x) (Just y) _)              = "\t" ++ show x ++ " := " ++ show y
   show (ThreeAddressCode Add (Just x) (Just y) (Just z))          = "\t" ++ show x ++ " := " ++ show y ++ " + " ++ show z
-  show (ThreeAddressCode Minus (Just x) (Just y) Nothing)         = "\t" ++ show x ++ " := -" ++ show y 
+  show (ThreeAddressCode Minus (Just x) (Just y) Nothing)         = "\t" ++ show x ++ " := -" ++ show y
   show (ThreeAddressCode Sub (Just x) (Just y) (Just z))          = "\t" ++ show x ++ " := " ++ show y ++ " - " ++ show z
   show (ThreeAddressCode Mult (Just x) (Just y) (Just z))         = "\t" ++ show x ++ " := " ++ show y ++ " * " ++ show z
   show (ThreeAddressCode Div (Just x) (Just y) (Just z))          = "\t" ++ show x ++ " := " ++ show y ++ " / " ++ show z
+  show (ThreeAddressCode Mod (Just x) (Just y) (Just z))          = "\t" ++ show x ++ " := " ++ show y ++ " % " ++ show z
   show (ThreeAddressCode (Cast _ toType) (Just x) (Just y) _)     = "\t" ++ show x ++ " := " ++ toType ++ "(" ++ show y ++ ")"
   show (ThreeAddressCode Not (Just x) (Just y) _)                 = "\t" ++ show x ++ " := ~" ++ show y
   show (ThreeAddressCode And (Just x) (Just y) (Just z))          = "\t" ++ show x ++ " := " ++ show y ++ " && " ++ show z
@@ -38,17 +39,22 @@ instance (SymEntryCompatible a, Show a, Show b) => Show (ThreeAddressCode a b) w
   show (ThreeAddressCode New (Just x) (Just size) Nothing)        = "\t" ++ show x ++ " := malloc(" ++ show size ++ ")"
   show (ThreeAddressCode Free Nothing (Just addr) Nothing)        = "\tfree(" ++ show addr ++ ")"
   show (ThreeAddressCode Ref (Just x) (Just y) Nothing)           = "\t" ++ show x ++ " := &" ++ show y
+  show (ThreeAddressCode Deref (Just x) (Just y) Nothing)           = "\t" ++ show x ++ " := *" ++ show y
   show (ThreeAddressCode Param Nothing (Just p) Nothing)          = "\tparam " ++ show p
   show (ThreeAddressCode Call Nothing (Just l) (Just n))          = "\tcall " ++ show l ++ ", " ++ show n
   show (ThreeAddressCode Call (Just t) (Just l) (Just n))         = "\t" ++ show t ++ " := call " ++ show l ++ ", " ++ show n
-  show (ThreeAddressCode Return Nothing Nothing Nothing)          = "\treturn" 
-  show (ThreeAddressCode Return Nothing (Just t) Nothing)          = "\treturn " ++ show t 
+  show (ThreeAddressCode Read Nothing (Just e) Nothing)           = "\tread " ++ show e
+  show (ThreeAddressCode Print Nothing (Just e) Nothing)          = "\tprint " ++ show e
+  show (ThreeAddressCode Return Nothing Nothing Nothing)          = "\treturn"
+  show (ThreeAddressCode Return Nothing (Just t) Nothing)         = "\treturn " ++ show t
+  show (ThreeAddressCode Exit Nothing Nothing Nothing)            = "\texit"
+  show (ThreeAddressCode Abort Nothing Nothing Nothing)           = "\tabort"
 
   show tac = show (tacLvalue tac) ++ " := " ++ show (tacRvalue1 tac) ++ show (tacOperand tac) ++ show (tacRvalue2 tac)
 
-data (SymEntryCompatible a) => Operand a b = 
-  Id a | 
-  Constant (String, b) | 
+data (SymEntryCompatible a) => Operand a b =
+  Id a |
+  Constant (String, b) |
   Label String
   deriving (Eq)
 
@@ -132,6 +138,18 @@ data Operation =
     New         |
     -- | free(x)
     Free        |
+
+    -- Input/Output
+    -- | read x
+    Read        |
+    -- | print x
+    Print       |
+
+    -- Exit program
+    -- | exit (successful)
+    Exit        |
+    -- | abort (failure)
+    Abort       |
 
     Cast String String
     deriving (Eq, Show)

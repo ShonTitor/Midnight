@@ -239,10 +239,15 @@ genCodeInstr (Asig (e1@(Access _ _),_) e2) = do
     b <- getOperand e2
     tell [T.ThreeAddressCode T.Set (Just a) (Just $ T.Constant ("0", Simple "planet")) (Just b)]
 genCodeInstr (Asig e1 e2) = do
-    -- faltan copias profundas
+    let f (_,Composite s _) = elem s ["Cluster", "Quasar", "Nebula"] 
+        f _ = False
     lvalue <- getOperand e1
     rvalue <- getOperand e2
-    tell [T.ThreeAddressCode T.Assign (Just lvalue) (Just rvalue) Nothing]
+    if f e1 then do
+        a1 <- getAddress $ fst e1
+        a2 <- getAddress $ fst e2
+        genCodeCopy (snd e1) a1 a2
+    else tell [T.ThreeAddressCode T.Assign (Just lvalue) (Just rvalue) Nothing]
 -- Return y Yield
 genCodeInstr (Return e1) = do
     o <- getOperand e1
@@ -253,6 +258,39 @@ genCodeInstr (Yield e1) = do
 --
 genCodeInstr (Declar _ _) = return ()
 --genCodeInstr _ = return ()
+
+genCodeCopy :: Type -> Operand -> Operand -> InterMonad ()
+genCodeCopy (Simple _) a1 a2 = do
+    t1 <- newTemp
+    tell [T.ThreeAddressCode T.Deref (Just t1) (Just a2) Nothing,
+          T.ThreeAddressCode T.Set (Just a1) (Just $ T.Constant ("0", Simple "planet")) (Just t1)]
+genCodeCopy (Composite "Cluster" t) a1 a2 = do
+    t1 <- newTemp
+    t2 <- newTemp
+    t3 <- newTemp
+    label <- newLabel
+    begin <- newLabel
+    end <- newLabel
+    tell [T.ThreeAddressCode T.Add (Just t3) (Just a1) (Just $ T.Constant (show $ anchura (Composite "~" IDK), Simple "planet")),
+          T.ThreeAddressCode T.Add (Just t2) (Just a2) (Just $ T.Constant (show $ anchura (Composite "~" IDK), Simple "planet")),
+          T.ThreeAddressCode T.Deref (Just t1) (Just t3) Nothing,
+          T.ThreeAddressCode T.Deref (Just t2) (Just t2) Nothing,
+          T.ThreeAddressCode T.Gte (Just t1) (Just t2) (Just label),
+          T.ThreeAddressCode T.Mult (Just t1) (Just t2) (Just $ T.Constant (show $ anchura t, Simple "planet")),
+          T.ThreeAddressCode T.New (Just t1) (Just t1) Nothing,
+          T.ThreeAddressCode T.Set (Just a1) (Just $ T.Constant ("0", Simple "planet")) (Just t1),
+          T.ThreeAddressCode T.NewLabel Nothing (Just label) Nothing,
+          T.ThreeAddressCode T.Set (Just t3) (Just $ T.Constant ("0", Simple "planet")) (Just t2),
+          T.ThreeAddressCode T.Assign (Just t3) (Just $ T.Constant ("0", Simple "planet")) Nothing,
+          T.ThreeAddressCode T.Eq (Just t3) (Just t2) (Just end),
+          T.ThreeAddressCode T.NewLabel Nothing (Just begin) Nothing]
+    genCodeCopy t a1 a2
+    tell [T.ThreeAddressCode T.Add (Just t3) (Just t3) (Just $ T.Constant ("1", Simple "planet")),
+          T.ThreeAddressCode T.Add (Just a1) (Just a1) (Just $ T.Constant (show $ anchura t, Simple "planet")),
+          T.ThreeAddressCode T.Add (Just a2) (Just a2) (Just $ T.Constant (show $ anchura t, Simple "planet")),
+          T.ThreeAddressCode T.Neq (Just t3) (Just t2) (Just begin),
+          T.ThreeAddressCode T.NewLabel Nothing (Just end) Nothing]
+genCodeCopy _ _ _ = error "No implementado, copia profunda"
 
 genCodeExp :: Expr -> InterMonad InterCode
 -- Aritmeticas
@@ -346,6 +384,17 @@ genCodeExp (Funcall f a) = do
     fun <- getOperand f
     t <- newTemp
     return $ Prelude.map g args ++ [T.ThreeAddressCode T.Call (Just t) (Just fun) (Just $ T.Constant (show $ length args, Simple "planet"))]
+    -- Print y Read
+genCodeExp (Print (e1:_)) = do
+    o <- getOperand e1
+    return [T.ThreeAddressCode T.Print Nothing (Just o) Nothing]
+genCodeExp (Read) = do
+    o <- newTemp
+    return [T.ThreeAddressCode T.Read Nothing (Just o) Nothing]
+    --Malloc
+genCodeExp (Bigbang t1) = do
+    o <- newTemp
+    return [T.ThreeAddressCode T.New (Just o) (Just $ T.Constant (show $ anchura t1, Simple "planet")) Nothing]
 -- RIP
 genCodeExp _ = do
     _ <- newTemp

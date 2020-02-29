@@ -1,0 +1,8 @@
+Space
+
+[Constellation]Cluster perro;
+[Constellation]Cluster gato;
+
+perro = gato;
+
+EndofSpace

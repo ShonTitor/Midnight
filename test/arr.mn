@@ -1,7 +1,16 @@
 Space
-planet n = 39;
-[[planet]Quasar]Cluster A;
-A[0][n+2] = 62;
-n = A[2][2]
+
+Galaxy Perro{
+    Constellation nombre;
+    planet edad;
+    Constellation raza;
+}
+
+Perro Galaxy sakuray;
+
+
+[[Perro Galaxy ]Cluster]Cluster A;
+A[0][2] = sakuray;
+
 
 EndofSpace

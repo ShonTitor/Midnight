@@ -141,21 +141,38 @@ FunSig : comet id Params '->' Type
 
 Func  :: { () }
       : FunSig '{' Seq LQC Pop               { () }
-      | RegSig '{' Regs Pop LQC              { () }
+      | RegSig '{' Regs LQC              { % do 
+                                                  (c,a)<- $1
+                                                  pushPila
+                                                  b <- $3 c
+                                                  actualizarRegistro a b
+                                                  popPila }
 
-RegSig : ufo id                              { % insertarReg $2 (fst $1) }
-       | galaxy id                           { % insertarReg $2 (fst $1) }
+RegSig : ufo id                              { % do 
+                                                  let f = do 
+                                                            insertarReg $2 (fst $1)
+                                                            return $ ("UFO", fst $2)
+                                                  return f }
+       | galaxy id                           { % do
+                                                  let f = do
+                                                            insertarReg $2 (fst $1)
+                                                            return $ ("Galaxy", fst $2)
+                                                  return f }
 
-Regs : Push RegsAux    
+Regs : RegsAux    
       { % do
-          let rex = reverse $2
-          insertarCampos rex
-          return (rex) }
-     | Push RegsAux ';'                                             
-     { % do
-          let rex = reverse $2
-          insertarCampos rex
-          return (rex) }
+          let f s = do 
+                  let rex = reverse $1
+                  insertarCampos rex s
+                  return $ map fst rex
+          return f }
+     | RegsAux ';'                                             
+      { % do
+          let f s = do 
+                  let rex = reverse $1
+                  insertarCampos rex s
+                  return $ map fst rex
+          return f }
 
 RegsAux   : RegsAux ';' Type id                           { ($3, $4) : $1 }
           | Type id                                       { [($1, $2)] }
@@ -247,8 +264,8 @@ TComp : '[' Type CQC cluster      { Composite (fst $4) $2 }
       | '[' Type CQC quasar       { Composite (fst $4) $2 }
       | '[' Type CQC nebula       { Composite (fst $4) $2 }
       | '~' Type                  { Composite (fst $1) $2 }
-      | id galaxy                 { Record (fst $2) (fst $1) }
-      | id ufo                    { Record (fst $2) (fst $1) }
+      | id galaxy                 { Record (fst $2) (fst $1) [] }
+      | id ufo                    { Record (fst $2) (fst $1) [] }
       | '(' Types '->' Type PQC comet      { Subroutine (fst $6) $2 $4 }
       | '(' Types '->' Type PQC satellite  { Subroutine (fst $6) $2 $4 }
 

@@ -475,11 +475,29 @@ TComp : '[' Type CQC cluster
         return $ Composite (fst $4) $2 }
       | '~' Type                  { Composite (fst $1) $2 }
       | id galaxy                 { % do
-                                      lookupExists $1
-                                      return $ Record (fst $2) (fst $1) }
+                                      entry <- lookupExists $1
+                                      if isNothing entry then return Err
+                                      else do
+                                          let f (Registro t _) = t
+                                              f _ = Err
+                                              (Entry _ kt _ _) = fromJust entry
+                                              AlexPn _ m n = snd $1
+                                          if (f kt) == Err then do
+                                            printError m n ("Error de tipo: "++(show $ fst $1)++" no es un Galaxy")
+                                            return Err
+                                          else return $ f kt }
       | id ufo                    { % do
-                                      lookupExists $1
-                                      return $ Record (fst $2) (fst $1) }
+                                      entry <- lookupExists $1
+                                      if isNothing entry then return Err
+                                      else do
+                                          let f (Registro t _) = t
+                                              f _ = Err
+                                              (Entry _ kt _ _) = fromJust entry
+                                              AlexPn _ m n = snd $1
+                                          if (f kt) == Err then do
+                                            printError m n ("Error de tipo: "++(show $ fst $1)++" no es un UFO")
+                                            return Err
+                                          else return $ f kt }
       | '(' Types '->' Type PQC comet      
       { % do
         checkCierre $5 "(" $1
@@ -497,9 +515,9 @@ LValue :: { Exp }
                                     else
                                       return (Var (fst $1) (fromJust e), getTipo e) }
        | Exp '.' id               { %do 
-                                    let isRecord (Record _ _) = True
+                                    let isRecord (Record _ _ _) = True
                                         isRecord _ = False
-                                        getR (Record _ r) = r
+                                        getR (Record _ r _) = r
                                         getS (Entry _ (Registro _ sc) _ _) = [sc]
                                         getS _ = []
                                         t1 = snd $1
@@ -681,7 +699,7 @@ Exp :: { Exp }
     | bigbang '(' Type PQC        
       { % do
         checkCierre $4 "(" $2
-        return (Bigbang, Composite "~" $3) }
+        return (Bigbang $3, Composite "~" $3) }
     | scale '(' Exp PQC           
       { % do
         let f (Composite "~" _ ) = False

@@ -9,7 +9,7 @@ main = do
   --putStrLn "Hola este es el main"
   (s:_) <- getArgs
   --putStrLn s
-  --k <- gato s
+  --_ <- gato s
   k <- vaca s
   putStrLn $ intercalate "\n" (map (show) k)
   putStrLn "jaja salu2"
