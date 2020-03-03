@@ -294,6 +294,8 @@ genCodeCopy (Composite "Cluster" t) a1 a2 = do
           T.ThreeAddressCode T.New (Just t1) (Just t1) Nothing,
           T.ThreeAddressCode T.Set (Just a1) (Just $ T.Constant ("0", Simple "planet")) (Just t1),
           T.ThreeAddressCode T.NewLabel Nothing (Just label) Nothing,
+          T.ThreeAddressCode T.Deref (Just t1) (Just a1) Nothing, 
+          T.ThreeAddressCode T.Set (Just a1) (Just $ T.Constant ("0", Simple "planet")) (Just t1),
           T.ThreeAddressCode T.Set (Just t3) (Just $ T.Constant ("0", Simple "planet")) (Just t2),
           T.ThreeAddressCode T.Assign (Just t3) (Just $ T.Constant ("0", Simple "planet")) Nothing,
           T.ThreeAddressCode T.Eq (Just t3) (Just t2) (Just end),
