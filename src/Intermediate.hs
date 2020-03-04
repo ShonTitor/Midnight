@@ -306,6 +306,63 @@ genCodeCopy (Composite "Cluster" t) a1 a2 = do
           T.ThreeAddressCode T.Add (Just a2) (Just a2) (Just $ T.Constant (show $ anchura t, Simple "planet")),
           T.ThreeAddressCode T.Neq (Just t3) (Just t2) (Just begin),
           T.ThreeAddressCode T.NewLabel Nothing (Just end) Nothing]
+genCodeCopy (Composite "Quasar" t) a1 a2 = do
+    t2 <- newTemp
+    t3 <- newTemp
+    t4 <- newTemp
+    t5 <- newTemp
+    t6 <- newTemp
+    label1 <- newLabel
+    label2 <- newLabel
+    label3 <- newLabel
+    label4 <- newLabel
+    let tnodo = T.Constant (show $ anchura  (Composite "~" IDK) + anchura t, Simple "planet") 
+    tell [T.ThreeAddressCode T.Add (Just t4) (Just a1) (Just $ T.Constant (show $ anchura (Composite "~" IDK), Simple "planet")),
+          T.ThreeAddressCode T.Add (Just t3) (Just a2) (Just $ T.Constant (show $ anchura (Composite "~" IDK), Simple "planet")),
+          T.ThreeAddressCode T.Deref (Just t2) (Just t4) Nothing,
+          T.ThreeAddressCode T.Deref (Just t3) (Just t3) Nothing,
+          T.ThreeAddressCode T.Set (Just t4) (Just $ T.Constant ("0", Simple "planet")) (Just t3),
+          T.ThreeAddressCode T.Assign (Just t4) (Just $ T.Constant ("0", Simple "planet")) Nothing,
+          T.ThreeAddressCode T.Eq (Just t3) (Just $ T.Constant ("0", Simple "planet")) (Just label3),
+          T.ThreeAddressCode T.Gte (Just t2) (Just t3) (Just label1),
+          T.ThreeAddressCode T.Eq (Just t2) (Just $ T.Constant ("0", Simple "planet")) (Just label2),
+          T.ThreeAddressCode T.NewLabel Nothing (Just label4) Nothing,
+          T.ThreeAddressCode T.Deref (Just a1) (Just a1) Nothing,
+          T.ThreeAddressCode T.Deref (Just a2) (Just a2) Nothing,
+          T.ThreeAddressCode T.Add (Just t6) (Just a2) (Just $ T.Constant ("4", Simple "planet")),
+          T.ThreeAddressCode T.Add (Just t5) (Just a1) (Just $ T.Constant ("4", Simple "planet"))]
+    genCodeCopy t t5 t6
+          --T.ThreeAddressCode T.Deref (Just t6) (Just t6) Nothing,
+          --T.ThreeAddressCode T.Set (Just t5) (Just $ T.Constant ("0", Simple "planet")) (Just t6),
+    tell [T.ThreeAddressCode T.Add (Just t4) (Just t4) (Just $ T.Constant ("1", Simple "planet")),
+          T.ThreeAddressCode T.Neq (Just t4) (Just t2) (Just label4),
+          T.ThreeAddressCode T.Eq (Just t4) (Just t3) (Just label3),
+          T.ThreeAddressCode T.NewLabel Nothing (Just label2) Nothing,
+          T.ThreeAddressCode T.New (Just t5) (Just tnodo) Nothing,
+          T.ThreeAddressCode T.Set (Just a1) (Just $ T.Constant ("0", Simple "planet")) (Just t5),
+          T.ThreeAddressCode T.Deref (Just a2) (Just a2) Nothing,
+          T.ThreeAddressCode T.Add (Just t6) (Just a2) (Just $ T.Constant ("4", Simple "planet")),
+          T.ThreeAddressCode T.Add (Just t5) (Just t5) (Just $ T.Constant ("4", Simple "planet"))]
+    genCodeCopy t t5 t6
+          --T.ThreeAddressCode T.Deref (Just t6) (Just t6) Nothing,
+          --T.ThreeAddressCode T.Set (Just t5) (Just $ T.Constant ("0", Simple "planet")) (Just t6),
+    tell [T.ThreeAddressCode T.Add (Just t4) (Just t4) (Just $ T.Constant ("1", Simple "planet")),
+          T.ThreeAddressCode T.Deref (Just a1) (Just a1) Nothing,
+          T.ThreeAddressCode T.Neq (Just t4) (Just t3) (Just label2),
+          T.ThreeAddressCode T.GoTo Nothing Nothing (Just label3),
+          T.ThreeAddressCode T.NewLabel Nothing (Just label1) Nothing,
+          T.ThreeAddressCode T.Deref (Just a1) (Just a1) Nothing,
+          T.ThreeAddressCode T.Deref (Just a2) (Just a2) Nothing,
+          T.ThreeAddressCode T.Add (Just t6) (Just a2) (Just $ T.Constant ("4", Simple "planet")),
+          T.ThreeAddressCode T.Add (Just t5) (Just a1) (Just $ T.Constant ("4", Simple "planet"))]
+    genCodeCopy t t5 t6
+        --  T.ThreeAddressCode T.Deref (Just t6) (Just t6) Nothing,         
+         -- T.ThreeAddressCode T.Set (Just t5) (Just $ T.Constant ("0", Simple "planet")) (Just t6),
+    tell [T.ThreeAddressCode T.Add (Just t4) (Just t4) (Just $ T.Constant ("1", Simple "planet")),
+          T.ThreeAddressCode T.Neq (Just t4) (Just t3) (Just label1),
+          T.ThreeAddressCode T.NewLabel Nothing (Just label3) Nothing,
+          T.ThreeAddressCode T.Set (Just a1) (Just $ T.Constant ("0", Simple "planet")) (Just $ T.Constant ("0", Simple "planet"))]
+genCodeCopy _ _ _ = error "No implementado, copia profunda"
 genCodeCopy _ _ _ = error "No implementado, copia profunda"
 
 genCodeExp :: Expr -> InterMonad InterCode

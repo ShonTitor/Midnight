@@ -1,7 +1,7 @@
 Space
 
-Constellation perro;
-Constellation gato;
+[planet]Quasar perro;
+[planet]Quasar gato;
 
 perro = gato;
 
