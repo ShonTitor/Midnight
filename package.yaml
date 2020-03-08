@@ -50,6 +50,7 @@ library:
     - Tipos
     - Tablon
     - Intermediate
+    - FinalDestination
 
 executables:
   midnight-exe:

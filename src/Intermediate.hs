@@ -10,7 +10,8 @@ data VarType = Temp Int
              | SymEntry String Entry
              | Base
 type Operand = T.Operand VarType Type
-type InterCode = [T.ThreeAddressCode VarType Type]
+type InterInstr = T.ThreeAddressCode VarType Type
+type InterCode = [InterInstr]
 type InterMonad a = RWST () InterCode (Int, Int, [[Operand]], [[Operand]]) IO a
 
 instance T.SymEntryCompatible VarType where
@@ -332,8 +333,6 @@ genCodeCopy (Composite "Quasar" t) a1 a2 = do
           T.ThreeAddressCode T.Add (Just t6) (Just a2) (Just $ T.Constant ("4", Simple "planet")),
           T.ThreeAddressCode T.Add (Just t5) (Just a1) (Just $ T.Constant ("4", Simple "planet"))]
     genCodeCopy t t5 t6
-          --T.ThreeAddressCode T.Deref (Just t6) (Just t6) Nothing,
-          --T.ThreeAddressCode T.Set (Just t5) (Just $ T.Constant ("0", Simple "planet")) (Just t6),
     tell [T.ThreeAddressCode T.Add (Just t4) (Just t4) (Just $ T.Constant ("1", Simple "planet")),
           T.ThreeAddressCode T.Neq (Just t4) (Just t2) (Just label4),
           T.ThreeAddressCode T.Eq (Just t4) (Just t3) (Just label3),
@@ -344,8 +343,6 @@ genCodeCopy (Composite "Quasar" t) a1 a2 = do
           T.ThreeAddressCode T.Add (Just t6) (Just a2) (Just $ T.Constant ("4", Simple "planet")),
           T.ThreeAddressCode T.Add (Just t5) (Just t5) (Just $ T.Constant ("4", Simple "planet"))]
     genCodeCopy t t5 t6
-          --T.ThreeAddressCode T.Deref (Just t6) (Just t6) Nothing,
-          --T.ThreeAddressCode T.Set (Just t5) (Just $ T.Constant ("0", Simple "planet")) (Just t6),
     tell [T.ThreeAddressCode T.Add (Just t4) (Just t4) (Just $ T.Constant ("1", Simple "planet")),
           T.ThreeAddressCode T.Deref (Just a1) (Just a1) Nothing,
           T.ThreeAddressCode T.Neq (Just t4) (Just t3) (Just label2),
@@ -356,13 +353,10 @@ genCodeCopy (Composite "Quasar" t) a1 a2 = do
           T.ThreeAddressCode T.Add (Just t6) (Just a2) (Just $ T.Constant ("4", Simple "planet")),
           T.ThreeAddressCode T.Add (Just t5) (Just a1) (Just $ T.Constant ("4", Simple "planet"))]
     genCodeCopy t t5 t6
-        --  T.ThreeAddressCode T.Deref (Just t6) (Just t6) Nothing,         
-         -- T.ThreeAddressCode T.Set (Just t5) (Just $ T.Constant ("0", Simple "planet")) (Just t6),
     tell [T.ThreeAddressCode T.Add (Just t4) (Just t4) (Just $ T.Constant ("1", Simple "planet")),
           T.ThreeAddressCode T.Neq (Just t4) (Just t3) (Just label1),
           T.ThreeAddressCode T.NewLabel Nothing (Just label3) Nothing,
           T.ThreeAddressCode T.Set (Just a1) (Just $ T.Constant ("0", Simple "planet")) (Just $ T.Constant ("0", Simple "planet"))]
-genCodeCopy _ _ _ = error "No implementado, copia profunda"
 genCodeCopy _ _ _ = error "No implementado, copia profunda"
 
 genCodeExp :: Expr -> InterMonad InterCode
