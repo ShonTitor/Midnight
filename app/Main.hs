@@ -12,7 +12,7 @@ main = do
   (s:_) <- getArgs
   --putStrLn s
   --_ <- gato s
-  k <- vaca s
+  (k,tab) <- vaca s
   putStrLn $ showCode k
-  _ <- mapM putStrLn $ map show $ makeArcs $ partitionCode k
+  _ <- mapM putStrLn $ map show $ makeArcs (partitionCode k) tab
   putStrLn "jaja salu2"

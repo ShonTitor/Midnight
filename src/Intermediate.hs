@@ -12,7 +12,7 @@ data VarType = Temp Int
 type Operand = T.Operand VarType Type
 type InterInstr = T.ThreeAddressCode VarType Type
 type InterCode = [InterInstr]
-type InterMonad a = RWST () InterCode (Int, Int, [[Operand]], [[Operand]]) IO a
+type InterMonad a = RWST () InterCode (Int, Int, [Operand], [Operand]) IO a
 
 instance T.SymEntryCompatible VarType where
   getSymID (Temp n) = "_t"++(show n)
@@ -22,16 +22,16 @@ instance T.SymEntryCompatible VarType where
 instance Show VarType where
     show x = T.getSymID x
 
-vaca :: String -> IO InterCode
+vaca :: String -> IO (InterCode, Tablon)
 vaca f = do
     (arbol, (tablon, _, _, ok, _, _), _) <- gatto f
     cow arbol tablon ok
 
-cow :: Program -> Tablon -> Bool -> IO InterCode
+cow :: Program -> Tablon -> Bool -> IO (InterCode, Tablon)
 cow (Root lis) tab ok = do
     let moo' :: (Int, Int, InterCode) -> String -> Entry -> IO (Int, Int, InterCode)
         moo' (n, m, code) s entry = do
-            (_, (a,b,_,_), c) <- runRWST (genCodeSub s entry) () (n,m,[[]],[[]])
+            (_, (a,b,_,_), c) <- runRWST (genCodeSub s entry) () (n,m,[],[])
             return (a, b, code++c)
         moo :: IO (Int, Int, InterCode) -> String -> [Entry] -> IO (Int, Int, InterCode)
         moo b s entries = do
@@ -44,37 +44,27 @@ cow (Root lis) tab ok = do
     if ok then do
         let (cc,_) = mapAccumWithKey moo'' mu tab
         (i,j,sc) <- cc
-        (_,(_,_,_,_),c) <- runRWST (genCode lis) () (i,j,[[]],[[]])
-        return (sc++(T.ThreeAddressCode T.NewLabel Nothing (Just $ T.Label "_main") Nothing):c)
-    else return []
+        (_,(_,_,_,_),c) <- runRWST (genCode lis) () (i,j,[],[])
+        return ((sc++(T.ThreeAddressCode T.NewLabel Nothing (Just $ T.Label "_main") Nothing):c), tab)
+    else return ([], tab)
 
 base :: Operand
 base = T.Id Base
 
-popVaina :: InterMonad ()
-popVaina = do
-    (n, m, _:p1, _:p2) <- get
-    put (n, m, p1, p2)
-
-pushVaina :: InterMonad ()
-pushVaina = do
-    (n, m, p1, p2) <- get
-    put (n, m, []:p1, []:p2)
-
 popLoop :: InterMonad ()
 popLoop = do
-    (n, m, s1, s2) <- get
-    put (n, m, tail $ head s1 : tail s1, tail $ head s2 : tail s2)
+    (n, m, _:s1, _:s2) <- get
+    put (n, m, s1, s2)
 
 lookLoop :: InterMonad ([Operand], [Operand])
 lookLoop = do
     (_, _, s1, s2) <- get
-    return (head s1, head s2)
+    return (s1, s2)
 
 pushLoop :: Operand -> Operand -> InterMonad ()
 pushLoop a b = do
-    (n, m, p1:s1, p2:s2) <- get
-    put (n, m, (a:p1):s1, (b:p2):s2)
+    (n, m, s1, s2) <- get
+    put (n, m, a:s1, b:s2)
 
 newTemp :: InterMonad Operand
 newTemp = do
@@ -532,7 +522,11 @@ genCodeExpB ((MenorI e1 e2), btrue, bfalse) = do
     op1 <- getOperand e1
     op2 <- getOperand e2
     return [T.ThreeAddressCode T.Lte (Just op1) (Just op2) (Just btrue), T.ThreeAddressCode T.GoTo Nothing Nothing (Just bfalse)]
-genCodeExpB _ = error "no c nada"
+genCodeExpB (exp, btrue, bfalse) = do
+    let op2 = T.Constant ("new", Simple "moon")
+    op1 <- getOperand (exp, Simple "moon")
+    return [T.ThreeAddressCode T.Eq (Just op1) (Just op2) (Just bfalse), T.ThreeAddressCode T.GoTo Nothing Nothing (Just btrue)]
+genCodeExpB exp = error $ "no c nada expresion: "++(show exp)
 
 getAddress :: Expr -> InterMonad Operand
 getAddress (Var _ entry) = do
