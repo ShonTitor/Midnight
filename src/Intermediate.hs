@@ -45,7 +45,7 @@ cow (Root lis) tab ok = do
         let (cc,_) = mapAccumWithKey moo'' mu tab
         (i,j,sc) <- cc
         (_,(_,_,_,_),c) <- runRWST (genCode lis) () (i,j,[],[])
-        return ((sc++(T.ThreeAddressCode T.NewLabel Nothing (Just $ T.Label "_main") Nothing):c), tab)
+        return ((sc++(T.ThreeAddressCode T.NewLabel Nothing (Just $ T.Label "~main") Nothing):c), tab)
     else return ([], tab)
 
 base :: Operand
@@ -81,7 +81,7 @@ newLabel :: InterMonad Operand
 newLabel = do 
     (n,m,a,b) <- get
     put (n,m+1,a,b)
-    return $ T.Label (show m)
+    return $ T.Label $ '_':(show m)
 
 genCode :: [Instr] -> InterMonad ()
 genCode [] = return ()
