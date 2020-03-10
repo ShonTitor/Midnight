@@ -45,7 +45,8 @@ cow (Root lis) tab ok = do
         let (cc,_) = mapAccumWithKey moo'' mu tab
         (i,j,sc) <- cc
         (_,(_,_,_,_),c) <- runRWST (genCode lis) () (i,j,[],[])
-        return ((sc++(T.ThreeAddressCode T.NewLabel Nothing (Just $ T.Label "~main") Nothing):c), tab)
+        return ((sc++(T.ThreeAddressCode T.NewLabel Nothing (Just $ T.Label "~main") Nothing):c)++
+          [T.ThreeAddressCode T.NewLabel Nothing (Just $ T.Label "~end") Nothing], tab)
     else return ([], tab)
 
 base :: Operand

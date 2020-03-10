@@ -15,4 +15,6 @@ main = do
   (k,tab) <- vaca s
   putStrLn $ showCode k
   _ <- mapM putStrLn $ map show $ makeArcs (partitionCode k) tab
+  let (a,_,_) = flowGraph k tab
+  putStrLn $ show a
   putStrLn "jaja salu2"
