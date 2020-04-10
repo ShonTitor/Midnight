@@ -1,6 +1,9 @@
 Space
 
-orbit k around range(0, 10, 22) {
+planet begin = 0;
+planet end = 10;
+planet step = 2;
+orbit k around range(begin, end, step) {
     k = 42;
     break
 }

@@ -1,6 +1,6 @@
 module FinalDestination where
 import Data.Graph
-import Data.Maybe (isNothing, fromJust)
+import Data.Maybe (fromJust)
 import Intermediate
 import Tipos
 import Tablon (buscar)
@@ -44,7 +44,7 @@ partitionCode xs = a : partitionCode b
 
 partitionCode' :: InterCode -> ((InterCode, Maybe InterInstr), InterCode)
 partitionCode' [] = (([], Nothing),[])
-partitionCode' (x:xs) = if isJump x then error "why is this allowed?" --(([x], Just x), xs)
+partitionCode' (x:xs) = if isJump x then (([x], Just x), xs)
                         else ((x:a, aa), b)
                     where ((a, aa),b) = partitionCode'' xs
 

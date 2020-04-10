@@ -1,7 +1,13 @@
 Space
 
-[planet]Quasar perro;
-[planet]Quasar gato;
+Galaxy Perro{
+    Constellation nombre;
+    planet edad;
+    planet raza;
+}
+
+Perro Galaxy perro;
+Perro Galaxy gato;
 
 perro = gato;
 
