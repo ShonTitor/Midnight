@@ -561,6 +561,18 @@ LValue :: { Exp }
                                         return (exp, Err)
                                     else return (exp, f t1)
                                     }
+    | '~' Exp                     { % do
+                                    let exp = Desref $2
+                                    if (snd $2) == Err then return (exp, Err)
+                                    else do
+                                        let f (Composite "~" tipo) = tipo
+                                            f _ = Err
+                                            t = f (snd $2)
+                                            AlexPn _ m n = snd $1
+                                        if t == Err then do
+                                            printError m n ("No se puede desreferenciar el tipo " ++ (show $ snd $2))
+                                            return (exp, Err)
+                                        else return (exp, t) }
 
 
 
@@ -641,18 +653,6 @@ Exp :: { Exp }
                                                 printError m n ("Error de tipo: El tipo " ++ (show $ snd $1) ++ " no admite slices")
                                                 return (exp, Err)
                                             else return (exp, t) }
-    | '~' Exp                     { % do
-                                    let exp = Desref $2
-                                    if (snd $2) == Err then return (exp, Err)
-                                    else do
-                                        let f (Composite "~" tipo) = tipo
-                                            f _ = Err
-                                            t = f (snd $2)
-                                            AlexPn _ m n = snd $1
-                                        if t == Err then do
-                                            printError m n ("No se puede desreferenciar el tipo " ++ (show $ snd $2))
-                                            return (exp, Err)
-                                        else return (exp, t) }
     | Exp '(' Args PQC            { % do
                                     checkCierre $4 "(" $2
                                     let isSub (Subroutine _ _ _) = True

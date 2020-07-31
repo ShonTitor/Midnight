@@ -358,5 +358,5 @@ EndofSpace
 Estas son ideas de características para añadirle al lenguaje si da tiempo:  
 - Quitar las restricciones de los iteradores.
 - Funciones de primera clase.
-- Polimosfismo parametrico.
-- Listas por comprensióm.
+- Polimosfismo paramétrico.
+- Listas por comprensión.
