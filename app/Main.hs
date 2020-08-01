@@ -3,7 +3,7 @@ module Main (main) where
 import Intermediate (vaca)
 import System.Environment
 import Data.List (intercalate)
-import Data.Array (indices)
+import Data.Array (elems)
 import FinalDestination
 
 main :: IO ()
@@ -17,6 +17,8 @@ main = do
   putStrLn $ showCode k
   --_ <- mapM putStrLn $ map show $ makeArcs (partitionCode k) tab
   let (a,f,_) = flowGraph k tab
+      (ins, outs) = (aliveVars k tab)
+      live = zip (elems ins) (elems outs)
   putStrLn $ show a
-  putStrLn $ intercalate "\n" (map show (defuse k tab))
+  putStrLn $ intercalate "\n" (map show live)
   putStrLn "jaja salu2"

@@ -1,8 +1,9 @@
 module FinalDestination where
 import Data.Graph
-import Data.Array (indices)
+import Data.Array
 import Data.Maybe (fromJust, catMaybes, isNothing)
 import Data.List (nub)
+import Debug.Trace (trace)
 import Intermediate
 import Tipos
 import Tablon (buscar)
@@ -175,14 +176,39 @@ use' :: [InterInstr] -> [Operand]
 use' [] = []
 use' (x:xs) = (catMaybes $ use x) ++ use' xs
 
-defuse :: InterCode -> Tablon -> [(Int, [Operand], [Operand])]
-defuse code tab = map defuse' v
+defuse :: Graph -> (Vertex -> (InterCode, Int, [Int])) -> [(Int, [Operand], [Operand])]
+defuse g f = map defuse' v
       where defuse' u = (u, nub $ filter isVar $ def' $ ff u, nub $ filter isVar $ use' $ ff u)
-            (g, f, _) = flowGraph code tab
             ffst (c,_,_) = c
             ff x = ffst $ f x
             v = indices g
 
 isVar :: Operand -> Bool
-isVar (T.Id _) = True
+isVar (T.Id (SymEntry _ (Entry _ Variable _ _))) = True
+isVar (T.Id (Temp _)) = True
 isVar _ = False
+
+aliveVars :: InterCode -> Tablon -> (Array Int [Operand], Array Int [Operand])
+aliveVars code tab = aliveVars' n g f defs uses emptyArr emptyArr
+      where (g, f, _) = flowGraph code tab
+            defuses = defuse g f
+            n = trace (show $ length defuses) (length defuses)
+            defs = array (0,n-1) [ (ind, d) | (ind, d, _) <- defuses ]
+            uses = array (0,n-1) [ (ind, u) | (ind, _, u) <- defuses ]
+            emptyArr = array (0,n-1) ([ (i,[]) | i <- [0..n-1] ])
+
+aliveVars' :: Int -> Graph
+           -> (Vertex -> (InterCode, Int, [Int]))
+           -> Array Int [Operand] -- def 
+           -> Array Int [Operand] -- use
+           -> Array Int [Operand] -- in
+           -> Array Int [Operand] -- out
+           -> (Array Int [Operand], Array Int [Operand]) -- (in, out)
+aliveVars' n g f defs uses ins outs = if ins == nextins then (ins, outs)
+                                      else aliveVars' n g f defs uses nextins nextouts
+          where succs k = filter (<n) $ thr $ f k
+                thr (_,_,a) = a
+                nextout b = nub [ x | y <- succs b, x <- ins ! y ]
+                nextin b  = nub [ x | x <- (uses ! b) ++ (nextouts ! b), not (elem x (defs ! b)) ]
+                nextouts  = listArray (0,n-1) (map nextout [0..n-1])
+                nextins  = listArray (0,n-1) (map nextin [0..n-1])
