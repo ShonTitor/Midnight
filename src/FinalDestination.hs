@@ -256,3 +256,6 @@ aliveVarsB' cosas = if cosas == next then current
                  next = nub (nextin cosas)
                  swap (a,b) = (b,a)
 
+interferenceEdges :: [[Operand]]
+interferenceEdges oof = nub $ foldl (++) [] oof
+                  where edges (x:xs) = [ (x,y) | y <- xs ]
