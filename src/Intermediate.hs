@@ -18,7 +18,7 @@ type InterMonad a = RWST () InterCode (Int, Int, [Operand], [Operand]) IO a
 
 instance T.SymEntryCompatible VarType where
   getSymID (Temp n) = "_t"++(show n)
-  getSymID (SymEntry s (Entry _ _ a _)) = s++" (scope:"++(show a)++")"
+  getSymID (SymEntry s (Entry _ _ a _)) = s-- ++" (scope:"++(show a)++")"
   getSymID Base = "_base"
 
 instance Show VarType where

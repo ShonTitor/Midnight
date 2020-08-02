@@ -176,26 +176,46 @@ use' :: [InterInstr] -> [Operand]
 use' [] = []
 use' (x:xs) = (catMaybes $ use x) ++ use' xs
 
+--defuse :: Graph -> (Vertex -> (InterCode, Int, [Int])) -> [(Int, [Operand], [Operand])]
+--defuse g f = map defuse' v
+--      where defuse' u = (u, nub $ filter isVar $ def' $ ff u, nub $ filter isVar $ use' $ ff u)
+--            ffst (c,_,_) = c
+--            ff x = ffst $ f x
+--            v = indices g
+
 defuse :: Graph -> (Vertex -> (InterCode, Int, [Int])) -> [(Int, [Operand], [Operand])]
-defuse g f = map defuse' v
-      where defuse' u = (u, nub $ filter isVar $ def' $ ff u, nub $ filter isVar $ use' $ ff u)
-            ffst (c,_,_) = c
+defuse g f = map defuse'' v
+      where ffst (c,_,_) = c
             ff x = ffst $ f x
             v = indices g
+            defuse'' n = pegar n (limpiar $ defuse' ([],[]) (ff n))
+            pegar a (b,c) = (a,b,c)
+            limpiar (a,b) = (nub $ filter isVar $ a, nub $ filter isVar $ b)
+
+defuse' :: ([Operand], [Operand]) -> InterCode -> ([Operand], [Operand])
+defuse' acum [] = acum
+defuse' (defs, uses) (inst:code) = defuse' (newdef, newuse) code
+      where newdef = defs ++ [ x |  x <- (catMaybes [def inst]) , not $ elem x newuse ]
+            newuse = uses ++ [ x |  x <- (catMaybes $ use inst) , not $ elem x defs ]
 
 isVar :: Operand -> Bool
 isVar (T.Id (SymEntry _ (Entry _ Variable _ _))) = True
 isVar (T.Id (Temp _)) = True
 isVar _ = False
 
-aliveVars :: InterCode -> Tablon -> (Array Int [Operand], Array Int [Operand])
-aliveVars code tab = aliveVars' n g f defs uses emptyArr emptyArr
-      where (g, f, _) = flowGraph code tab
-            defuses = defuse g f
-            n = trace (show $ length defuses) (length defuses)
+aliveVars :: Graph -> (Vertex -> (InterCode, Int, [Int])) -> (Array Int [Operand], Array Int [Operand], [[[Operand]]])
+aliveVars g f = (r1, r2, r3)
+      where defuses = defuse g f
+            n = length defuses
+            ffst (c,_,_) = c
+            ff x = ffst $ f x
             defs = array (0,n-1) [ (ind, d) | (ind, d, _) <- defuses ]
             uses = array (0,n-1) [ (ind, u) | (ind, _, u) <- defuses ]
             emptyArr = array (0,n-1) ([ (i,[]) | i <- [0..n-1] ])
+            (r1,r2) = aliveVars' n g f defs uses emptyArr emptyArr
+            alives k = aliveVarsB (ff k) (r1 ! k) (r2 ! k)
+            r3 = map alives (vertices g)
+
 
 aliveVars' :: Int -> Graph
            -> (Vertex -> (InterCode, Int, [Int]))
@@ -204,11 +224,35 @@ aliveVars' :: Int -> Graph
            -> Array Int [Operand] -- in
            -> Array Int [Operand] -- out
            -> (Array Int [Operand], Array Int [Operand]) -- (in, out)
-aliveVars' n g f defs uses ins outs = if ins == nextins then (ins, outs)
+aliveVars' n g f defs uses ins _ = if ins == nextins then (nextins, nextouts)
                                       else aliveVars' n g f defs uses nextins nextouts
           where succs k = filter (<n) $ thr $ f k
                 thr (_,_,a) = a
                 nextout b = nub [ x | y <- succs b, x <- ins ! y ]
                 nextin b  = nub [ x | x <- (uses ! b) ++ (nextouts ! b), not (elem x (defs ! b)) ]
-                nextouts  = listArray (0,n-1) (map nextout [0..n-1])
-                nextins  = listArray (0,n-1) (map nextin [0..n-1])
+                nextouts  = listArray (0,n-1) (map' nextout [0..n-1])
+                nextins  = listArray (0,n-1) (map' nextin [0..n-1])
+                map' _ [] = []
+                map' _ [_] = [[]]
+                map' ff (x:xs) = (ff x) : map' ff xs
+
+aliveVarsB :: InterCode -> [Operand] -> [Operand] -> [[Operand]]
+aliveVarsB code ins outs = aliveVarsB' (zip (code++[filler]) newins)
+          where n = length code
+                givein 0 = ins
+                givein x = if x == n then outs else []
+                newins = map givein [0..n]
+                filler = T.ThreeAddressCode T.Abort Nothing Nothing Nothing
+
+aliveVarsB' :: [(InterInstr, [Operand])] -> [[Operand]]
+aliveVarsB' cosas = if cosas == next then current
+                    else aliveVarsB' next
+           where def'' i = filter isVar $ catMaybes [def i]
+                 use'' i = filter isVar $ catMaybes $ use i
+                 nextin [] = []
+                 nextin [x] = [x]
+                 nextin ((c1,_):(c2,i2):xs) = (c1, nub [ x | x <- ((use'' c1)++i2), not (elem x (def'' c1)) ]) : (nextin $ (c2,i2):xs)
+                 current = snd $ unzip cosas
+                 next = nub (nextin cosas)
+                 swap (a,b) = (b,a)
+
