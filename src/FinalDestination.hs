@@ -186,9 +186,9 @@ defuse g f = map defuse'' v
 
 defuse' :: (OpSet, OpSet) -> InterCode -> (OpSet, OpSet)
 defuse' acum [] = acum
-defuse' (defs, _) (inst:code) = defuse' (newdef, newuse) code
-      where newdef = S.union defs (S.difference (def' inst) newuse) --defs ++ [ x |  x <- (catMaybes [def inst]) , not $ elem x newuse ]
-            newuse = S.union defs (S.difference (use' inst) defs) --uses ++ [ x |  x <- (catMaybes $ use inst) , not $ elem x defs ]
+defuse' (defs, uses) (inst:code) = defuse' (newdef, newuse) code
+      where newdef = S.union defs (S.difference (def' inst) newuse)
+            newuse = S.union uses (S.difference (use' inst) defs)
 
 isVar :: Operand -> Bool
 isVar (T.Id (SymEntry _ (Entry _ Variable _ _))) = True
@@ -224,17 +224,17 @@ aliveVars' :: Int -> Graph
            -> Array Int OpSet -- in
            -> Array Int OpSet -- out
            -> (Array Int OpSet, Array Int OpSet) -- (in, out)
-aliveVars' n g f defs uses ins _ = if ins == nextins then (nextins, nextouts)
+aliveVars' n g f defs uses ins outs = if ins == nextins then (nextins, nextouts)
                                       else aliveVars' n g f defs uses nextins nextouts
           where succs k = filter (<n) $ thr $ f k
                 thr (_,_,a) = a
-                nextout b = S.unions [ ins ! y | y <- succs b ] --nub [ x | y <- succs b, x <- ins ! y ]
-                nextin b  = S.union (uses ! b) (S.difference (nextouts ! b) (defs ! b )) --nub [ x | x <- (uses ! b) ++ (nextouts ! b), not (elem x (defs ! b)) ]
-                nextouts  = listArray (0,n-1) (map' nextout [0..n-1])
-                nextins  = listArray (0,n-1) (map' nextin [0..n-1])
-                map' _ [] = []
-                map' _ [_] = [S.empty]
-                map' ff (x:xs) = (ff x) : map' ff xs
+                nextout b = S.unions [ ins ! y | y <- succs b ]
+                nextin b  = S.union (uses ! b) (S.difference (nextouts ! b) (defs ! b ))
+                nextouts  = listArray (0,n-1) (map' nextout [0..n-1] (outs ! (n-1)))
+                nextins  = listArray (0,n-1) (map' nextin [0..n-1] (S.empty))
+                map' _ [] _ = []
+                map' _ [_] defa = [defa]
+                map' ff (x:xs) defa = (ff x) : map' ff xs defa
 
 aliveVarsB :: InterCode -> OpSet -> OpSet -> [OpSet]
 aliveVarsB code ins outs = aliveVarsB' (zip (code++[filler]) newins)
