@@ -2,7 +2,6 @@ module Intermediate where
 import Control.Monad.RWS
 import Data.Map
 import Data.Foldable
-import Data.Array (indices)
 import Tipos
 import Parser (gatto)
 import qualified TACType as T
@@ -18,8 +17,11 @@ type InterMonad a = RWST () InterCode (Int, Int, [Operand], [Operand]) IO a
 
 instance T.SymEntryCompatible VarType where
   getSymID (Temp n) = "_t"++(show n)
-  getSymID (SymEntry s (Entry _ _ a _)) = s-- ++" (scope:"++(show a)++")"
+  getSymID (SymEntry s (Entry _ _ _ _)) = s-- ++ " (scope:"++(show a)++")"
   getSymID Base = "_base"
+
+instance Ord VarType where
+  compare a b = compare (T.getSymID a) (T.getSymID b)
 
 instance Show VarType where
     show x = T.getSymID x
