@@ -202,8 +202,8 @@ toVar _ = Nothing
 onlyVars :: [Maybe Operand] -> OpSet
 onlyVars xs = S.fromList $ catMaybes $ map toVar $ catMaybes xs
 
-aliveVars :: Graph -> (Vertex -> (InterCode, Int, [Int])) -> (Array Int OpSet, Array Int OpSet, [[OpSet]])
-aliveVars g f = trace ("\n PERRO "++(show $ interferenceEdges r3)++"\n") (r1, r2, r3)
+aliveVars :: Graph -> (Vertex -> (InterCode, Int, [Int])) -> [[OpSet]]
+aliveVars g f = r3
       where defuses = defuse g f
             n = length defuses
             ffst (c,_,_) = c
@@ -252,9 +252,22 @@ aliveVarsB' cosas = if cosas == next then current
                  current = snd $ unzip cosas
                  next = nextin cosas
 
-interferenceEdges :: [[OpSet]] -> S.Set (VarType, VarType)
-interferenceEdges oof = S.unions $ map makeedges $ map S.toList $ flatten oof
-                  where makeedges (x:xs) = S.fromList [ (x,y) | y <- xs ]
+interferenceEdges :: [[OpSet]] -> [(VarType, VarType)]
+interferenceEdges oof = map (dupla.(S.toList)) $ S.toList $ S.unions $ map (makeedges.(S.toList)) $ flatten oof
+                  where makeedges (x:xs) = S.fromList [ S.fromList [x,y] | y <- xs ]
                         makeedges [] = S.empty
                         flatten (x:xs) = x ++ flatten xs
                         flatten [] = []
+                        dupla [x,y] = (x,y)
+                        dupla _ = error "No"
+
+interferenceVertices :: InterCode -> OpSet
+interferenceVertices xs = S.union defs uses
+                          where defs = S.unions $ map def' xs
+                                uses = S.unions $ map use' xs
+
+interferenceGraph :: InterCode -> Tablon -> (OpSet, [(VarType, VarType)])
+interferenceGraph code tab = (interferenceVertices code, interferenceEdges $ aliveVars g f )
+                  where (g,f,_) = flowGraph code tab
+
+--dSatur :: [(VarType, VarType)]

@@ -16,10 +16,8 @@ main = do
   (k,tab) <- vaca s
   putStrLn $ showCode k
   --_ <- mapM putStrLn $ map show $ makeArcs (partitionCode k) tab
-  let (a,f,_) = flowGraph k tab
-      (ins, outs, insb) = (aliveVars a f)
-      live = zip (elems ins) (elems outs)
-  putStrLn $ show a
-  putStrLn $ intercalate "\n" (map show live)
-  putStrLn $ intercalate "\n" (map show insb)
+  let (v,e) = interferenceGraph k tab
+  --putStrLn $ show a
+  putStrLn $ (show v)
+  putStrLn $ intercalate "\n" (map show e)
   putStrLn "jaja salu2"
