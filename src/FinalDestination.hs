@@ -1,8 +1,9 @@
 module FinalDestination where
 import Data.Graph
 import Data.Array
-import Data.Maybe (fromJust, catMaybes)
+import Data.Maybe (fromJust, catMaybes, isNothing, fromMaybe)
 import qualified Data.Set as S
+import qualified Data.Map as M
 import Debug.Trace (trace)
 import Intermediate
 import Tipos
@@ -266,8 +267,58 @@ interferenceVertices xs = S.union defs uses
                           where defs = S.unions $ map def' xs
                                 uses = S.unions $ map use' xs
 
-interferenceGraph :: InterCode -> Tablon -> (OpSet, [(VarType, VarType)])
-interferenceGraph code tab = (interferenceVertices code, interferenceEdges $ aliveVars g f )
+interferenceGraph :: InterCode -> Tablon -> (OpSet , (Graph, Vertex -> (VarType, Int, [Int]), Int -> Maybe Vertex))
+interferenceGraph code tab = interferenceGraph' (interferenceVertices code, interferenceEdges $ aliveVars g f )
                   where (g,f,_) = flowGraph code tab
 
---dSatur :: [(VarType, VarType)]
+interferenceGraph' :: (OpSet, [(VarType, VarType)]) -> (OpSet, (Graph, Vertex -> (VarType, Int, [Int]), Int -> Maybe Vertex))
+interferenceGraph' (v, e) = (v, (g, f1, f2))
+        where emptySuccs = M.fromSet (\_ -> S.empty) v
+              succsMap = foldl uniteUp emptySuccs e
+              succs u = if isNothing (M.lookup u succsMap) then S.empty
+                        else fromJust $ M.lookup u succsMap
+              uniteUp m (k, a) = uniteUp' (k, a) m
+              uniteUp' (k, a) m = M.insertWith S.union a (S.singleton k) (M.insertWith S.union k (S.singleton a) m)
+              indexMap :: M.Map VarType Int
+              indexMap = foldl (\m (k,a) -> M.insert k a m) (M.empty) (zip (S.toList v) [0..])
+              getIndex u = fromJust $ M.lookup u indexMap
+              (g, f1, f2) = graphFromEdges $ map (\u -> (u, getIndex u, map getIndex $ S.toList $ succs u)) $ S.toList v
+
+
+dSatur :: (Graph, Vertex -> (VarType, Int, [Int]), Int -> Maybe Vertex) -> [OpSet]
+dSatur gg@(g, f, _) = map (S.map ff) (dSatur' gg (S.delete maxDeg vv) (M.fromList [(maxDeg, 0)], [S.singleton maxDeg]))
+      where degree u = length $ succs u
+            succs u = thr $ f u
+            thr (_,_,a) = a
+            frt (a,_,_) = a
+            ff u = frt $ f u
+            maxDeg = maxDeg' (vertices g) 0
+            maxDeg' [] big = big
+            maxDeg' (u:us) big = if degree u > degree big then maxDeg' us u 
+                                 else maxDeg' us big
+            vv = S.fromList $ vertices g
+
+dSatur' :: (Graph, Vertex -> (VarType, Int, [Int]), Int -> Maybe Vertex) -> S.Set Vertex -> (M.Map Vertex Int, [S.Set Vertex])
+            -> [S.Set Vertex]
+dSatur' gg@(g,f,_) uncolored (colorKeys, colors) = if S.size uncolored' == 0 then colors'
+                                                   else dSatur' gg uncolored' (colorKeys', colors')
+      where satDeg u = S.size $ S.fromList $ filter (>= 0) $ map colorKey $ succs u
+            degree u = length $ succs u
+            succs u = thr $ f u
+            thr (_,_,a) = a
+            maxSatDeg = maxSatDeg' (filter (\x -> S.member x uncolored) (vertices g))
+            maxSatDeg' xs@(x:_) = maxDeg' xs x
+            maxSatDeg' [] = error "algo salió terriblemente mal con dsatur"
+            maxDeg' [] big = big
+            maxDeg' (u:us) big = if (satDeg u > satDeg big) || 
+                                    ((satDeg u == satDeg big) && (degree u) > (degree big))
+                                    then maxDeg' us u 
+                                 else maxDeg' us big
+            colorKey u = fromMaybe (-1) (M.lookup u colorKeys)
+            uncolored' = S.delete maxSatDeg uncolored
+            neighbors = S.fromList $ succs maxSatDeg
+            insertIndex acum [] = (acum, [S.singleton maxSatDeg])
+            insertIndex acum (c:cs) = if S.disjoint neighbors c then (acum, (S.insert maxSatDeg c) : cs)
+                                      else (\(a,b) -> (a,c:b)) (insertIndex (acum+1) cs)
+            (colork, colors') = insertIndex 0 colors
+            colorKeys' = M.insert maxSatDeg colork colorKeys

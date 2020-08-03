@@ -3,7 +3,7 @@ module Main (main) where
 import Intermediate (vaca)
 import System.Environment
 import Data.List (intercalate)
-import Data.Array (elems)
+import Data.Graph
 import FinalDestination
 
 main :: IO ()
@@ -16,8 +16,10 @@ main = do
   (k,tab) <- vaca s
   putStrLn $ showCode k
   --_ <- mapM putStrLn $ map show $ makeArcs (partitionCode k) tab
-  let (v,e) = interferenceGraph k tab
+  let (_,gg@(g,f,_)) = interferenceGraph k tab
   --putStrLn $ show a
-  putStrLn $ (show v)
-  putStrLn $ intercalate "\n" (map show e)
+  putStrLn $ (show $ map f $ vertices g )
+  putStrLn $ (show g)
+  putStrLn $ (show $ dSatur gg)
+  --putStrLn $ intercalate "\n" (map show e)
   putStrLn "jaja salu2"
