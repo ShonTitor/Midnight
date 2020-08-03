@@ -255,7 +255,7 @@ aliveVarsB' cosas = if cosas == next then current
 
 interferenceEdges :: [[OpSet]] -> [(VarType, VarType)]
 interferenceEdges oof = map (dupla.(S.toList)) $ S.toList $ S.unions $ map (makeedges.(S.toList)) $ flatten oof
-                  where makeedges (x:xs) = S.fromList [ S.fromList [x,y] | y <- xs ]
+                  where makeedges (x:xs) = S.union (S.fromList [ S.fromList [x,y] | y <- xs ]) (makeedges xs)
                         makeedges [] = S.empty
                         flatten (x:xs) = x ++ flatten xs
                         flatten [] = []
