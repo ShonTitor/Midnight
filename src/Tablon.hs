@@ -295,6 +295,57 @@ insertarReg (s, pos) tr = do
     (_, _, _, b, r, off) <- get
     put (tab, pila, n, b, r, off)
 
+porRefExp' :: (String, Entry) -> Expr -> Expr
+porRefExp' a (Funcall exp exps)  = Funcall (porRefExp a exp) (map (porRefExp a) exps)
+        -- LValues
+--porRefExp' v1 v2@( Var s ( Entry t c a o ) ) = if v1 == v2 then newExp else v2                      -- Revisar: Actually da error y falla
+--        where newExp = Desref ( Var s (Entry tt c a o) , tt)
+--              tt = Composite "~" t
+               --3 tipos de slices:
+porRefExp' a (Access exp (Index exp2))         = Access (porRefExp a exp) (Index (porRefExp a exp2))
+porRefExp' a (Access exp (Interval exp2 exp3)) = Access (porRefExp a exp) (Interval (porRefExp a exp2) (porRefExp a exp3))
+porRefExp' a (Access exp (Begin exp2))         = Access (porRefExp a exp) (Begin (porRefExp a exp2))
+porRefExp' a (Attr exp (string, entry))        = Attr (porRefExp a exp) (string, entry)               -- Revisar
+         -- funciones de preludio
+porRefExp' a (Print exps)     = Print (map (porRefExp a) exps)
+porRefExp' a (Scale exp)      = Scale (porRefExp a exp)
+porRefExp' a (Pop exp exps)   = Pop (porRefExp a exp) (map (porRefExp a) exps)
+porRefExp' a (Add exp exps)   = Add (porRefExp a exp) (map (porRefExp a) exps)
+porRefExp' a (Desref exp)     = Desref (porRefExp a exp)
+        -- Numericas
+porRefExp' a (Suma exp1 exp2)  = Suma (porRefExp a exp1) (porRefExp a exp2)
+porRefExp' a (Sub exp1 exp2)   = Sub (porRefExp a exp1) (porRefExp a exp2)
+porRefExp' a (Mul exp1 exp2)   = Mul (porRefExp a exp1) (porRefExp a exp2)
+porRefExp' a (Pow exp1 exp2)   = Pow (porRefExp a exp1) (porRefExp a exp2)
+porRefExp' a (Div exp1 exp2)   = Div (porRefExp a exp1) (porRefExp a exp2)
+porRefExp' a (DivE exp1 exp2)  = DivE (porRefExp a exp1) (porRefExp a exp2)
+porRefExp' a (Mod exp1 exp2)   = Mod (porRefExp a exp1) (porRefExp a exp2)
+porRefExp' a (Neg exp)         = Neg (porRefExp a exp)
+        -- Comparaciones
+porRefExp' a (Eq exp1 exp2)     = Eq (porRefExp a exp1) (porRefExp a exp2)
+porRefExp' a (Neq exp1 exp2)    = Neq (porRefExp a exp1) (porRefExp a exp2)
+porRefExp' a (Mayor exp1 exp2)  = Mayor (porRefExp a exp1) (porRefExp a exp2)
+porRefExp' a (MayorI exp1 exp2) = MayorI (porRefExp a exp1) (porRefExp a exp2)
+porRefExp' a (Menor exp1 exp2)  = Menor (porRefExp a exp1) (porRefExp a exp2)
+porRefExp' a (MenorI exp1 exp2) = MenorI (porRefExp a exp1) (porRefExp a exp2)
+      -- Bool
+porRefExp' a (And exp1 exp2)    = And (porRefExp a exp1) (porRefExp a exp2)
+porRefExp' a (Bitand exp1 exp2) = Bitand (porRefExp a exp1) (porRefExp a exp2)
+porRefExp' a (Or exp1 exp2)     = Or (porRefExp a exp1) (porRefExp a exp2)
+porRefExp' a (Bitor exp1 exp2)  = Bitor (porRefExp a exp1) (porRefExp a exp2)
+porRefExp' a (Not exp)          = Not (porRefExp a exp)
+      -- Otros
+porRefExp' a (ArrLit exps) = ArrLit (map (porRefExp a) exps)
+porRefExp' a (ArrInit exp tipo) = ArrInit (porRefExp a exp) tipo                               -- RevisaR
+porRefExp' a (ListLit exps) = ListLit (map (porRefExp a) exps)
+--porRefExp' a (DictLit exps) = DictLit (map (porRefExp a) exps)                               -- Revisar:  exps es de la forma [(Exp,Exp)] uwu
+
+porRefExp' _ exp = exp
+
+--Funcion incompleta:
+porRefExp :: (String, Entry) -> Exp -> Exp   
+porRefExp a exp = exp
+
 showTablon :: Tablon -> String
 showTablon t = fst (Map.mapAccumWithKey f "" t) where
   f a k v =  (a ++ '\n' : k ++ '\n' : intercalate "\n" (map (show) v) ++ "\n" , ())
