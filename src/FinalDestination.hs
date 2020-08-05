@@ -1,4 +1,5 @@
 module FinalDestination where
+import Control.Monad.RWS
 import Data.Graph
 import Data.Array
 import Data.Maybe (fromJust, catMaybes, isNothing, fromMaybe)
@@ -103,6 +104,10 @@ getArcs xs _ ((_,_, Just inst@(T.ThreeAddressCode T.GoTo _ _ _)), _) = destinati
 getArcs xs _ ((_,_, Just inst), n) = if isJump inst then (n+1):(destination xs (getLabel inst)) else [n+1]
 -- falta return
 
+--returnArcs' :: (Maybe Type) -> [((InterCode, InterInstr, Maybe InterInstr), Int)] -> [((InterCode, InterInstr, Maybe InterInstr), Int)] -> Tablon -> 
+--              -> [((InterCode, InterInstr, Maybe InterInstr), Int)]
+--returnArcs tipo 
+
 makeArcs :: [(InterCode, Maybe InterInstr)] -> Tablon -> [(InterCode, Int, [Int])]
 makeArcs ys tab = Prelude.map fd zs
          where zs = zip (f dummy ys) [0..]
@@ -115,7 +120,7 @@ makeArcs ys tab = Prelude.map fd zs
                dummy = T.ThreeAddressCode T.Add Nothing Nothing Nothing
 
 flowGraph :: InterCode -> Tablon -> (Graph, Vertex -> (InterCode, Int, [Int]), Int -> Maybe Vertex)
-flowGraph c tab = graphFromEdges $ makeArcs (partitionCode c) tab
+flowGraph c tab = trace ("flujo: "++(show  $ (\(g,f,_) -> map f $ vertices g) (graphFromEdges $ makeArcs (partitionCode c) tab))) (graphFromEdges $ makeArcs (partitionCode c) tab)
 
 getSymID :: T.SymEntryCompatible a => T.Operand a b -> Maybe String
 getSymID  (T.Id x)  = Just $ T.getSymID x
@@ -177,7 +182,7 @@ use' :: InterInstr -> OpSet
 use' inst = onlyVars $ use inst
 
 defuse :: Graph -> (Vertex -> (InterCode, Int, [Int])) -> [(Int, OpSet, OpSet)]
-defuse g f = map defuse'' v
+defuse g f = trace ("\nPERRO: \n"++(show $map defuse'' v)++"\n") (map defuse'' v)
       where ffst (c,_,_) = c
             ff x = ffst $ f x
             v = indices g
@@ -192,11 +197,13 @@ defuse' (defs, uses) (inst:code) = defuse' (newdef, newuse) code
 
 isVar :: Operand -> Bool
 isVar (T.Id (SymEntry _ (Entry _ Variable _ _))) = True
+isVar (T.Id (SymEntry _ (Entry _ (Parametro _) _ _))) = True
 isVar (T.Id (Temp _)) = True
 isVar _ = False
 
 toVar :: Operand -> Maybe VarType
 toVar (T.Id v@(SymEntry _ (Entry _ Variable _ _))) = Just v
+toVar (T.Id v@(SymEntry _ (Entry _ (Parametro _) _ _))) = Just v
 toVar (T.Id v@(Temp _)) = Just v
 toVar _ = Nothing
 
@@ -204,8 +211,8 @@ onlyVars :: [Maybe Operand] -> OpSet
 onlyVars xs = S.fromList $ catMaybes $ map toVar $ catMaybes xs
 
 aliveVars :: Graph -> (Vertex -> (InterCode, Int, [Int])) -> [[OpSet]]
-aliveVars g f = r3
-      where defuses = defuse g f
+aliveVars g f = if n== 0 then [] else r3
+      where defuses = trace "\n\nprro\n\n" (defuse g f)
             n = length defuses
             ffst (c,_,_) = c
             ff x = ffst $ f x
@@ -285,22 +292,27 @@ interferenceGraph' (v, e) = (v, (g, f1, f2))
               (g, f1, f2) = graphFromEdges $ map (\u -> (u, getIndex u, map getIndex $ S.toList $ succs u)) $ S.toList v
 
 
+-- dSatur :: (Graph, Vertex -> (VarType, Int, [Int]), Int -> Maybe Vertex) -> [OpSet]
+-- dSatur gg@(g, f, _) = map (S.map ff) (dSatur' gg (S.delete maxDeg vv) (M.fromList [(maxDeg, 0)], [S.singleton maxDeg]))
+--       where degree u = length $ succs u
+--             succs u = thr $ f u
+--             thr (_,_,a) = a
+--             frt (a,_,_) = a
+--             ff u = frt $ f u
+--             maxDeg = maxDeg' (vertices g) 0
+--             maxDeg' [] big = big
+--             maxDeg' (u:us) big = if degree u > degree big then maxDeg' us u 
+--                                  else maxDeg' us big
+--             vv = S.fromList $ vertices g
+
 dSatur :: (Graph, Vertex -> (VarType, Int, [Int]), Int -> Maybe Vertex) -> [OpSet]
-dSatur gg@(g, f, _) = map (S.map ff) (dSatur' gg (S.delete maxDeg vv) (M.fromList [(maxDeg, 0)], [S.singleton maxDeg]))
-      where degree u = length $ succs u
-            succs u = thr $ f u
-            thr (_,_,a) = a
-            frt (a,_,_) = a
+dSatur gg@(g, f, _) = map (S.map ff) (dSatur' gg (S.fromList $ vertices g) (M.empty, []))
+      where frt (a,_,_) = a
             ff u = frt $ f u
-            maxDeg = maxDeg' (vertices g) 0
-            maxDeg' [] big = big
-            maxDeg' (u:us) big = if degree u > degree big then maxDeg' us u 
-                                 else maxDeg' us big
-            vv = S.fromList $ vertices g
 
 dSatur' :: (Graph, Vertex -> (VarType, Int, [Int]), Int -> Maybe Vertex) -> S.Set Vertex -> (M.Map Vertex Int, [S.Set Vertex])
             -> [S.Set Vertex]
-dSatur' gg@(g,f,_) uncolored (colorKeys, colors) = if S.size uncolored' == 0 then colors'
+dSatur' gg@(g,f,_) uncolored (colorKeys, colors) = if S.size uncolored == 0 then colors
                                                    else dSatur' gg uncolored' (colorKeys', colors')
       where satDeg u = S.size $ S.fromList $ filter (>= 0) $ map colorKey $ succs u
             degree u = length $ succs u
@@ -308,7 +320,7 @@ dSatur' gg@(g,f,_) uncolored (colorKeys, colors) = if S.size uncolored' == 0 the
             thr (_,_,a) = a
             maxSatDeg = maxSatDeg' (filter (\x -> S.member x uncolored) (vertices g))
             maxSatDeg' xs@(x:_) = maxDeg' xs x
-            maxSatDeg' [] = error "algo salió terriblemente mal con dsatur"
+            maxSatDeg' [] = error ("algo salió terriblemente mal con dsatur "++(show $ S.size uncolored))
             maxDeg' [] big = big
             maxDeg' (u:us) big = if (satDeg u > satDeg big) || 
                                     ((satDeg u == satDeg big) && (degree u) > (degree big))
@@ -322,3 +334,6 @@ dSatur' gg@(g,f,_) uncolored (colorKeys, colors) = if S.size uncolored' == 0 the
                                       else (\(a,b) -> (a,c:b)) (insertIndex (acum+1) cs)
             (colork, colors') = insertIndex 0 colors
             colorKeys' = M.insert maxSatDeg colork colorKeys
+
+type FinalMonad a = RWST () String () IO a
+

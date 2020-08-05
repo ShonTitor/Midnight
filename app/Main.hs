@@ -21,5 +21,4 @@ main = do
   putStrLn $ (show $ map f $ vertices g )
   putStrLn $ (show g)
   putStrLn $ (show $ dSatur gg)
-  --putStrLn $ intercalate "\n" (map show e)
   putStrLn "jaja salu2"
