@@ -120,7 +120,7 @@ makeArcs ys tab = Prelude.map fd zs
                dummy = T.ThreeAddressCode T.Add Nothing Nothing Nothing
 
 flowGraph :: InterCode -> Tablon -> (Graph, Vertex -> (InterCode, Int, [Int]), Int -> Maybe Vertex)
-flowGraph c tab = trace ("flujo: "++(show  $ (\(g,f,_) -> map f $ vertices g) (graphFromEdges $ makeArcs (partitionCode c) tab))) (graphFromEdges $ makeArcs (partitionCode c) tab)
+flowGraph c tab = graphFromEdges $ makeArcs (partitionCode c) tab
 
 getSymID :: T.SymEntryCompatible a => T.Operand a b -> Maybe String
 getSymID  (T.Id x)  = Just $ T.getSymID x
@@ -159,13 +159,13 @@ use (T.ThreeAddressCode T.Mod _ y z)    = [y,z]
 use (T.ThreeAddressCode T.Not _ y _)    = [y]
 use (T.ThreeAddressCode T.And _ y z)    = [y,z]
 use (T.ThreeAddressCode T.Or _ y z)     = [y,z]
-use (T.ThreeAddressCode T.If _ y _)     = [y]
-use (T.ThreeAddressCode T.Eq _ y _)     = [y]
-use (T.ThreeAddressCode T.Neq y z _)    = [y,z]
-use (T.ThreeAddressCode T.Lt y z _)     = [y,z]
-use (T.ThreeAddressCode T.Gt y z _)     = [y,z]
-use (T.ThreeAddressCode T.Lte y z _)    = [y,z]
-use (T.ThreeAddressCode T.Gte y z _)    = [y,z]
+use (T.ThreeAddressCode T.If _ y z)     = [y,z]
+use (T.ThreeAddressCode T.Eq x y z)     = [x,y,z]
+use (T.ThreeAddressCode T.Neq x y z)    = [x,y,z]
+use (T.ThreeAddressCode T.Lt x y z)     = [x,y,z]
+use (T.ThreeAddressCode T.Gt x y z)     = [x,y,z]
+use (T.ThreeAddressCode T.Lte x y z)    = [x,y,z]
+use (T.ThreeAddressCode T.Gte x y z)    = [x,y,z]
 use (T.ThreeAddressCode T.Get _ y z)    = [y,z]
 use (T.ThreeAddressCode T.Set _ y z)    = [y,z]
 use (T.ThreeAddressCode T.New _ y _)    = [y]
@@ -182,7 +182,7 @@ use' :: InterInstr -> OpSet
 use' inst = onlyVars $ use inst
 
 defuse :: Graph -> (Vertex -> (InterCode, Int, [Int])) -> [(Int, OpSet, OpSet)]
-defuse g f = trace ("\nPERRO: \n"++(show $map defuse'' v)++"\n") (map defuse'' v)
+defuse g f = map defuse'' v
       where ffst (c,_,_) = c
             ff x = ffst $ f x
             v = indices g
@@ -207,12 +207,15 @@ toVar (T.Id v@(SymEntry _ (Entry _ (Parametro _) _ _))) = Just v
 toVar (T.Id v@(Temp _)) = Just v
 toVar _ = Nothing
 
+toVar' :: Operand -> VarType
+toVar' a = fromJust $ toVar a
+
 onlyVars :: [Maybe Operand] -> OpSet
 onlyVars xs = S.fromList $ catMaybes $ map toVar $ catMaybes xs
 
 aliveVars :: Graph -> (Vertex -> (InterCode, Int, [Int])) -> [[OpSet]]
 aliveVars g f = if n== 0 then [] else r3
-      where defuses = trace "\n\nprro\n\n" (defuse g f)
+      where defuses = defuse g f
             n = length defuses
             ffst (c,_,_) = c
             ff x = ffst $ f x
@@ -291,20 +294,6 @@ interferenceGraph' (v, e) = (v, (g, f1, f2))
               getIndex u = fromJust $ M.lookup u indexMap
               (g, f1, f2) = graphFromEdges $ map (\u -> (u, getIndex u, map getIndex $ S.toList $ succs u)) $ S.toList v
 
-
--- dSatur :: (Graph, Vertex -> (VarType, Int, [Int]), Int -> Maybe Vertex) -> [OpSet]
--- dSatur gg@(g, f, _) = map (S.map ff) (dSatur' gg (S.delete maxDeg vv) (M.fromList [(maxDeg, 0)], [S.singleton maxDeg]))
---       where degree u = length $ succs u
---             succs u = thr $ f u
---             thr (_,_,a) = a
---             frt (a,_,_) = a
---             ff u = frt $ f u
---             maxDeg = maxDeg' (vertices g) 0
---             maxDeg' [] big = big
---             maxDeg' (u:us) big = if degree u > degree big then maxDeg' us u 
---                                  else maxDeg' us big
---             vv = S.fromList $ vertices g
-
 dSatur :: (Graph, Vertex -> (VarType, Int, [Int]), Int -> Maybe Vertex) -> [OpSet]
 dSatur gg@(g, f, _) = map (S.map ff) (dSatur' gg (S.fromList $ vertices g) (M.empty, []))
       where frt (a,_,_) = a
@@ -335,5 +324,142 @@ dSatur' gg@(g,f,_) uncolored (colorKeys, colors) = if S.size uncolored == 0 then
             (colork, colors') = insertIndex 0 colors
             colorKeys' = M.insert maxSatDeg colork colorKeys
 
-type FinalMonad a = RWST () String () IO a
+getColors :: InterCode -> Tablon -> M.Map VarType Int
+getColors code tab = M.fromList [ x | x <- colored++spills ]
+          where  colors = dSatur $ snd $ interferenceGraph code tab
+                 colored = pairs $ zip colors [2..25]
+                 spills = pairs $ zip (drop 24 colors) (repeat 0)
+                 pairs a = [ (v,n) | (s,n) <- a, v <- S.toList s ]
 
+type FinalMonad a = RWST () String (M.Map VarType Int) IO a
+
+hasReg :: Operand -> Bool
+hasReg (T.Id Base) = True
+hasReg a = isVar a
+
+isConst :: Operand -> Bool
+isConst (T.Constant _) = True
+isConst _ = False
+
+labelize :: Operand -> String
+labelize (T.Label ('~':s)) = s
+labelize (T.Label s) = s
+labelize _ = error "not a label"
+
+getType :: Operand -> Type
+getType (T.Id (SymEntry _ (Entry t _ _ _))) = t
+getType (T.Constant (_,t)) = t
+getType _ = Err
+
+getReg :: Operand -> FinalMonad Int
+getReg op = do
+    m <- get
+    let var = toVar' op
+        color = M.lookup var m
+        isBase (T.Id Base) = True
+        isBase _ = False
+        n = if isBase op then 30
+            else if isNothing color then error "variable sin colorear"
+            else fromJust $ color
+    return n
+
+finalOp :: Operand -> FinalMonad String
+finalOp op = do
+  if isConst op then return $ show op
+  else if hasReg op then do
+      o <- getReg op
+      if o == 0 then error "aquí se manejarían los spills... si los manejáramos"
+      else return $ '$':(show o)
+  else return $ labelize op
+
+finalDestination :: InterCode -> Tablon -> IO String
+finalDestination code tab = do
+  (_, _, text) <- runRWST (finalCode code) () (getColors code tab)
+  return text
+
+finalCode :: InterCode -> FinalMonad ()
+finalCode code = do
+  tell ".text\n"
+  _ <- mapM finalInstr' code
+  return ()
+
+finalInstr' :: InterInstr -> FinalMonad ()
+finalInstr' (T.ThreeAddressCode T.NewLabel _ (Just label) _) = tell $ (labelize label)++":\n"
+finalInstr' i = do
+  tell "\t"
+  finalInstr i
+  tell "\n"
+
+finalInstr :: InterInstr -> FinalMonad ()
+finalInstr (T.ThreeAddressCode T.Assign (Just x) (Just y) _) = do
+    if hasReg x then do
+        a <- finalOp x
+        if hasReg y then do
+            b <- finalOp y
+            if a == b then tell "# "
+            else return ()
+            tell $ "move "++a++(',':' ':b)
+        else if isConst y then do
+          tell $ "li "++a++(',':' ':(show y))
+        else tell $ "la "++a++(',':' ':(show y))
+    else error "asignación inválida"
+finalInstr (T.ThreeAddressCode T.Add (Just x) (Just y) (Just z)) = do
+    a <- finalOp x
+    b <- finalOp y
+    c <- finalOp z
+    tell ("add "++a++',':' ':b++',':' ':c)
+finalInstr (T.ThreeAddressCode T.Mult (Just x) (Just y) (Just z)) = do
+    a <- finalOp x
+    b <- finalOp y
+    c <- finalOp z
+    tell ("mul "++a++',':' ':b++',':' ':c)
+finalInstr (T.ThreeAddressCode T.Eq (Just x) (Just y) (Just label)) = do
+    a <- finalOp x
+    b <- finalOp y
+    c <- finalOp label
+    tell ("beq "++a++',':' ':b++',':' ':c)
+finalInstr (T.ThreeAddressCode T.GoTo Nothing Nothing (Just label)) = do
+    l <- finalOp label
+    if hasReg label then tell ("jr "++l)
+    else tell ("j "++l)
+finalInstr (T.ThreeAddressCode T.Print Nothing (Just e) Nothing) = do
+    let t = getType e
+    ee <- finalOp e
+    if t == Simple "planet" then do
+        tell ("move $a0, "++ee++"\n")
+        tell "\tli $v0, 1\n"
+        tell "\tsyscall"
+    else tell ("# print no implementado: "++(show t))
+finalInstr i = tell ("# No implementado: "++(show i))
+-- show (ThreeAddressCode Minus (Just x) (Just y) Nothing)         = "\t" ++ show x ++ " := -" ++ show y
+-- show (ThreeAddressCode Sub (Just x) (Just y) (Just z))          = "\t" ++ show x ++ " := " ++ show y ++ " - " ++ show z
+-- show (ThreeAddressCode Mult (Just x) (Just y) (Just z))         = "\t" ++ show x ++ " := " ++ show y ++ " * " ++ show z
+-- show (ThreeAddressCode Div (Just x) (Just y) (Just z))          = "\t" ++ show x ++ " := " ++ show y ++ " / " ++ show z
+-- show (ThreeAddressCode Mod (Just x) (Just y) (Just z))          = "\t" ++ show x ++ " := " ++ show y ++ " % " ++ show z
+-- show (ThreeAddressCode (Cast _ toType) (Just x) (Just y) _)     = "\t" ++ show x ++ " := " ++ toType ++ "(" ++ show y ++ ")"
+-- show (ThreeAddressCode Not (Just x) (Just y) _)                 = "\t" ++ show x ++ " := ~" ++ show y
+-- show (ThreeAddressCode And (Just x) (Just y) (Just z))          = "\t" ++ show x ++ " := " ++ show y ++ " && " ++ show z
+-- show (ThreeAddressCode Or (Just x) (Just y) (Just z))           = "\t" ++ show x ++ " := " ++ show y ++ " || " ++ show z
+-- show (ThreeAddressCode GoTo Nothing Nothing (Just label))       = "\t" ++ "goto " ++ show label
+-- show (ThreeAddressCode GoTo Nothing Nothing Nothing)            = "\t" ++ "goto __"
+-- show (ThreeAddressCode If Nothing (Just b) (Just label))        = "\t" ++ "if " ++ show b ++ " then goto " ++ show label
+-- show (ThreeAddressCode If Nothing (Just b) Nothing)             = "\t" ++ "if " ++ show b ++ " then goto __"
+-- show (ThreeAddressCode Neq (Just x) (Just y) (Just label))      = "\t" ++  "if " ++ show x ++ " != " ++ show y ++ " then goto " ++ show label
+-- show (ThreeAddressCode Lt (Just x) (Just y) (Just label))       = "\t" ++ "if " ++ show x ++ " < " ++ show y ++ " then goto " ++ show label
+-- show (ThreeAddressCode Gt (Just x) (Just y) (Just label))       = "\t" ++ "if " ++ show x ++ " > " ++ show y ++ " then goto " ++ show label
+-- show (ThreeAddressCode Lte (Just x) (Just y) (Just label))      = "\t" ++  "if " ++ show x ++ " <= " ++ show y ++ " then goto " ++ show label
+-- show (ThreeAddressCode Gte (Just x) (Just y) (Just label))      = "\t" ++  "if " ++ show x ++ " >= " ++ show y ++ " then goto " ++ show label
+-- show (ThreeAddressCode Get (Just x) (Just y) (Just i))          = "\t" ++ show x ++ " := " ++ show y ++ "[" ++ show i ++ "]"
+-- show (ThreeAddressCode Set (Just x) (Just i) (Just y))          = "\t" ++ show x ++ "[" ++ show i ++ "] := " ++ show y
+-- show (ThreeAddressCode New (Just x) (Just size) Nothing)        = "\t" ++ show x ++ " := malloc(" ++ show size ++ ")"
+-- show (ThreeAddressCode Free Nothing (Just addr) Nothing)        = "\tfree(" ++ show addr ++ ")"
+-- show (ThreeAddressCode Ref (Just x) (Just y) Nothing)           = "\t" ++ show x ++ " := &" ++ show y
+-- show (ThreeAddressCode Deref (Just x) (Just y) Nothing)           = "\t" ++ show x ++ " := *" ++ show y
+-- show (ThreeAddressCode Param Nothing (Just p) Nothing)          = "\tparam " ++ show p
+-- show (ThreeAddressCode Call Nothing (Just l) (Just n))          = "\tcall " ++ show l ++ ", " ++ show n
+-- show (ThreeAddressCode Call (Just t) (Just l) (Just n))         = "\t" ++ show t ++ " := call " ++ show l ++ ", " ++ show n
+-- show (ThreeAddressCode Read Nothing (Just e) Nothing)           = "\tread " ++ show e
+-- show (ThreeAddressCode Return Nothing Nothing Nothing)          = "\treturn"
+-- show (ThreeAddressCode Return Nothing (Just t) Nothing)         = "\treturn " ++ show t
+-- show (ThreeAddressCode Exit Nothing Nothing Nothing)            = "\texit"
+-- show (ThreeAddressCode Abort Nothing Nothing Nothing)           = "\tabort"

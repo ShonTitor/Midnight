@@ -528,7 +528,9 @@ genCodeExpB ((Or (e1,_) (e2,_)), btrue, bfalse) = do
 genCodeExpB ((Eq e1 e2), btrue, bfalse) = do
     op1 <- getOperand e1
     op2 <- getOperand e2
-    return [T.ThreeAddressCode T.Eq (Just op1) (Just op2) (Just btrue), T.ThreeAddressCode T.GoTo Nothing Nothing (Just bfalse)]
+    temp <- newTemp
+    return [T.ThreeAddressCode T.Assign (Just temp) (Just op1) Nothing,
+            T.ThreeAddressCode T.Eq (Just temp) (Just op2) (Just btrue), T.ThreeAddressCode T.GoTo Nothing Nothing (Just bfalse)]
 genCodeExpB ((Neq e1 e2), btrue, bfalse) = do
     op1 <- getOperand e1
     op2 <- getOperand e2
