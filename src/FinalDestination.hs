@@ -391,6 +391,7 @@ finalInstr' i = do
   tell "\n"
 
 finalInstr :: InterInstr -> FinalMonad ()
+-- asignación
 finalInstr (T.ThreeAddressCode T.Assign (Just x) (Just y) _) = do
     if hasReg x then do
         a <- finalOp x
@@ -408,20 +409,82 @@ finalInstr (T.ThreeAddressCode T.Add (Just x) (Just y) (Just z)) = do
     b <- finalOp y
     c <- finalOp z
     tell ("add "++a++',':' ':b++',':' ':c)
+-- lógicas y aritméticas
 finalInstr (T.ThreeAddressCode T.Mult (Just x) (Just y) (Just z)) = do
     a <- finalOp x
     b <- finalOp y
     c <- finalOp z
     tell ("mul "++a++',':' ':b++',':' ':c)
+finalInstr (T.ThreeAddressCode T.Sub (Just x) (Just y) (Just z)) = do
+    a <- finalOp x
+    b <- finalOp y
+    c <- finalOp z
+    tell ("sub "++a++',':' ':b++',':' ':c)
+finalInstr (T.ThreeAddressCode T.Div (Just x) (Just y) (Just z)) = do
+    a <- finalOp x
+    b <- finalOp y
+    c <- finalOp z
+    tell ("div "++a++',':' ':b++',':' ':c)
+finalInstr (T.ThreeAddressCode T.Mod (Just x) (Just y) (Just z)) = do
+    a <- finalOp x
+    b <- finalOp y
+    c <- finalOp z
+    tell ("rem "++a++',':' ':b++',':' ':c)
+finalInstr (T.ThreeAddressCode T.Minus (Just x) (Just y) Nothing) = do
+    a <- finalOp x
+    b <- finalOp y
+    tell ("neg "++a++',':' ':b)
+finalInstr (T.ThreeAddressCode T.Not (Just x) (Just y) Nothing) = do
+    a <- finalOp x
+    b <- finalOp y
+    tell ("not "++a++',':' ':b)
+finalInstr (T.ThreeAddressCode T.And (Just x) (Just y) (Just z)) = do
+    a <- finalOp x
+    b <- finalOp y
+    c <- finalOp z
+    tell ("and "++a++',':' ':b++',':' ':c)
+finalInstr (T.ThreeAddressCode T.Or (Just x) (Just y) (Just z)) = do
+    a <- finalOp x
+    b <- finalOp y
+    c <- finalOp z
+    if isConst z then tell ("ori "++a++',':' ':b++',':' ':c)
+    else tell ("or "++a++',':' ':b++',':' ':c)
+-- branches
+finalInstr (T.ThreeAddressCode T.GoTo Nothing Nothing (Just label)) = do
+    l <- finalOp label
+    if hasReg label then tell ("jr "++l)
+    else tell ("j "++l)
 finalInstr (T.ThreeAddressCode T.Eq (Just x) (Just y) (Just label)) = do
     a <- finalOp x
     b <- finalOp y
     c <- finalOp label
     tell ("beq "++a++',':' ':b++',':' ':c)
-finalInstr (T.ThreeAddressCode T.GoTo Nothing Nothing (Just label)) = do
-    l <- finalOp label
-    if hasReg label then tell ("jr "++l)
-    else tell ("j "++l)
+finalInstr (T.ThreeAddressCode T.Neq (Just x) (Just y) (Just label)) = do
+    a <- finalOp x
+    b <- finalOp y
+    c <- finalOp label
+    tell ("bne "++a++',':' ':b++',':' ':c)
+finalInstr (T.ThreeAddressCode T.Lt (Just x) (Just y) (Just label)) = do
+    a <- finalOp x
+    b <- finalOp y
+    c <- finalOp label
+    tell ("blt "++a++',':' ':b++',':' ':c)
+finalInstr (T.ThreeAddressCode T.Gt (Just x) (Just y) (Just label)) = do
+    a <- finalOp x
+    b <- finalOp y
+    c <- finalOp label
+    tell ("bgt "++a++',':' ':b++',':' ':c)
+finalInstr (T.ThreeAddressCode T.If Nothing (Just y) (Just label)) = do
+    b <- finalOp y
+    c <- finalOp label
+    tell ("bnez "++b++',':' ':c)
+-- no thank you finalInstr (T.ThreeAddressCode T.Lte (Just x) (Just y) (Just label)) = do
+finalInstr (T.ThreeAddressCode T.Gte (Just x) (Just y) (Just label)) = do
+    a <- finalOp x
+    b <- finalOp y
+    c <- finalOp label
+    tell ("bge "++a++',':' ':b++',':' ':c)
+-- otros 
 finalInstr (T.ThreeAddressCode T.Print Nothing (Just e) Nothing) = do
     let t = getType e
     ee <- finalOp e
@@ -430,29 +493,19 @@ finalInstr (T.ThreeAddressCode T.Print Nothing (Just e) Nothing) = do
         tell "\tli $v0, 1\n"
         tell "\tsyscall"
     else tell ("# print no implementado: "++(show t))
+finalInstr (T.ThreeAddressCode T.Get (Just x) (Just y) (Just _)) = do
+    a <- finalOp x
+    b <- finalOp y
+    --c <- finalOp i
+    tell ("lw "++a++',':' ':b)
+finalInstr (T.ThreeAddressCode T.Set (Just x) (Just _) (Just z)) = do
+    a <- finalOp x
+    b <- finalOp z
+    --c <- finalOp i
+    tell ("sw "++b++',':' ':a)
 finalInstr i = tell ("# No implementado: "++(show i))
--- show (ThreeAddressCode Minus (Just x) (Just y) Nothing)         = "\t" ++ show x ++ " := -" ++ show y
--- show (ThreeAddressCode Sub (Just x) (Just y) (Just z))          = "\t" ++ show x ++ " := " ++ show y ++ " - " ++ show z
--- show (ThreeAddressCode Mult (Just x) (Just y) (Just z))         = "\t" ++ show x ++ " := " ++ show y ++ " * " ++ show z
--- show (ThreeAddressCode Div (Just x) (Just y) (Just z))          = "\t" ++ show x ++ " := " ++ show y ++ " / " ++ show z
--- show (ThreeAddressCode Mod (Just x) (Just y) (Just z))          = "\t" ++ show x ++ " := " ++ show y ++ " % " ++ show z
--- show (ThreeAddressCode (Cast _ toType) (Just x) (Just y) _)     = "\t" ++ show x ++ " := " ++ toType ++ "(" ++ show y ++ ")"
--- show (ThreeAddressCode Not (Just x) (Just y) _)                 = "\t" ++ show x ++ " := ~" ++ show y
--- show (ThreeAddressCode And (Just x) (Just y) (Just z))          = "\t" ++ show x ++ " := " ++ show y ++ " && " ++ show z
--- show (ThreeAddressCode Or (Just x) (Just y) (Just z))           = "\t" ++ show x ++ " := " ++ show y ++ " || " ++ show z
--- show (ThreeAddressCode GoTo Nothing Nothing (Just label))       = "\t" ++ "goto " ++ show label
--- show (ThreeAddressCode GoTo Nothing Nothing Nothing)            = "\t" ++ "goto __"
--- show (ThreeAddressCode If Nothing (Just b) (Just label))        = "\t" ++ "if " ++ show b ++ " then goto " ++ show label
--- show (ThreeAddressCode If Nothing (Just b) Nothing)             = "\t" ++ "if " ++ show b ++ " then goto __"
--- show (ThreeAddressCode Neq (Just x) (Just y) (Just label))      = "\t" ++  "if " ++ show x ++ " != " ++ show y ++ " then goto " ++ show label
--- show (ThreeAddressCode Lt (Just x) (Just y) (Just label))       = "\t" ++ "if " ++ show x ++ " < " ++ show y ++ " then goto " ++ show label
--- show (ThreeAddressCode Gt (Just x) (Just y) (Just label))       = "\t" ++ "if " ++ show x ++ " > " ++ show y ++ " then goto " ++ show label
--- show (ThreeAddressCode Lte (Just x) (Just y) (Just label))      = "\t" ++  "if " ++ show x ++ " <= " ++ show y ++ " then goto " ++ show label
--- show (ThreeAddressCode Gte (Just x) (Just y) (Just label))      = "\t" ++  "if " ++ show x ++ " >= " ++ show y ++ " then goto " ++ show label
--- show (ThreeAddressCode Get (Just x) (Just y) (Just i))          = "\t" ++ show x ++ " := " ++ show y ++ "[" ++ show i ++ "]"
--- show (ThreeAddressCode Set (Just x) (Just i) (Just y))          = "\t" ++ show x ++ "[" ++ show i ++ "] := " ++ show y
+-- show           = "\t" ++ show x ++ "[" ++ show i ++ "] := " ++ show y
 -- show (ThreeAddressCode New (Just x) (Just size) Nothing)        = "\t" ++ show x ++ " := malloc(" ++ show size ++ ")"
--- show (ThreeAddressCode Free Nothing (Just addr) Nothing)        = "\tfree(" ++ show addr ++ ")"
 -- show (ThreeAddressCode Ref (Just x) (Just y) Nothing)           = "\t" ++ show x ++ " := &" ++ show y
 -- show (ThreeAddressCode Deref (Just x) (Just y) Nothing)           = "\t" ++ show x ++ " := *" ++ show y
 -- show (ThreeAddressCode Param Nothing (Just p) Nothing)          = "\tparam " ++ show p
