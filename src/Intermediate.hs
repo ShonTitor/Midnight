@@ -280,6 +280,33 @@ genCodeInstr (Yield e1) = do
 genCodeInstr (Declar _ _) = return ()
 --genCodeInstr _ = return ()
 
+genCodeEq :: Type -> (Operand, Operand) -> Operand -> Operand  -> InterMonad ()
+genCodeEq (Composite "Cluster" tipo) (btrue, bfalse) a1 a2 = do
+--    let ancho = anchura tipo -- pero como operando
+    t1 <- newTemp
+    t2 <- newTemp
+    contador <- newTemp
+    size <- newTemp
+    btrue2 <- newLabel
+    pepito <- newLabel
+    tell [T.ThreeAddressCode T.Add (Just t1) (Just a1) (Just $ pointerSize),
+          T.ThreeAddressCode T.Add (Just t2) (Just a2) (Just $ pointerSize),
+          T.ThreeAddressCode T.Deref (Just t1) (Just t1) Nothing,
+          T.ThreeAddressCode T.Deref (Just t2) (Just t2) Nothing,
+          T.ThreeAddressCode T.Neq (Just t1) (Just t2) (Just bfalse), 
+          T.ThreeAddressCode T.Assign (Just contador) (Just $ constInt 0) Nothing,
+          T.ThreeAddressCode T.Assign (Just size) (Just t1) Nothing,
+          T.ThreeAddressCode T.Deref (Just t1) (Just a1) Nothing,
+          T.ThreeAddressCode T.Deref (Just t2) (Just a2) Nothing,
+          T.ThreeAddressCode T.GoTo Nothing Nothing (Just pepito),
+          T.ThreeAddressCode T.NewLabel Nothing (Just btrue2) Nothing, 
+          T.ThreeAddressCode T.Add (Just t1) (Just t1) (Just $ constInt $ anchura tipo),
+          T.ThreeAddressCode T.Add (Just t2) (Just t2) (Just $ constInt $ anchura tipo),
+          T.ThreeAddressCode T.Add (Just contador) (Just contador) (Just $ constInt 1),
+          T.ThreeAddressCode T.NewLabel Nothing (Just pepito) Nothing,
+          T.ThreeAddressCode T.Eq (Just contador) (Just size) (Just btrue)]
+    genCodeEq tipo (btrue2, bfalse) t1 t2
+
 genCodeCopy :: Type -> Operand -> Operand -> InterMonad ()
 genCodeCopy (Simple _) a1 a2 = do
     t1 <- newTemp
