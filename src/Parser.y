@@ -330,7 +330,8 @@ InstrB : Push If                                                             { $
             checkCierre $9 "(" $3
             checkCierre $12 "{" $10
             checkBool' $5 (snd $6)
-            return $ ForC $4 $6 $8 (reverse $11) }
+            n <- currentScope
+            return $ ForC $4 $6 $8 (reverse $11) n }
 
 IterHead : Push orbit id AROUND Exp
           { % do
@@ -347,7 +348,8 @@ IterHead : Push orbit id AROUND Exp
               printError m n ("Error de tipo: El tipo  "++(show t1)++" no es iterable")
             else return ()
             entry <- insertarVar $3 t2
-            let f' seq = Foreach (Var (fst $3) entry, getTipo (Just entry)) $5 seq
+            sc <- currentScope
+            let f' seq = Foreach (Var (fst $3) entry, getTipo (Just entry)) $5 seq sc
             return f' }
          | Push orbit id AROUND range '(' Exp ',' Exp ',' Exp PQC
            { % do
@@ -356,7 +358,8 @@ IterHead : Push orbit id AROUND Exp
              checkInt' $6 (snd $7)
              checkInt' $8 (snd $9)
              checkInt' $10 (snd $11)
-             let f seq = ForRange (Var (fst $3) entry, getTipo (Just entry)) $7 $9 $11 seq
+             sc <- currentScope
+             let f seq = ForRange (Var (fst $3) entry, getTipo (Just entry)) $7 $9 $11 seq sc
              return f }
          | Push orbit id AROUND range '(' Exp ',' Exp PQC
            { % do
@@ -364,14 +367,16 @@ IterHead : Push orbit id AROUND Exp
              entry <- insertarVar $3 (Simple "planet")
              checkInt' $6 (snd $7)
              checkInt' $8 (snd $9)
-             let f seq = ForRange (Var (fst $3) entry, getTipo (Just entry)) $7 $9 (IntLit 1, Simple "planet") seq
+             sc <- currentScope
+             let f seq = ForRange (Var (fst $3) entry, getTipo (Just entry)) $7 $9 (IntLit 1, Simple "planet") seq sc
              return f }
          | Push orbit id AROUND range '(' Exp PQC
            { % do
              checkCierre $8 "(" $6
              entry <- insertarVar $3 (Simple "planet")
              checkInt' $6 (snd $7)
-             let f seq = ForRange (Var (fst $3) entry, getTipo (Just entry)) (IntLit 0, Simple "planet") $7 (IntLit 1, Simple "planet") seq
+             sc <- currentScope
+             let f seq = ForRange (Var (fst $3) entry, getTipo (Just entry)) (IntLit 0, Simple "planet") $7 (IntLit 1, Simple "planet") seq sc
              return f }
 
 If : if '(' Exp PQC '{' Seq LQC                           
@@ -379,42 +384,49 @@ If : if '(' Exp PQC '{' Seq LQC
       checkCierre $4 "(" $2
       checkCierre $7 "{" $5
       checkBool' $2 (snd $3)
-      return $ If [($3, $6)] }
+      n <- currentScope
+      return $ If [($3, $6, n)] }
    | unless '(' Exp PQC '{' Seq LQC                       
    {  % do
       checkCierre $4 "(" $2
       checkCierre $7 "{" $5
       checkBool' $2 (snd $3)
-      return $ If [((Not $3, Err), $6)] }
+      n <- currentScope
+      return $ If [((Not $3, Err), $6, n)] }
    | if '(' Exp PQC '{' Seq LQC Push Elif
    {  % do
       checkCierre $4 "(" $2
       checkCierre $7 "{" $5
       checkBool' $2 (snd $3)
-      return $ If (($3, $6) : $9) }
+      n <- currentScope
+      return $ If (($3, $6, n) : $9) }
 
 ElifAux : elseif '(' Exp PQC '{' Seq LQC Pop
         {  % do
          checkCierre $4 "(" $2
          checkCierre $7 "{" $5
          checkBool' $2 (snd $3)
-         return [($3, $6)] }
+         n <- currentScope
+         return [($3, $6, n)] }
         | Elif Push elseif '(' Exp PQC '{' Seq LQC Pop
         {  % do
          checkCierre $6 "(" $4
          checkCierre $9 "{" $7
          checkBool' $4 (snd $5)
-         return $ ($5, $8) : $1 }
+         n <- currentScope
+         return $ ($5, $8, n) : $1 }
  
 Elif : ElifAux                                         { reverse $1 }
      | ElifAux Push else  '{' Seq LQC Pop              
      {  % do
         checkCierre $6 "{" $4
-        return $ reverse $ ((Var "full" (Entry (Simple "moon") Literal 0 (-1)), Simple "bool"), $5) :  $1 }
+        n <- currentScope
+        return $ reverse $ ((Var "full" (Entry (Simple "moon") Literal 0 (-1)), Simple "bool"), $5, n) :  $1 }
      | else  '{' Seq LQC Pop                           
      {  % do
         checkCierre $4 "{" $2
-        return [((Var "full" (Entry (Simple "moon") Literal 0 (-1)), Simple "bool"), $3)] }
+        n <- currentScope
+        return [((Var "full" (Entry (Simple "moon") Literal 0 (-1)), Simple "bool"), $3, n)] }
 
 
 
@@ -423,13 +435,15 @@ While : orbit while '(' Exp PQC '{' Seq LQC
       checkCierre $5 "(" $3
       checkCierre $8 "{" $6
       checkBool' $3 (snd $4)
-      return $ While $4 $7 }
+      n <- currentScope
+      return $ While $4 $7 n }
       | orbit until '(' Exp PQC '{' Seq LQC
    {  % do
       checkCierre $5 "(" $3
       checkCierre $8 "{" $6
       checkBool' $3 (snd $4)
-      return $ While (Not $4, Err) $7 }
+      n <- currentScope
+      return $ While (Not $4, Err) $7 n }
 
 
 Params : Push '(' ParamsAux PQC                                   

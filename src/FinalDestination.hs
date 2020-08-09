@@ -198,13 +198,13 @@ defuse' (defs, uses) (inst:code) = defuse' (newdef, newuse) code
 isVar :: Operand -> Bool
 isVar (T.Id (SymEntry _ (Entry _ Variable _ _))) = True
 isVar (T.Id (SymEntry _ (Entry _ (Parametro _) _ _))) = True
-isVar (T.Id (Temp _)) = True
+isVar (T.Id (Temp _ _)) = True
 isVar _ = False
 
 toVar :: Operand -> Maybe VarType
 toVar (T.Id v@(SymEntry _ (Entry _ Variable _ _))) = Just v
 toVar (T.Id v@(SymEntry _ (Entry _ (Parametro _) _ _))) = Just v
-toVar (T.Id v@(Temp _)) = Just v
+toVar (T.Id v@(Temp _ _)) = Just v
 toVar _ = Nothing
 
 toVar' :: Operand -> VarType
@@ -255,13 +255,17 @@ aliveVarsB code ins outs = aliveVarsB' (zip (code++[filler]) newins)
                 filler = T.ThreeAddressCode T.Abort Nothing Nothing Nothing
 
 aliveVarsB' :: [(InterInstr, OpSet)] -> [OpSet]
-aliveVarsB' cosas = if cosas == next then current
+aliveVarsB' cosas = if cosas == next then orphans++current
                     else aliveVarsB' next
            where nextin [] = []
                  nextin [x] = [x]
-                 nextin ((c1,_):(c2,i2):xs) = (c1, S.union (use' c1) (S.difference i2 (def' c1)) ) : (nextin $ (c2,i2):xs) 
+                 nextin ((c1,_):(c2,i2):xs) = (c1, S.union (use' c1) (S.difference i2 (def' c1)) ) : (nextin $ (c2,i2):xs)
                  current = snd $ unzip cosas
                  next = nextin cosas
+                 orph [] = []
+                 orph [_] = []
+                 orph ((c1,i1):b@(_,i2):xs) = (S.union i1 (S.difference (def' c1) i2)) : (orph (b:xs))
+                 orphans = orph next
 
 interferenceEdges :: [[OpSet]] -> [(VarType, VarType)]
 interferenceEdges oof = map (dupla.(S.toList)) $ S.toList $ S.unions $ map (makeedges.(S.toList)) $ flatten oof
@@ -327,8 +331,8 @@ dSatur' gg@(g,f,_) uncolored (colorKeys, colors) = if S.size uncolored == 0 then
 getColors :: InterCode -> Tablon -> M.Map VarType Int
 getColors code tab = M.fromList [ x | x <- colored++spills ]
           where  colors = dSatur $ snd $ interferenceGraph code tab
-                 colored = pairs $ zip colors [2..25]
-                 spills = pairs $ zip (drop 24 colors) (repeat 0)
+                 colored = pairs $ zip colors [8..25]
+                 spills = pairs $ zip (drop 18 colors) (repeat 0)
                  pairs a = [ (v,n) | (s,n) <- a, v <- S.toList s ]
 
 type FinalMonad a = RWST () String (M.Map VarType Int) IO a
@@ -381,6 +385,7 @@ finalCode :: InterCode -> FinalMonad ()
 finalCode code = do
   tell ".text\n"
   _ <- mapM finalInstr' code
+  tell "\tli $v0, 10\n\tsyscall"
   return ()
 
 finalInstr' :: InterInstr -> FinalMonad ()
@@ -491,21 +496,26 @@ finalInstr (T.ThreeAddressCode T.Print Nothing (Just e) Nothing) = do
     if t == Simple "planet" then do
         tell ("move $a0, "++ee++"\n")
         tell "\tli $v0, 1\n"
+        tell "\tsyscall\n"
+        tell "\tli $v0, 11\n"
+        tell "\tli $a0, 10\n"
         tell "\tsyscall"
     else tell ("# print no implementado: "++(show e))
 finalInstr (T.ThreeAddressCode T.Get (Just x) (Just y) (Just _)) = do
     a <- finalOp x
     b <- finalOp y
-    tell ("lw "++a++',':' ':b)
+    --tell ("lw "++a++',':' ':b)
+    tell ("lw "++a++", _datos("++b++")")
 finalInstr (T.ThreeAddressCode T.Set (Just x) (Just _) (Just z)) = do
     a <- finalOp x
     b <- finalOp z
-    tell ("sw "++b++',':' ':a)
+    --tell ("sw "++b++',':' ':a)
+    tell ("sw "++a++", _datos("++b++")")
 -- no thank you (T.ThreeAddressCode T.Ref (Just x) (Just y) Nothing)
 finalInstr (T.ThreeAddressCode T.Deref (Just x) (Just y) _) = do
     a <- finalOp x
     b <- finalOp y
-    tell ("lw "++a++',':' ':b)
+    tell ("lw "++a++", _datos("++b++")")
 finalInstr (T.ThreeAddressCode T.New (Just x) (Just size) _) = do
     a <- finalOp x
     b <- finalOp size

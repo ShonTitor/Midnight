@@ -91,11 +91,11 @@ data Instr
       = Flotando Exp
       | Declar Type String
       | Asig Exp Exp
-      | If [(Exp, [Instr])]
-      | While Exp [Instr]
-      | Foreach Exp Exp [Instr]
-      | ForRange Exp Exp Exp Exp [Instr]
-      | ForC Instr Exp Instr [Instr]
+      | If [(Exp, [Instr], Integer)]
+      | While Exp [Instr] Integer
+      | Foreach Exp Exp [Instr] Integer
+      | ForRange Exp Exp Exp Exp [Instr] Integer
+      | ForC Instr Exp Instr [Instr] Integer
       | Break Exp
       | Continue
       | Return Exp

@@ -6,7 +6,7 @@ import Tipos
 import Parser (gatto)
 import qualified TACType as T
 
-data VarType = Temp Int
+data VarType = Temp Int Integer
              | SymEntry String Entry
              | Base
       deriving (Eq)
@@ -16,7 +16,7 @@ type InterCode = [InterInstr]
 type InterMonad a = RWST () InterCode (Int, Int, [Operand], [Operand]) IO a
 
 instance T.SymEntryCompatible VarType where
-  getSymID (Temp n) = "_t"++(show n)
+  getSymID (Temp n _) = "_t"++(show n)
   getSymID (SymEntry s (Entry _ _ _ _)) = s-- ++ " (scope:"++(show a)++")"
   getSymID Base = "_base"
 
@@ -81,12 +81,12 @@ newTemp :: InterMonad Operand
 newTemp = do
     (n,m,a,b) <- get
     put (n+1,m,a,b)
-    return $ T.Id (Temp n)
+    return $ T.Id (Temp n 0)
 
 lastTemp :: InterMonad Operand
 lastTemp = do
     (n,_,_,_) <- get
-    return $ T.Id (Temp (n-1))
+    return $ T.Id (Temp (n-1) 0)
 
 newLabel :: InterMonad Operand
 newLabel = do 
@@ -114,14 +114,14 @@ genCodeInstr (Flotando (e,_)) = do
     tell c
 -- Selección
 genCodeInstr (If xs) = do
-    let genCodeIf [((b,_), sequ)] next = do
+    let genCodeIf [((b,_), sequ, _)] next = do
             btrue <- newLabel
             c1 <- genCodeExpB (b, btrue, next)
             tell c1
             tell [T.ThreeAddressCode T.NewLabel Nothing (Just btrue) Nothing]
             genCode sequ
             --tell [T.ThreeAddressCode T.GoTo Nothing Nothing (Just next)]
-        genCodeIf (((b,_), sequ):elifs) next = do
+        genCodeIf (((b,_), sequ, _):elifs) next = do
             btrue <- newLabel
             bfalse <- newLabel
             c1 <- genCodeExpB (b, btrue, bfalse)
@@ -136,7 +136,7 @@ genCodeInstr (If xs) = do
     genCodeIf xs next
     tell [T.ThreeAddressCode T.NewLabel Nothing (Just next) Nothing]
 -- Repetición
-genCodeInstr (While (b,_) sequ) = do
+genCodeInstr (While (b,_) sequ _) = do
     begin <- newLabel
     btrue <- newLabel
     bfalse <- newLabel
@@ -148,7 +148,7 @@ genCodeInstr (While (b,_) sequ) = do
     popLoop
     tell [T.ThreeAddressCode T.GoTo Nothing Nothing (Just begin),
           T.ThreeAddressCode T.NewLabel Nothing (Just bfalse) Nothing]
-genCodeInstr (ForC instr (b,_) instrf sequ) = do
+genCodeInstr (ForC instr (b,_) instrf sequ _) = do
     begin <- newLabel
     btrue <- newLabel
     bfalse <- newLabel
@@ -164,7 +164,7 @@ genCodeInstr (ForC instr (b,_) instrf sequ) = do
     popLoop
     tell [T.ThreeAddressCode T.GoTo Nothing Nothing (Just begin),
           T.ThreeAddressCode T.NewLabel Nothing (Just bfalse) Nothing]
-genCodeInstr (ForRange k e1 e2 e3 sequ) = do
+genCodeInstr (ForRange k e1 e2 e3 sequ _) = do
     begin <- newLabel
     btrue <- newLabel
     bfalse <- newLabel
@@ -191,7 +191,7 @@ genCodeInstr (ForRange k e1 e2 e3 sequ) = do
     tell [T.ThreeAddressCode T.Add (Just iter) (Just iter) (Just step),
           T.ThreeAddressCode T.GoTo Nothing Nothing (Just begin),
           T.ThreeAddressCode T.NewLabel Nothing (Just bfalse) Nothing]
-genCodeInstr (Foreach k e sequ) = do
+genCodeInstr (Foreach k e sequ _) = do
     let f (_, Composite "Quasar" _) = True
         f _ = False
     if f e then do
