@@ -202,6 +202,11 @@ popPila = do
     (tablonActual, pila, n, b, r, off) <- get
     put (tablonActual, tail pila, n, b, r, tail off)
 
+currentScope :: MonadTablon Integer
+currentScope = do
+    (_, _, n, _, _, _) <- get
+    return n
+
 insertarCampos :: [(Type, (String, AlexPosn))] -> String -> MonadTablon ()
 insertarCampos xs ts = do
     (tablonActual, pila@(tope:_), n, _, _, o:_) <- get
