@@ -492,27 +492,31 @@ finalInstr (T.ThreeAddressCode T.Print Nothing (Just e) Nothing) = do
         tell ("move $a0, "++ee++"\n")
         tell "\tli $v0, 1\n"
         tell "\tsyscall"
-    else tell ("# print no implementado: "++(show t))
+    else tell ("# print no implementado: "++(show e))
 finalInstr (T.ThreeAddressCode T.Get (Just x) (Just y) (Just _)) = do
     a <- finalOp x
     b <- finalOp y
-    --c <- finalOp i
     tell ("lw "++a++',':' ':b)
 finalInstr (T.ThreeAddressCode T.Set (Just x) (Just _) (Just z)) = do
     a <- finalOp x
     b <- finalOp z
-    --c <- finalOp i
     tell ("sw "++b++',':' ':a)
+-- no thank you (T.ThreeAddressCode T.Ref (Just x) (Just y) Nothing)
+finalInstr (T.ThreeAddressCode T.Deref (Just x) (Just y) _) = do
+    a <- finalOp x
+    b <- finalOp y
+    tell ("lw "++a++',':' ':b)
+finalInstr (T.ThreeAddressCode T.New (Just x) (Just size) _) = do
+    a <- finalOp x
+    b <- finalOp size
+    tell ("li $v0, 9\n\tli $a0, "++b++"\n\tsyscall\n\tmove "++a++", $v0")
+finalInstr (T.ThreeAddressCode T.Exit _ _ _) = tell "li $v0, 10\n\tsyscall"
+finalInstr (T.ThreeAddressCode T.Abort _ _ _) = tell "li $v0, 10\n\tsyscall"
+finalInstr (T.ThreeAddressCode T.Read Nothing (Just e) Nothing) = do
+    a <- finalOp e
+    tell ("li $v0, 9\n\tli $a0, 1024\n\tsyscall\n\tmove $a0, $v0\n\tli $a1, 1024\n\tli $v0, 8\n\tsyscall\n\tmove "++a++", $v0")
 finalInstr i = tell ("# No implementado: "++(show i))
--- show           = "\t" ++ show x ++ "[" ++ show i ++ "] := " ++ show y
--- show (ThreeAddressCode New (Just x) (Just size) Nothing)        = "\t" ++ show x ++ " := malloc(" ++ show size ++ ")"
--- show (ThreeAddressCode Ref (Just x) (Just y) Nothing)           = "\t" ++ show x ++ " := &" ++ show y
--- show (ThreeAddressCode Deref (Just x) (Just y) Nothing)           = "\t" ++ show x ++ " := *" ++ show y
 -- show (ThreeAddressCode Param Nothing (Just p) Nothing)          = "\tparam " ++ show p
--- show (ThreeAddressCode Call Nothing (Just l) (Just n))          = "\tcall " ++ show l ++ ", " ++ show n
 -- show (ThreeAddressCode Call (Just t) (Just l) (Just n))         = "\t" ++ show t ++ " := call " ++ show l ++ ", " ++ show n
--- show (ThreeAddressCode Read Nothing (Just e) Nothing)           = "\tread " ++ show e
 -- show (ThreeAddressCode Return Nothing Nothing Nothing)          = "\treturn"
 -- show (ThreeAddressCode Return Nothing (Just t) Nothing)         = "\treturn " ++ show t
--- show (ThreeAddressCode Exit Nothing Nothing Nothing)            = "\texit"
--- show (ThreeAddressCode Abort Nothing Nothing Nothing)           = "\tabort"
