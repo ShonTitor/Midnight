@@ -17,6 +17,7 @@ Comet double(planet @n) -> vacuum {
     return vac
 }
 
+print(34);
 (planet -> planet) Comet f = twice;
 planet z = f(2);
 halley(42);

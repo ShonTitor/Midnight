@@ -21,4 +21,4 @@ main = do
   putStrLn $ show $ getColors k tab
   text <- finalDestination k tab
   putStrLn text
-  putStrLn "jaja salu2"
+  --putStrLn "jaja salu2"

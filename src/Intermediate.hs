@@ -6,7 +6,7 @@ import Tipos
 import Parser (gatto)
 import qualified TACType as T
 
-data VarType = Temp Int Integer
+data VarType = Temp Int Integer Type
              | SymEntry String Entry
              | Base
       deriving (Eq)
@@ -16,7 +16,7 @@ type InterCode = [InterInstr]
 type InterMonad a = RWST () InterCode (Int, Int, [Operand], [Operand]) IO a
 
 instance T.SymEntryCompatible VarType where
-  getSymID (Temp n _) = "_t"++(show n)
+  getSymID (Temp n _ _) = "_t"++(show n)
   getSymID (SymEntry s (Entry _ _ _ _)) = s-- ++ " (scope:"++(show a)++")"
   getSymID Base = "_base"
 
@@ -81,12 +81,12 @@ newTemp :: InterMonad Operand
 newTemp = do
     (n,m,a,b) <- get
     put (n+1,m,a,b)
-    return $ T.Id (Temp n 0)
+    return $ T.Id (Temp n 0 IDK)
 
 lastTemp :: InterMonad Operand
 lastTemp = do
     (n,_,_,_) <- get
-    return $ T.Id (Temp (n-1) 0)
+    return $ T.Id (Temp (n-1) 0 IDK)
 
 newLabel :: InterMonad Operand
 newLabel = do 
@@ -387,10 +387,12 @@ genCodeCopy (Composite "Quasar" t) a1 a2 = do
           T.ThreeAddressCode T.Add (Just t6) (Just a2) (Just pointerSize),
           T.ThreeAddressCode T.Add (Just t5) (Just a1) (Just pointerSize)]
     genCodeCopy t t5 t6
+    temp0 <- newTemp
     tell [T.ThreeAddressCode T.Add (Just t4) (Just t4) (Just $ constInt 1),
           T.ThreeAddressCode T.Neq (Just t4) (Just t3) (Just label1),
           T.ThreeAddressCode T.NewLabel Nothing (Just label3) Nothing,
-          T.ThreeAddressCode T.Set (Just a1) (Just $ constInt 0) (Just $ constInt 0)]
+          T.ThreeAddressCode T.Assign (Just temp0) (Just $ constInt 0) Nothing,
+          T.ThreeAddressCode T.Set (Just a1) (Just $ constInt 0) (Just temp0)]
 
 genCodeCopy (Record "Galaxy" _ ts) a1 a2 = do
     let f :: Integer -> [Type] -> InterMonad ()
@@ -409,7 +411,8 @@ genCodeExp (Suma e1 e2) = do
     op1 <- getOperand e1
     op2 <- getOperand e2
     t <- newTemp
-    return [T.ThreeAddressCode T.Add (Just t) (Just op1) (Just op2)]
+    return [T.ThreeAddressCode T.Assign (Just t) (Just op1) Nothing, 
+            T.ThreeAddressCode T.Add (Just t) (Just t) (Just op2)]
 genCodeExp (Sub e1 e2) = do
     op1 <- getOperand e1
     op2 <- getOperand e2
@@ -423,7 +426,8 @@ genCodeExp (Mul e1 e2) = do
     op1 <- getOperand e1
     op2 <- getOperand e2
     t <- newTemp
-    return [T.ThreeAddressCode T.Mult (Just t) (Just op1) (Just op2)]
+    return [T.ThreeAddressCode T.Assign (Just t) (Just op1) Nothing, 
+            T.ThreeAddressCode T.Mult (Just t) (Just t) (Just op2)]
 genCodeExp (Div e1 e2) = do
     op1 <- getOperand e1
     op2 <- getOperand e2
@@ -490,11 +494,11 @@ genCodeExp (Scale e1) = do
           T.ThreeAddressCode T.Deref (Just tam) (Just tam) Nothing]
 -- Llamada a subrutina
 genCodeExp (Funcall f a) = do
-    let g op = T.ThreeAddressCode T.Param Nothing (Just op) Nothing
-    args <- mapM getOperand a
+    --args <- mapM getOperand a
     fun <- getOperand f
+    params <- mapM copyParam a
     t <- newTemp
-    return $ Prelude.map g args ++ [T.ThreeAddressCode T.Call (Just t) (Just fun) (Just $ constInt $ toInteger $ length args)]
+    return (params ++ [T.ThreeAddressCode T.Call (Just t) (Just fun) (Just $ constInt $ toInteger $ length params)])
     -- Print y Read
 genCodeExp (Print (e1:_)) = do
     o <- getOperand e1
@@ -511,6 +515,14 @@ genCodeExp _ = do
     _ <- newTemp
     --lift $ putStrLn "Esto falta jaja salu2"
     return []
+
+copyParam :: Exp -> InterMonad InterInstr
+copyParam e@(_,ti) = do
+    t <- newTemp
+    a <- getOperand e
+    tell [T.ThreeAddressCode T.New (Just t) (Just $ constInt $ anchura ti) Nothing]
+    genCodeCopy ti t a
+    return $ T.ThreeAddressCode T.Param Nothing (Just t) Nothing
 
 genCodeExpB' :: Expr -> InterMonad InterCode
 genCodeExpB' e = do

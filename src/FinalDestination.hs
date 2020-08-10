@@ -198,13 +198,13 @@ defuse' (defs, uses) (inst:code) = defuse' (newdef, newuse) code
 isVar :: Operand -> Bool
 isVar (T.Id (SymEntry _ (Entry _ Variable _ _))) = True
 isVar (T.Id (SymEntry _ (Entry _ (Parametro _) _ _))) = True
-isVar (T.Id (Temp _ _)) = True
+isVar (T.Id (Temp _ _ _)) = True
 isVar _ = False
 
 toVar :: Operand -> Maybe VarType
 toVar (T.Id v@(SymEntry _ (Entry _ Variable _ _))) = Just v
 toVar (T.Id v@(SymEntry _ (Entry _ (Parametro _) _ _))) = Just v
-toVar (T.Id v@(Temp _ _)) = Just v
+toVar (T.Id v@(Temp _ _ _)) = Just v
 toVar _ = Nothing
 
 toVar' :: Operand -> VarType
@@ -348,12 +348,12 @@ isConst _ = False
 labelize :: Operand -> String
 labelize (T.Label ('~':s)) = s
 labelize (T.Label s) = s
-labelize _ = error "not a label"
+labelize a = show a
 
 getType :: Operand -> Type
 getType (T.Id (SymEntry _ (Entry t _ _ _))) = t
 getType (T.Constant (_,t)) = t
-getType _ = Err
+getType (T.Id (Temp _ _ t)) = Simple "planet" --t
 
 getReg :: Operand -> FinalMonad Int
 getReg op = do
@@ -383,13 +383,26 @@ finalDestination code tab = do
 
 finalCode :: InterCode -> FinalMonad ()
 finalCode code = do
-  tell ".text\n"
+  tell ".data\n_datos:\n.text\n"
   _ <- mapM finalInstr' code
   tell "\tli $v0, 10\n\tsyscall"
   return ()
 
 finalInstr' :: InterInstr -> FinalMonad ()
 finalInstr' (T.ThreeAddressCode T.NewLabel _ (Just label) _) = tell $ (labelize label)++":\n"
+finalInstr' (T.ThreeAddressCode T.Param Nothing (Just p) Nothing) = do
+    let ancho = anchura $ getType p
+        f :: String -> Integer -> FinalMonad ()
+        f _ 0 = return ()
+        f a n = do
+          if n < 0 then error "no alineado"
+          else do 
+            tell ("\tsw "++a++", ($sp)\n")
+            tell "\tadd $sp, 4\n"
+            f a (n-4)
+    pp <- finalOp p
+    f pp ancho
+
 finalInstr' i = do
   tell "\t"
   finalInstr i
@@ -494,7 +507,8 @@ finalInstr (T.ThreeAddressCode T.Print Nothing (Just e) Nothing) = do
     let t = getType e
     ee <- finalOp e
     if t == Simple "planet" then do
-        tell ("move $a0, "++ee++"\n")
+        if isConst e then tell ("li $a0, "++ee++"\n")
+        else tell ("move $a0, "++ee++"\n")
         tell "\tli $v0, 1\n"
         tell "\tsyscall\n"
         tell "\tli $v0, 11\n"
@@ -504,18 +518,18 @@ finalInstr (T.ThreeAddressCode T.Print Nothing (Just e) Nothing) = do
 finalInstr (T.ThreeAddressCode T.Get (Just x) (Just y) (Just _)) = do
     a <- finalOp x
     b <- finalOp y
-    --tell ("lw "++a++',':' ':b)
-    tell ("lw "++a++", _datos("++b++")")
-finalInstr (T.ThreeAddressCode T.Set (Just x) (Just _) (Just z)) = do
+    if isConst y then tell ("lw "++a++", "++b)
+    else tell ("lw "++a++", ("++b++")")
+finalInstr (T.ThreeAddressCode T.Set (Just x) (Just i) (Just z)) = do
     a <- finalOp x
     b <- finalOp z
-    --tell ("sw "++b++',':' ':a)
-    tell ("sw "++a++", _datos("++b++")")
+    tell ("sw "++b++", ("++a++")")
 -- no thank you (T.ThreeAddressCode T.Ref (Just x) (Just y) Nothing)
 finalInstr (T.ThreeAddressCode T.Deref (Just x) (Just y) _) = do
     a <- finalOp x
     b <- finalOp y
-    tell ("lw "++a++", _datos("++b++")")
+    if isConst y then tell ("lw "++a++", "++b)
+    else tell ("lw "++a++", ("++b++")")
 finalInstr (T.ThreeAddressCode T.New (Just x) (Just size) _) = do
     a <- finalOp x
     b <- finalOp size
@@ -525,8 +539,11 @@ finalInstr (T.ThreeAddressCode T.Abort _ _ _) = tell "li $v0, 10\n\tsyscall"
 finalInstr (T.ThreeAddressCode T.Read Nothing (Just e) Nothing) = do
     a <- finalOp e
     tell ("li $v0, 9\n\tli $a0, 1024\n\tsyscall\n\tmove $a0, $v0\n\tli $a1, 1024\n\tli $v0, 8\n\tsyscall\n\tmove "++a++", $v0")
+finalInstr (T.ThreeAddressCode T.Call (Just t) (Just l) (Just n)) = do
+    f <- finalOp l
+    if hasReg l then tell ("jalr "++f)
+    else tell ("jal "++f)
+finalInstr (T.ThreeAddressCode T.Return Nothing (Just t) Nothing) = do
+    -- copiar valor de retorno
+    tell "jr $ra"
 finalInstr i = tell ("# No implementado: "++(show i))
--- show (ThreeAddressCode Param Nothing (Just p) Nothing)          = "\tparam " ++ show p
--- show (ThreeAddressCode Call (Just t) (Just l) (Just n))         = "\t" ++ show t ++ " := call " ++ show l ++ ", " ++ show n
--- show (ThreeAddressCode Return Nothing Nothing Nothing)          = "\treturn"
--- show (ThreeAddressCode Return Nothing (Just t) Nothing)         = "\treturn " ++ show t
