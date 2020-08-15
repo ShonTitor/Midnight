@@ -511,17 +511,25 @@ genCodeExp (Bigbang t1) = do
     o <- newTemp
     return [T.ThreeAddressCode T.New (Just o) (Just $ constInt $ anchura t1) Nothing]
 -- RIP
-genCodeExp _ = do
+genCodeExp op = do
     _ <- newTemp
     --lift $ putStrLn "Esto falta jaja salu2"
     return []
 
 copyParam :: Exp -> InterMonad InterInstr
 copyParam e@(_,ti) = do
+    let isSimple (Simple _) = True
+        isSimple _ = False
     t <- newTemp
     a <- getOperand e
-    tell [T.ThreeAddressCode T.New (Just t) (Just $ constInt $ anchura ti) Nothing]
-    genCodeCopy ti t a
+    if isSimple ti then do
+      t2 <- newTemp
+      tell [T.ThreeAddressCode T.Assign (Just t2) (Just a) Nothing,
+            T.ThreeAddressCode T.New (Just t) (Just $ constInt $ anchura ti) Nothing,
+            T.ThreeAddressCode T.Set (Just t) (Just $ constInt $ 0) (Just t2)]
+    else do 
+      tell [T.ThreeAddressCode T.New (Just t) (Just $ constInt $ anchura ti) Nothing]
+      genCodeCopy ti t a
     return $ T.ThreeAddressCode T.Param Nothing (Just t) Nothing
 
 genCodeExpB' :: Expr -> InterMonad InterCode
