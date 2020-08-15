@@ -307,6 +307,37 @@ genCodeEq (Composite "Cluster" tipo) (btrue, bfalse) a1 a2 = do
           T.ThreeAddressCode T.Eq (Just contador) (Just size) (Just btrue)]
     genCodeEq tipo (btrue2, bfalse) t1 t2
 
+genCodeEq (Composite "Quasar" tipo) (btrue, bfalse) a1 a2 = do
+    t1 <- newTemp
+    t2 <- newTemp
+    t3 <- newTemp
+    t4 <- newTemp
+    contador <- newTemp
+    size <- newTemp
+    btrue2 <- newLabel
+    pepito <- newLabel
+    tell [T.ThreeAddressCode T.Add (Just t1) (Just a1) (Just $ pointerSize),
+          T.ThreeAddressCode T.Add (Just t2) (Just a2) (Just $ pointerSize),
+          T.ThreeAddressCode T.Deref (Just t1) (Just t1) Nothing,
+          T.ThreeAddressCode T.Deref (Just t2) (Just t2) Nothing,
+          T.ThreeAddressCode T.Neq (Just t1) (Just t2) (Just bfalse), 
+          T.ThreeAddressCode T.Assign (Just contador) (Just $ constInt 0) Nothing,
+          T.ThreeAddressCode T.Assign (Just size) (Just t1) Nothing,
+          T.ThreeAddressCode T.Deref (Just t3) (Just a1) Nothing,
+          T.ThreeAddressCode T.Deref (Just t4) (Just a2) Nothing,
+          T.ThreeAddressCode T.Add (Just t1) (Just t3) (Just $ pointerSize),
+          T.ThreeAddressCode T.Add (Just t2) (Just t4) (Just $ pointerSize),
+          T.ThreeAddressCode T.GoTo Nothing Nothing (Just pepito),
+          T.ThreeAddressCode T.NewLabel Nothing (Just btrue2) Nothing, 
+          T.ThreeAddressCode T.Deref (Just t3) (Just t3) Nothing,
+          T.ThreeAddressCode T.Deref (Just t4) (Just t4) Nothing,
+          T.ThreeAddressCode T.Add (Just t1) (Just t3) (Just $ pointerSize),
+          T.ThreeAddressCode T.Add (Just t2) (Just t4) (Just $ pointerSize),
+          T.ThreeAddressCode T.Add (Just contador) (Just contador) (Just $ constInt 1),
+          T.ThreeAddressCode T.NewLabel Nothing (Just pepito) Nothing,
+          T.ThreeAddressCode T.Eq (Just contador) (Just size) (Just btrue)]
+    genCodeEq tipo (btrue2, bfalse) t1 t2
+
 genCodeCopy :: Type -> Operand -> Operand -> InterMonad ()
 genCodeCopy (Simple _) a1 a2 = do
     t1 <- newTemp
