@@ -413,7 +413,7 @@ unsee = do
               tell ("\tsw "++v++", "++(show $ getOffset' op)++"($fp)\n")
   (a,unseen) <- get
   tell "\t# PANIC\n"
-  mapM f (S.toList unseen)
+  _ <- mapM f (S.toList unseen)
   tell "\t# END PANIC\n"
   put (a, S.empty)
 
@@ -428,7 +428,8 @@ finalInstr (T.ThreeAddressCode T.NewLabel _ (Just label) _) = do
   unsee'
   tell $ lab++":\n"
   if lab == "main" then do 
-    tell "\tla $fp, _datos\n"
+    tell "\tmove $fp, $sp\n"
+    tell "\tadd $sp, $sp, 512\n"
   else return ()
 finalInstr (T.ThreeAddressCode T.Param Nothing Nothing Nothing) = do
   tell "\tsw $fp, ($sp)\n"
@@ -590,6 +591,7 @@ finalInstr (T.ThreeAddressCode T.Call (Just t) (Just l) (Just n)) = do
     tell ("\tsub $sp, $sp, "++ps++"\n")
     tell ("\tlw $ra, -8($sp) \n")
     tell ("\tlw $fp, -12($sp) \n")
+    tell ("\tsub $sp, $sp, 12\n")
 finalInstr (T.ThreeAddressCode T.Return Nothing (Just t) Nothing) = do
     -- copiar valor de retorno
     tell "\tjr $ra\n"

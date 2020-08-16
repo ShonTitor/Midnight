@@ -18,7 +18,8 @@ main = do
   --putStrLn $ (show $ map f $ vertices g )
   --putStrLn $ (show g)
   --putStrLn $ (show $ dSatur gg)
-  putStrLn $ show $ getColors k tab
+  --putStrLn $ show $ getColors k tab
+  putStrLn "\n"
   text <- finalDestination k tab
   putStrLn text
   --putStrLn "jaja salu2"
