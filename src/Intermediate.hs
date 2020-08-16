@@ -526,10 +526,12 @@ genCodeExp (Scale e1) = do
 -- Llamada a subrutina
 genCodeExp (Funcall f a) = do
     --args <- mapM getOperand a
+    let emp = sum $ Prelude.map (anchura.snd) a
     fun <- getOperand f
     params <- mapM copyParam a
     t <- newTemp
-    return (params ++ [T.ThreeAddressCode T.Call (Just t) (Just fun) (Just $ constInt $ toInteger $ length params)])
+    --return $ (T.ThreeAddressCode T.Param Nothing Nothing Nothing):(params ++ [T.ThreeAddressCode T.Call (Just t) (Just fun) (Just $ constInt $ toInteger $ length params)])
+    return $ (T.ThreeAddressCode T.Param Nothing Nothing Nothing):(params ++ [T.ThreeAddressCode T.Call (Just t) (Just fun) (Just $ constInt $ emp)])
     -- Print y Read
 genCodeExp (Print (e1:_)) = do
     o <- getOperand e1
@@ -542,6 +544,7 @@ genCodeExp (Bigbang t1) = do
     o <- newTemp
     return [T.ThreeAddressCode T.New (Just o) (Just $ constInt $ anchura t1) Nothing]
 -- RIP
+
 genCodeExp op = do
     _ <- newTemp
     --lift $ putStrLn "Esto falta jaja salu2"
