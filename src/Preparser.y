@@ -342,10 +342,10 @@ END : end { True } | error { False }
 AROUND : around { True } | error { False }
 
 Pop :: { () }
-    :   {- Lambda -}      { % popPila }
+    :   {- Lambda -}      { % popPila' }
 
 Push  ::  { () }
-      :   {- Lambda -}    { % pushPila }
+      :   {- Lambda -}    { % pushPila' }
 
 {
 parseError :: [Token] -> a

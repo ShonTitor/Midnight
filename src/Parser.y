@@ -109,7 +109,7 @@ import qualified Data.Map as Map
 %left NEG
 %%
 
-S :: { Program } : Push Programa Pop  { $2 }
+S :: { Program } : Push2 Programa Pop2  { $2 }
 
 Programa :: { Program }    
       : space END                     { % return $ Root [] }
@@ -150,12 +150,12 @@ Func  :: { () }
 RegSig : ufo id                              { () -- % insertarReg $2 (fst $1) }
        | galaxy id                           { () -- % insertarReg $2 (fst $1) }
 
-Regs : Push RegsAux    
+Regs : Push2 RegsAux    
       { % do
           let rex = reverse $2
           --insertarCampos rex
           return (rex) }
-     | Push RegsAux ';'                                             
+     | Push2 RegsAux ';'                                             
      { % do
           let rex = reverse $2
           --insertarCampos rex
@@ -868,6 +868,12 @@ Pop :: { () }
 
 Push  ::  { () }
       :   {- Lambda -}    { % pushPila }
+
+Pop2 :: { () }
+    :   {- Lambda -}      { % popPila' }
+
+Push2  ::  { () }
+      :   {- Lambda -}    { % pushPila' }
 
 {
 parseError :: [Token] -> a

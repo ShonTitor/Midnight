@@ -191,16 +191,27 @@ checkInt' = checkT' (Simple "planet")
 checkBool' :: AlexPosn -> Type -> MonadTablon Bool
 checkBool' = checkT' (Simple "moon")
 
-pushPila :: MonadTablon ()
-pushPila = do
+pushPila' :: MonadTablon ()
+pushPila' = do
     (tablonActual, pila, n, b, r, off) <- get
     let m = n + 1
     put (tablonActual, m:pila, m, b, r, 0:off)
 
+popPila' :: MonadTablon ()
+popPila' = do
+    (tablonActual, pila, n, b, r, off) <- get
+    put (tablonActual, tail pila, n, b, r, tail off)
+
+pushPila :: MonadTablon ()
+pushPila = do
+    (tablonActual, pila, n, b, r, off) <- get
+    let m = n + 1
+    put (tablonActual, m:pila, m, b, r, off)
+
 popPila :: MonadTablon ()
 popPila = do
     (tablonActual, pila, n, b, r, off) <- get
-    put (tablonActual, tail pila, n, b, r, tail off)
+    put (tablonActual, tail pila, n, b, r, off)
 
 currentScope :: MonadTablon Integer
 currentScope = do

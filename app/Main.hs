@@ -19,6 +19,7 @@ main = do
   --putStrLn $ (show g)
   --putStrLn $ (show $ dSatur gg)
   --putStrLn $ show $ getColors k tab
+  --putStrLn (show tab)
   putStrLn "\n"
   text <- finalDestination k tab
   putStrLn text
