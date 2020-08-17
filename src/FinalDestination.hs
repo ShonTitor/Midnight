@@ -387,12 +387,15 @@ getReg op = do
 
 finalOp :: Operand -> FinalMonad String
 finalOp op = do
+  let lab = labelize op
   if isConst op then return $ show op
   else if hasReg op then do
       o <- getReg op
       if o == 0 then error "aquí se manejarían los spills... si los manejáramos"
       else return $ '$':(show o)
-  else return $ labelize op
+  else if lab == "vac" || lab == "new" then do
+      return "$0"
+  else return lab
 
 finalDestination :: InterCode -> Tablon -> IO String
 finalDestination code tab = do
@@ -582,6 +585,7 @@ finalInstr (T.ThreeAddressCode T.Read Nothing (Just e) Nothing) = do
     a <- finalOp e
     tell ("\tli $v0, 9\n\tli $a0, 1024\n\tsyscall\n\tmove $a0, $v0\n\tli $a1, 1024\n\tli $v0, 8\n\tsyscall\n\tmove "++a++", $v0\n")
 finalInstr (T.ThreeAddressCode T.Call (Just t) (Just l) (Just n)) = do
+    ret <- finalOp t
     f <- finalOp l
     ps <- finalOp n
     unsee
@@ -589,10 +593,15 @@ finalInstr (T.ThreeAddressCode T.Call (Just t) (Just l) (Just n)) = do
     if hasReg l then tell ("\tjalr "++f++"\n")
     else tell ("\tjal "++f++"\n")
     tell ("\tsub $sp, $sp, "++ps++"\n")
+    tell ("\tlw "++ret++", -4($sp) \n")
+    tell ("\tlw "++ret++", ("++ret++") \n")
     tell ("\tlw $ra, -8($sp) \n")
     tell ("\tlw $fp, -12($sp) \n")
     tell ("\tsub $sp, $sp, 12\n")
 finalInstr (T.ThreeAddressCode T.Return Nothing (Just t) Nothing) = do
     -- copiar valor de retorno
+    ret <- finalOp t
+    tell "\t# RETURN\n"
+    tell ("\tsw "++ret++", -4($fp) \n")
     tell "\tjr $ra\n"
 finalInstr i = tell ("\t# No implementado: "++(show i)++"\n")

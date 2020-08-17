@@ -270,9 +270,18 @@ genCodeInstr (Asig e1 e2) = do
         genCodeCopy (snd e1) a1 a2
     else tell [T.ThreeAddressCode T.Assign (Just lvalue) (Just rvalue) Nothing]
 -- Return y Yield
-genCodeInstr (Return e1) = do
+genCodeInstr (Return e1@(_,ti)) = do
+    let isSimple (Simple _) = True
+        isSimple _ = False
     o <- getOperand e1
-    tell [T.ThreeAddressCode T.Return Nothing (Just o) Nothing]
+    temp <- newTemp
+    tell [T.ThreeAddressCode T.New (Just temp) (Just $ constInt $ anchura ti) Nothing]
+    if isSimple ti then do
+      temp2 <- newTemp
+      tell [T.ThreeAddressCode T.Assign (Just temp2) (Just o) Nothing,
+            T.ThreeAddressCode T.Set (Just temp) (Just $ constInt 0) (Just temp2)]
+    else genCodeCopy ti temp o
+    tell [T.ThreeAddressCode T.Return Nothing (Just temp) Nothing]
 genCodeInstr (Yield e1) = do
     o <- getOperand e1
     tell [T.ThreeAddressCode T.Return Nothing (Just o) Nothing]
