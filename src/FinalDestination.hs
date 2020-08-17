@@ -388,13 +388,12 @@ getReg op = do
 finalOp :: Operand -> FinalMonad String
 finalOp op = do
   let lab = labelize op
-  if isConst op then return $ show op
-  else if hasReg op then do
+  if hasReg op then do
       o <- getReg op
       if o == 0 then error "aquí se manejarían los spills... si los manejáramos"
       else return $ '$':(show o)
-  else if lab == "vac" || lab == "new" then do
-      return "$0"
+  else if lab == "vac" || lab == "new" then return "$0"
+  else if lab == "full" then return "1"
   else return lab
 
 finalDestination :: InterCode -> Tablon -> IO String
@@ -428,7 +427,7 @@ unsee' = do
 finalInstr :: InterInstr -> FinalMonad ()
 finalInstr (T.ThreeAddressCode T.NewLabel _ (Just label) _) = do
   let lab = labelize label
-  unsee'
+  --unsee'
   tell $ lab++":\n"
   if lab == "main" then do 
     tell "\tmove $fp, $sp\n"
@@ -463,8 +462,8 @@ finalInstr (T.ThreeAddressCode T.Assign (Just x) (Just y) _) = do
             if a == b then tell "# "
             else return ()
             tell $ "\tmove "++a++(',':' ':b)++"\n"
-        else if isConst y then do
-          tell $ "\tli "++a++(',':' ':(show y)++"\n")
+        else if (labelize y) == "full" then tell $ "\tli "++a++(',':' ':'1':"\n")
+        else if isConst y then tell $ "\tli "++a++(',':' ':(show y)++"\n")
         else tell $ "\tla "++a++(',':' ':(show y)++"\n")
     else error "asignación inválida"
 finalInstr (T.ThreeAddressCode T.Add (Just x) (Just y) (Just z)) = do
@@ -568,7 +567,10 @@ finalInstr (T.ThreeAddressCode T.Get (Just x) (Just y) (Just _)) = do
 finalInstr (T.ThreeAddressCode T.Set (Just x) (Just i) (Just z)) = do
     a <- finalOp x
     b <- finalOp z
-    tell ("\tsw "++b++", ("++a++")\n")
+    if isConst z then do 
+      tell ("\tli $a3, "++b++"\n")
+      tell ("\tsw $a3, ("++a++")\n")
+    else tell ("\tsw "++b++", ("++a++")\n")
 -- no thank you (T.ThreeAddressCode T.Ref (Just x) (Just y) Nothing)
 finalInstr (T.ThreeAddressCode T.Deref (Just x) (Just y) _) = do
     a <- finalOp x
