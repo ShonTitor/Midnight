@@ -461,7 +461,9 @@ genCodeExp (Sub e1 e2) = do
 genCodeExp (Neg e1) = do
     op1 <- getOperand e1
     t <- newTemp
-    return [T.ThreeAddressCode T.Minus (Just t) (Just op1) Nothing]
+    t2 <- newTemp
+    return [T.ThreeAddressCode T.Assign (Just t2) (Just op1) Nothing, 
+            T.ThreeAddressCode T.Minus (Just t) (Just t2) Nothing]
 genCodeExp (Mul e1 e2) = do
     op1 <- getOperand e1
     op2 <- getOperand e2

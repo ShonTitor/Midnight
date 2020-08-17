@@ -578,7 +578,8 @@ finalInstr (T.ThreeAddressCode T.Deref (Just x) (Just y) _) = do
 finalInstr (T.ThreeAddressCode T.New (Just x) (Just size) _) = do
     a <- finalOp x
     b <- finalOp size
-    tell ("\tli $v0, 9\n\tli $a0, "++b++"\n\tsyscall\n\tmove "++a++", $v0\n")
+    if isConst size then tell ("\tli $v0, 9\n\tli $a0, "++b++"\n\tsyscall\n\tmove "++a++", $v0\n")
+    else tell ("\tli $v0, 9\n\tmove $a0, "++b++"\n\tsyscall\n\tmove "++a++", $v0\n")
 finalInstr (T.ThreeAddressCode T.Exit _ _ _) = tell "\tli $v0, 10\n\tsyscall\n"
 finalInstr (T.ThreeAddressCode T.Abort _ _ _) = tell "\tli $v0, 10\n\tsyscall\n"
 finalInstr (T.ThreeAddressCode T.Read Nothing (Just e) Nothing) = do
