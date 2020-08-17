@@ -1,0 +1,17 @@
+Space
+
+Comet f(planet n) -> planet {
+	print(n);
+	if (n <= 1) {
+		return 1;
+	}
+	planet x = f(n-1);
+	x *= n;
+	return x
+}
+
+(planet -> planet) Comet g = f;
+planet r = g(6);
+print(r)
+
+EndofSpace
