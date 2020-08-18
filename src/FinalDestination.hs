@@ -379,9 +379,9 @@ getReg op = do
             else fromJust $ color
         off = show $ getOffset op
         opv = fromJust $ toVar op
-    if isTemp op || isBase op || S.member opv seen then return ()
+    if isBase op || S.member opv seen then return ()
     else do
-      put (m, S.insert opv seen, offmap, currentfun)
+      put (m, S.insert opv (S.filter (\o -> (fromJust $ M.lookup o m) /= (fromJust $ color)) seen), offmap, currentfun)
       tell ("\tlw $"++(show n)++", "++off++"($fp)\n")
     return n
 
@@ -412,6 +412,7 @@ unsee :: FinalMonad ()
 unsee = do
   let f op = do 
               v <- finalOp (T.Id op)
+              tell ("\t# "++(show op)++" "++(show $ getOffset' op)++"\n")
               tell ("\tsw "++v++", "++(show $ getOffset' op)++"($fp)\n")
   (a,unseen,off,currentfun) <- get
   tell "\t# PANIC\n"
@@ -430,13 +431,11 @@ finalInstr (T.ThreeAddressCode T.NewLabel _ (Just label) _) = do
       subr ('_':_) = False
       subr "end" = False
       subr _ = True
-  --unsee'
   tell $ lab++":\n"
   if subr lab then do 
     unsee'
     (a,b,offmap,_) <- get
     put (a,b,offmap,lab)
-    --tell "\tmove $fp, $sp\n"
     if lab == "main" then do tell "\tmove $fp, $sp\n" else return ()
     tell ("\tadd $sp, $fp, "++(show $ fromJust $ M.lookup lab offmap)++"\n")
   else return ()
@@ -444,7 +443,6 @@ finalInstr (T.ThreeAddressCode T.Param Nothing Nothing Nothing) = do
   tell "\tsw $fp, ($sp)\n"
   tell "\tsw $ra, 4($sp)\n"
   tell "\tadd $sp, 12\n"
-  --tell "\tmove $fp, $sp\n"
 finalInstr (T.ThreeAddressCode T.Param Nothing (Just p) Nothing) = do
     let ancho = anchura $ getType p
         f :: String -> Integer -> FinalMonad ()

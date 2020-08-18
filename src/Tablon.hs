@@ -267,8 +267,8 @@ actualizarSubrutina s sequ = do
                      else g (x:l, xs)
         g (_,_) = error "error raro"
         gg = g ([],entries)
-        Entry t _ _ _ = fst gg
-        e = Entry t (Subrutina sequ n) 1 (-1)
+        Entry t (Subrutina _ m) _ _ = fst gg
+        e = Entry t (Subrutina sequ m) 1 (-1)
         updated = e : (snd gg)
         tab = Map.insert s updated tablonActual
     put (tab, pila, n, b, r, off, oof)

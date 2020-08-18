@@ -238,7 +238,7 @@ While : orbit while '(' Exp PQC '{' Seq LQC { () }
 Params : Push '(' ParamsAux PQC
          { % do 
            let params = reverse $3
-           insertarParams params 
+           --insertarParams params 
            return params }
        | Push '('  PQC                                    { [] }
 

@@ -126,17 +126,19 @@ FunSig : comet id Params '->' Type
         { % do
           (tablonActual, pila, n, b, _, off, oof) <- get
           put (tablonActual, pila, n, b, Just (True, $5), off, oof)
+          insertarParams $3
           return $ fst $2
         }
        | satellite id Params '->' Type
         { % do
           (tablonActual, pila, n, b, _, off, oof) <- get
           put (tablonActual, pila, n, b, Just (False, $5), off, oof)
+          insertarParams $3
           return $ fst $2
         }
 
 Func  :: { () }
-      : FunSig '{' Seq LQC Pop    
+      : FunSig '{' Seq LQC Pop2 
         { % do 
           checkCierre $4 "{" $2
           actualizarSubrutina $1 $3 
@@ -446,7 +448,7 @@ While : orbit while '(' Exp PQC '{' Seq LQC
       return $ While (Not $4, Err) $7 n }
 
 
-Params : Push '(' ParamsAux PQC                                   
+Params : Push2 '(' ParamsAux PQC                                   
          { % do 
            checkCierre $4 "(" $2
            let params = reverse $3

@@ -4,6 +4,7 @@ import Intermediate (vaca)
 import System.Environment
 import Data.List (intercalate)
 import FinalDestination
+--import Tablon (showTablon)
 
 main :: IO ()
 main = do
@@ -14,4 +15,5 @@ main = do
   putStrLn "\n"
   text <- finalDestination code tab offsets
   putStrLn text
+  --putStrLn $ showTablon tab
   --putStrLn "jaja salu2"
