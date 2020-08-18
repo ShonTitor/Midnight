@@ -1,0 +1,15 @@
+Space
+
+planet a = 0;
+planet b = 1;
+planet n = 20;
+orbit i around range(n) {
+    print(a);
+    planet c = a+b;
+    a = b;
+    b = c;
+}
+print(a);
+print(b)
+
+EndofSpace

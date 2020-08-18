@@ -542,6 +542,19 @@ genCodeExp (Bigbang t1) = do
     o <- newTemp
     return [T.ThreeAddressCode T.New (Just o) (Just $ constInt $ anchura t1) Nothing]
 -- RIP
+genCodeExp (ArrInit tam tipo) = do
+    n <- getOperand tam
+    array <- newTemp
+    dv <- newTemp
+    t1 <- newTemp
+    return [T.ThreeAddressCode T.Mult (Just t1) (Just n) (Just $ constInt $ anchura tipo),
+            T.ThreeAddressCode T.New (Just array) (Just t1) Nothing,
+            T.ThreeAddressCode T.Add (Just t1) (Just $ constInt $ anchura (Simple "Planet")) (Just pointerSize),
+            T.ThreeAddressCode T.New (Just dv) (Just t1) Nothing,
+            T.ThreeAddressCode T.Set (Just dv) (Just $ constInt $ 0) (Just array),
+            T.ThreeAddressCode T.Add (Just dv) (Just dv) (Just pointerSize),
+            T.ThreeAddressCode T.Set (Just dv) (Just $ constInt $ 0) (Just n)]
+
 genCodeExp op = do
     _ <- newTemp
     --lift $ putStrLn "Esto falta jaja salu2"
