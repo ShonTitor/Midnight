@@ -7,7 +7,7 @@ Comet f(planet n) -> planet {
 	}
 	else {
 		planet r = f(n-1)*n;
-		print(r)
+		print(r);
 		return r
 	}
 }

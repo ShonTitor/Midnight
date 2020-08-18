@@ -379,7 +379,7 @@ getReg op = do
             else fromJust $ color
         off = show $ getOffset op
         opv = fromJust $ toVar op
-    if isBase op || S.member opv seen then return ()
+    if isTemp op || isBase op || S.member opv seen then return ()
     else do
       put (m, S.insert opv (S.filter (\o -> (fromJust $ M.lookup o m) /= (fromJust $ color)) seen), offmap, currentfun)
       tell ("\tlw $"++(show n)++", "++off++"($fp)\n")
