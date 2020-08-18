@@ -2,6 +2,7 @@ module Intermediate where
 import Control.Monad.RWS
 import Data.Map
 import Data.Foldable
+import Data.Maybe (fromJust)
 import Tipos
 import Parser (gatto)
 import qualified TACType as T
@@ -13,7 +14,7 @@ data VarType = Temp Int Integer Type
 type Operand = T.Operand VarType Type
 type InterInstr = T.ThreeAddressCode VarType Type
 type InterCode = [InterInstr]
-type InterMonad a = RWST () InterCode (Int, Int, [Operand], [Operand]) IO a
+type InterMonad a = RWST () InterCode (Int, Int, [Operand], [Operand], Integer) IO a
 
 instance T.SymEntryCompatible VarType where
   getSymID (Temp n _ _) = "_t"++(show n)
@@ -28,27 +29,28 @@ instance Show VarType where
 
 vaca :: String -> IO (InterCode, Tablon)
 vaca f = do
-    (arbol, (tablon, _, _, ok, _, _), _) <- gatto f
-    cow arbol tablon ok
+    (arbol, (tablon, _, _, ok, _, _, oof), _) <- gatto f
+    cow arbol tablon ok oof
 
-cow :: Program -> Tablon -> Bool -> IO (InterCode, Tablon)
-cow (Root lis) tab ok = do
-    let moo' :: (Int, Int, InterCode) -> String -> Entry -> IO (Int, Int, InterCode)
-        moo' (n, m, code) s entry = do
-            (_, (a,b,_,_), c) <- runRWST (genCodeSub s entry) () (n,m,[],[])
-            return (a, b, code++c)
-        moo :: IO (Int, Int, InterCode) -> String -> [Entry] -> IO (Int, Int, InterCode)
+cow :: Program -> Tablon -> Bool -> OffMap -> IO (InterCode, Tablon)
+cow (Root lis) tab ok oof = do
+    let moo' :: (Int, Int, InterCode, Map String Integer) -> String -> Entry -> IO (Int, Int, InterCode, Map String Integer)
+        moo' (n, m, code, oofmap) s entry@(Entry _ (Subrutina _ scope) 1 _) = do
+            (_, (a,b,_,_,off), c) <- runRWST (genCodeSub s entry) () (n,m,[],[], fromJust $ Data.Map.lookup scope oof)
+            return (a, b, code++c, insert s off oofmap)
+        moo' aaa _ _ = return aaa
+        moo :: IO (Int, Int, InterCode, Map String Integer) -> String -> [Entry] -> IO (Int, Int, InterCode, Map String Integer)
         moo b s entries = do
             a <- b
             foldlM (\x y -> moo' x s y) a entries
-        moo'' :: IO (Int, Int, InterCode) -> String -> [Entry] -> (IO (Int, Int, InterCode), ())
+        moo'' :: IO (Int, Int, InterCode, Map String Integer) -> String -> [Entry] -> (IO (Int, Int, InterCode, Map String Integer), ())
         moo'' b s entries = (moo b s entries, ())
-        mu :: IO (Int, Int, InterCode)
-        mu = return (0,0,[])
+        mu :: IO (Int, Int, InterCode,Map String Integer)
+        mu = return (0,0,[],Data.Map.empty)
     if ok then do
         let (cc,_) = mapAccumWithKey moo'' mu tab
-        (i,j,sc) <- cc
-        (_,(_,_,_,_),c) <- runRWST (genCode lis) () (i,j,[],[])
+        (i,j,sc,bigoof) <- cc
+        (_,(_,_,_,_,offsetmain),c) <- runRWST (genCode lis) () (i,j,[],[], fromJust $ Data.Map.lookup 1 oof)
         return ((sc++(T.ThreeAddressCode T.NewLabel Nothing (Just $ T.Label "~main") Nothing):c)++
           [T.ThreeAddressCode T.NewLabel Nothing (Just $ T.Label "~end") Nothing], tab)
     else return ([], tab)
@@ -64,34 +66,34 @@ pointerSize = constInt $ anchura (Composite "~" IDK)
 
 popLoop :: InterMonad ()
 popLoop = do
-    (n, m, _:s1, _:s2) <- get
-    put (n, m, s1, s2)
+    (n, m, _:s1, _:s2, off) <- get
+    put (n, m, s1, s2, off)
 
 lookLoop :: InterMonad ([Operand], [Operand])
 lookLoop = do
-    (_, _, s1, s2) <- get
+    (_, _, s1, s2, _) <- get
     return (s1, s2)
 
 pushLoop :: Operand -> Operand -> InterMonad ()
 pushLoop a b = do
-    (n, m, s1, s2) <- get
-    put (n, m, a:s1, b:s2)
+    (n, m, s1, s2, off) <- get
+    put (n, m, a:s1, b:s2, off)
 
 newTemp :: InterMonad Operand
 newTemp = do
-    (n,m,a,b) <- get
-    put (n+1,m,a,b)
-    return $ T.Id (Temp n 0 IDK)
+    (n,m,a,b,off) <- get
+    put (n+1,m,a,b,off+4)
+    return $ T.Id (Temp n off IDK)
 
 lastTemp :: InterMonad Operand
 lastTemp = do
-    (n,_,_,_) <- get
-    return $ T.Id (Temp (n-1) 0 IDK)
+    (n,_,_,_,off) <- get
+    return $ T.Id (Temp (n-1) (off-4) IDK)
 
 newLabel :: InterMonad Operand
 newLabel = do 
-    (n,m,a,b) <- get
-    put (n,m+1,a,b)
+    (n,m,a,b,off) <- get
+    put (n,m+1,a,b,off)
     return $ T.Label $ '_':(show m)
 
 genCode :: [Instr] -> InterMonad ()
@@ -101,7 +103,7 @@ genCode (x:xs) = do
     genCode xs
 
 genCodeSub :: String -> Entry -> InterMonad ()
-genCodeSub s (Entry _ (Subrutina sequ) 1 _) = do
+genCodeSub s (Entry _ (Subrutina sequ _) 1 _) = do
     tell [T.ThreeAddressCode T.NewLabel Nothing (Just $ T.Label s) Nothing]
     genCode sequ
 genCodeSub _ _ = return ()

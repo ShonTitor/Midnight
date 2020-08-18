@@ -97,7 +97,7 @@ getArcs xs tab ((_,_, Just (T.ThreeAddressCode T.Call _ f _)), _) = fd f
                                                 else destination' xs tab (bf entry)
           fd _ = error "Why is this allowed?"
           bf (Entry t _ _ _) = t
-          ps (Entry _ (Subrutina _) _ _) = True
+          ps (Entry _ (Subrutina _ _) _ _) = True
           ps _ = False
 getArcs xs tab ((_,fun, Just (T.ThreeAddressCode T.Return _ _ _)), _) = callMeMaybe xs tab (getLabel fun)
 getArcs xs _ ((_,_, Just inst@(T.ThreeAddressCode T.GoTo _ _ _)), _) = destination xs (getLabel inst)
