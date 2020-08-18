@@ -109,7 +109,7 @@ import qualified Data.Map as Map
 %left NEG
 %%
 
-S :: { Program } : Push Programa Pop  { $2 }
+S :: { Program } : Push2 Programa Pop2  { $2 }
 
 Programa :: { Program }    
       : space END                     { % return $ Root [] }
@@ -124,24 +124,26 @@ DefsAux : DefsAux Func                { $2 : $1 }
 
 FunSig : comet id Params '->' Type
         { % do
-          (tablonActual, pila, n, b, _, off) <- get
-          put (tablonActual, pila, n, b, Just (True, $5), off)
+          (tablonActual, pila, n, b, _, off, oof) <- get
+          put (tablonActual, pila, n, b, Just (True, $5), off, oof)
+          insertarParams $3
           return $ fst $2
         }
        | satellite id Params '->' Type
         { % do
-          (tablonActual, pila, n, b, _, off) <- get
-          put (tablonActual, pila, n, b, Just (False, $5), off)
+          (tablonActual, pila, n, b, _, off, oof) <- get
+          put (tablonActual, pila, n, b, Just (False, $5), off, oof)
+          insertarParams $3
           return $ fst $2
         }
 
 Func  :: { () }
-      : FunSig '{' Seq LQC Pop    
+      : FunSig '{' Seq LQC Pop2 
         { % do 
           checkCierre $4 "{" $2
           actualizarSubrutina $1 $3 
-          (tablonActual, pila, n, b, _, off) <- get
-          put (tablonActual, pila, n, b, Nothing, off)}
+          (tablonActual, pila, n, b, _, off, oof) <- get
+          put (tablonActual, pila, n, b, Nothing, off, oof)}
           --let d = Func (fst $2) $4 $7 $9
           --insertarSubrutina (d, snd $2) }
       | RegSig '{' Regs Pop LQC    { % checkCierre $5 "{" $2 }
@@ -150,12 +152,12 @@ Func  :: { () }
 RegSig : ufo id                              { () -- % insertarReg $2 (fst $1) }
        | galaxy id                           { () -- % insertarReg $2 (fst $1) }
 
-Regs : Push RegsAux    
+Regs : Push2 RegsAux    
       { % do
           let rex = reverse $2
           --insertarCampos rex
           return (rex) }
-     | Push RegsAux ';'                                             
+     | Push2 RegsAux ';'                                             
      { % do
           let rex = reverse $2
           --insertarCampos rex
@@ -274,7 +276,7 @@ InstrA : Type id
                               return $ Break $2 }
        | continue           { Continue }
        | return Exp         { % do
-                              (_,_,_,_,tipo,_) <- get
+                              (_,_,_,_,tipo,_,_) <- get
                               let AlexPn _ m n = $1
                                   (exp, _) = $2
                               if isNothing tipo then do
@@ -289,7 +291,7 @@ InstrA : Type id
                                   desu <- checkAsig $1 t $2
                                   return $ Return desu}
        | return             { % do
-                              (_,_,_,_,tipo,_) <- get
+                              (_,_,_,_,tipo,_,_) <- get
                               let AlexPn _ m n = $1
                                   exp = Var "vac" (Entry (Simple "vacuum") Literal 0 (-1))
                               if isNothing tipo then do
@@ -304,7 +306,7 @@ InstrA : Type id
                                   desu <- checkAsig $1 t (exp, Simple "vacuum")
                                   return $ Return desu }
        | yield Exp          { % do
-                              (_,_,_,_,tipo,_) <- get
+                              (_,_,_,_,tipo,_,_) <- get
                               let AlexPn _ m n = $1
                                   (exp, _) = $2
                               if isNothing tipo then do
@@ -446,7 +448,7 @@ While : orbit while '(' Exp PQC '{' Seq LQC
       return $ While (Not $4, Err) $7 n }
 
 
-Params : Push '(' ParamsAux PQC                                   
+Params : Push2 '(' ParamsAux PQC                                   
          { % do 
            checkCierre $4 "(" $2
            let params = reverse $3
@@ -869,6 +871,12 @@ Pop :: { () }
 Push  ::  { () }
       :   {- Lambda -}    { % pushPila }
 
+Pop2 :: { () }
+    :   {- Lambda -}      { % popPila' }
+
+Push2  ::  { () }
+      :   {- Lambda -}    { % pushPila' }
+
 {
 parseError :: [Token] -> a
 parseError (x:_) = error $ "Error de sintaxis en la línea " ++ (show m) ++ " columna " ++ (show n)
@@ -886,10 +894,10 @@ checkCierre b s pos = do
                       if b then return () 
                       else printError m n ("Error de sintaxis: No se pudo emparejar "++s )
 
-neko :: [Token] -> IO (Program, (Tipos.Tablon, [Integer], Integer, Bool, Maybe (Bool,Type), [Integer]), ())
+neko :: [Token] -> IO (Program, (Tipos.Tablon, [Integer], Integer, Bool, Maybe (Bool,Type), [Integer], OffMap), ())
 neko s = do
-  (_, (pretablon, _, _, b, _, off), _) <- runRWST (preparser s) () initTablon
-  nya <- runRWST (parser s) () (pretablon, [0], 0, b, Nothing, off)
+  (_, (pretablon, _, _, b, _, off, oof), _) <- runRWST (preparser s) () initTablon
+  nya <- runRWST (parser s) () (pretablon, [0], 0, b, Nothing, off, oof)
   return nya
 
 cat :: Program -> Tipos.Tablon -> IO ()
@@ -900,7 +908,7 @@ cat arbol tablon = do
   --putStrLn $ showTablon tablon
   putStrLn $ showTablon' tablon
 
-gatto :: String -> IO (Program, (Tipos.Tablon, [Integer], Integer, Bool, Maybe (Bool,Type), [Integer]), ())
+gatto :: String -> IO (Program, (Tipos.Tablon, [Integer], Integer, Bool, Maybe (Bool,Type), [Integer], OffMap), ())
 gatto f = do
   s <- getTokens f
   nya <- neko s
@@ -909,6 +917,6 @@ gatto f = do
 gato :: String -> IO ()
 gato f = do
   putStrLn ""
-  (arbol, (tablon, _, _, b, _, _), _) <- gatto f
+  (arbol, (tablon, _, _, b, _, _, _), _) <- gatto f
   if b then cat arbol tablon else return ()
 }

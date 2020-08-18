@@ -1,0 +1,17 @@
+Space
+
+Comet f(planet n) -> vacuum {
+	if (n <= 1) {
+		print(1);
+		return
+	}
+	print(n);
+	f(n-1);
+	return
+}
+
+(planet -> vacuum) Comet g = f;
+g(3);
+print(777)
+
+EndofSpace

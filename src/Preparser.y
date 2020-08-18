@@ -122,8 +122,8 @@ DefsAux : DefsAux Func                { $2 : $1 }
 
 FunSig : comet id Params '->' Type
         { % do
-          (t, pila, n, b, r, off) <- get
-          put (t, 1:pila, n, b, r, off)
+          (t, pila, n, b, r, off, oof) <- get
+          put (t, 1:pila, n, b, r, off, oof)
           let d = Func (fst $2) $3 $5 []
           insertarSubrutina (d, snd $2)
           popPila
@@ -131,8 +131,8 @@ FunSig : comet id Params '->' Type
         }
        | satellite id Params '->' Type
         { % do
-          (t, pila, n, b, r, off) <- get
-          put (t, 1:pila, n, b, r, off)
+          (t, pila, n, b, r, off, oof) <- get
+          put (t, 1:pila, n, b, r, off, oof)
           let d = Iter (fst $2) $3 $5 []
           insertarSubrutina (d, snd $2) 
           popPila
@@ -238,7 +238,7 @@ While : orbit while '(' Exp PQC '{' Seq LQC { () }
 Params : Push '(' ParamsAux PQC
          { % do 
            let params = reverse $3
-           insertarParams params 
+           --insertarParams params 
            return params }
        | Push '('  PQC                                    { [] }
 
@@ -342,10 +342,10 @@ END : end { True } | error { False }
 AROUND : around { True } | error { False }
 
 Pop :: { () }
-    :   {- Lambda -}      { % popPila }
+    :   {- Lambda -}      { % popPila' }
 
 Push  ::  { () }
-      :   {- Lambda -}    { % pushPila }
+      :   {- Lambda -}    { % pushPila' }
 
 {
 parseError :: [Token] -> a

@@ -63,7 +63,7 @@ data Category = Tipo
               | Literal
               | Registro Type Integer
               | Campo
-              | Subrutina [Instr]
+              | Subrutina [Instr] Integer
     deriving (Show, Eq)
 
 data Entry = Entry {
@@ -75,6 +75,8 @@ data Entry = Entry {
     deriving (Show, Eq)
 
 type Tablon  = Map.Map String [Entry]
+
+type OffMap  = Map.Map Integer Integer
 
 data Program
       = Root [Instr] 

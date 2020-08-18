@@ -4,21 +4,16 @@ import Intermediate (vaca)
 import System.Environment
 import Data.List (intercalate)
 import FinalDestination
+--import Tablon (showTablon)
 
 main :: IO ()
 main = do
   let showCode x = intercalate "\n" (map (show) x)
   (s:_) <- getArgs
-  --putStrLn s
-  --_ <- gato s
-  (k,tab) <- vaca s
-  putStrLn $ showCode k
-
-  --let (_,gg@(g,f,_)) = interferenceGraph k tab
-  --putStrLn $ (show $ map f $ vertices g )
-  --putStrLn $ (show g)
-  --putStrLn $ (show $ dSatur gg)
-  putStrLn $ show $ getColors k tab
-  text <- finalDestination k tab
+  (code,tab,offsets) <- vaca s
+  putStrLn $ showCode code
+  putStrLn "\n"
+  text <- finalDestination code tab offsets
   putStrLn text
+  --putStrLn $ showTablon tab
   --putStrLn "jaja salu2"
