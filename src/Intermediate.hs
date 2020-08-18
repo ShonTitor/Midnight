@@ -27,12 +27,12 @@ instance Ord VarType where
 instance Show VarType where
     show x = T.getSymID x
 
-vaca :: String -> IO (InterCode, Tablon)
+vaca :: String -> IO (InterCode, Tablon, Map String Integer)
 vaca f = do
     (arbol, (tablon, _, _, ok, _, _, oof), _) <- gatto f
     cow arbol tablon ok oof
 
-cow :: Program -> Tablon -> Bool -> OffMap -> IO (InterCode, Tablon)
+cow :: Program -> Tablon -> Bool -> OffMap -> IO (InterCode, Tablon, Map String Integer)
 cow (Root lis) tab ok oof = do
     let moo' :: (Int, Int, InterCode, Map String Integer) -> String -> Entry -> IO (Int, Int, InterCode, Map String Integer)
         moo' (n, m, code, oofmap) s entry@(Entry _ (Subrutina _ scope) 1 _) = do
@@ -52,8 +52,8 @@ cow (Root lis) tab ok oof = do
         (i,j,sc,bigoof) <- cc
         (_,(_,_,_,_,offsetmain),c) <- runRWST (genCode lis) () (i,j,[],[], fromJust $ Data.Map.lookup 1 oof)
         return ((sc++(T.ThreeAddressCode T.NewLabel Nothing (Just $ T.Label "~main") Nothing):c)++
-          [T.ThreeAddressCode T.NewLabel Nothing (Just $ T.Label "~end") Nothing], tab)
-    else return ([], tab)
+          [T.ThreeAddressCode T.NewLabel Nothing (Just $ T.Label "~end") Nothing], tab, insert "main" offsetmain bigoof)
+    else return ([], tab, insert "main" 0 Data.Map.empty)
 
 base :: Operand
 base = T.Id Base

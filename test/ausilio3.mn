@@ -5,9 +5,7 @@ Comet f(planet n) -> planet {
 	if (n <= 1) {
 		return 1;
 	}
-	planet x = f(n-1);
-	x *= n;
-	return x
+	return f(n-1)*n
 }
 
 (planet -> planet) Comet g = f;

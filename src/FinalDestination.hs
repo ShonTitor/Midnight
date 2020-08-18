@@ -5,11 +5,11 @@ import Data.Array
 import Data.Maybe (fromJust, catMaybes, isNothing, fromMaybe)
 import qualified Data.Set as S
 import qualified Data.Map as M
-import Debug.Trace (trace)
 import Intermediate
 import Tipos
 import Tablon (buscar)
 import qualified TACType as T
+--import Debug.Trace (trace)
 
 type OpSet = S.Set VarType
 
@@ -335,7 +335,7 @@ getColors code tab = M.fromList [ x | x <- colored++spills ]
                  spills = pairs $ zip (drop 18 colors) (repeat 0)
                  pairs a = [ (v,n) | (s,n) <- a, v <- S.toList s ]
 
-type FinalMonad a = RWST () String (M.Map VarType Int, S.Set VarType) IO a
+type FinalMonad a = RWST () String (M.Map VarType Int, S.Set VarType, M.Map String Integer, String) IO a
 
 hasReg :: Operand -> Bool
 hasReg (T.Id Base) = True
@@ -367,7 +367,7 @@ getOffset' a = error ("sin offset "++(show a))
 
 getReg :: Operand -> FinalMonad Int
 getReg op = do
-    (m, seen) <- get
+    (m, seen, offmap, currentfun) <- get
     let var = toVar' op
         color = M.lookup var m
         isBase (T.Id Base) = True
@@ -381,7 +381,7 @@ getReg op = do
         opv = fromJust $ toVar op
     if isTemp op || isBase op || S.member opv seen then return ()
     else do
-      put (m, S.insert opv seen)
+      put (m, S.insert opv seen, offmap, currentfun)
       tell ("\tlw $"++(show n)++", "++off++"($fp)\n")
     return n
 
@@ -396,9 +396,9 @@ finalOp op = do
   else if lab == "full" then return "1"
   else return lab
 
-finalDestination :: InterCode -> Tablon -> IO String
-finalDestination code tab = do
-  (_, _, text) <- runRWST (finalCode code) () (getColors code tab, S.empty)
+finalDestination :: InterCode -> Tablon -> M.Map String Integer -> IO String
+finalDestination code tab offsets = do
+  (_, _, text) <- runRWST (finalCode code) () (getColors code tab, S.empty, offsets, "")
   return text
 
 finalCode :: InterCode -> FinalMonad ()
@@ -413,31 +413,37 @@ unsee = do
   let f op = do 
               v <- finalOp (T.Id op)
               tell ("\tsw "++v++", "++(show $ getOffset' op)++"($fp)\n")
-  (a,unseen) <- get
+  (a,unseen,off,currentfun) <- get
   tell "\t# PANIC\n"
   _ <- mapM f (S.toList unseen)
   tell "\t# END PANIC\n"
-  put (a, S.empty)
+  put (a, S.empty, off, currentfun)
 
 unsee' :: FinalMonad ()
 unsee' = do
-  (a,_) <- get
-  put (a,S.empty)
+  (a,_,off,currentfun) <- get
+  put (a,S.empty,off,currentfun)
 
 finalInstr :: InterInstr -> FinalMonad ()
 finalInstr (T.ThreeAddressCode T.NewLabel _ (Just label) _) = do
   let lab = labelize label
+      subr ('_':_) = False
+      subr "end" = False
+      subr _ = True
   --unsee'
   tell $ lab++":\n"
-  if lab == "main" then do 
-    tell "\tmove $fp, $sp\n"
-    tell "\tadd $sp, $sp, 512\n"
+  if subr lab then do 
+    unsee'
+    (a,b,offmap,_) <- get
+    put (a,b,offmap,lab)
+    --tell "\tmove $fp, $sp\n"
+    if lab == "main" then do tell "\tmove $fp, $sp\n" else return ()
+    tell ("\tadd $sp, $fp, "++(show $ fromJust $ M.lookup lab offmap)++"\n")
   else return ()
 finalInstr (T.ThreeAddressCode T.Param Nothing Nothing Nothing) = do
   tell "\tsw $fp, ($sp)\n"
-  tell "\tadd $sp, 4\n"
-  tell "\tsw $ra, ($sp)\n"
-  tell "\tadd $sp, 8\n"
+  tell "\tsw $ra, 4($sp)\n"
+  tell "\tadd $sp, 12\n"
   --tell "\tmove $fp, $sp\n"
 finalInstr (T.ThreeAddressCode T.Param Nothing (Just p) Nothing) = do
     let ancho = anchura $ getType p
@@ -595,15 +601,18 @@ finalInstr (T.ThreeAddressCode T.Call (Just t) (Just l) (Just n)) = do
     tell ("\tsub $fp, $sp, "++ps++"\n")
     if hasReg l then tell ("\tjalr "++f++"\n")
     else tell ("\tjal "++f++"\n")
-    tell ("\tsub $sp, $sp, "++ps++"\n")
+    --tell ("\tsub $sp, $sp, "++ps++"\n")
     tell ("\tlw "++ret++", -4($sp) \n")
     tell ("\tlw "++ret++", ("++ret++") \n")
     tell ("\tlw $ra, -8($sp) \n")
     tell ("\tlw $fp, -12($sp) \n")
     tell ("\tsub $sp, $sp, 12\n")
 finalInstr (T.ThreeAddressCode T.Return Nothing (Just t) Nothing) = do
-    -- copiar valor de retorno
     ret <- finalOp t
+    (a,b,offmap,currentfun) <- get
+    put (a,b,offmap,currentfun)
+    --lift $ putStrLn (currentfun++(show offmap))
+    tell ("\tsub $sp, $sp, "++(show $ fromJust $ M.lookup currentfun offmap)++"\n")
     tell "\t# RETURN\n"
     tell ("\tsw "++ret++", -4($fp) \n")
     tell "\tjr $ra\n"
