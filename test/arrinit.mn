@@ -1,0 +1,11 @@
+Space
+
+Constellation s = Cluster (7) star;
+planet n = scale(s);
+orbit i around range(n) {
+	s[i] = 'a';
+	print(i)
+}
+print(scale(s))
+
+EndofSpace

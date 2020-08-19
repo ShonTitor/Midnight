@@ -382,7 +382,7 @@ getReg op = do
     if isTemp op || isBase op || S.member opv seen then return ()
     else do
       put (m, S.insert opv (S.filter (\o -> (fromJust $ M.lookup o m) /= (fromJust $ color)) seen), offmap, currentfun)
-      tell ("\tlw $"++(show n)++", "++off++"($fp)\n")
+      --tell ("\tlw $"++(show n)++", "++off++"($fp)\n")
     return n
 
 finalOp :: Operand -> FinalMonad String
@@ -474,7 +474,10 @@ finalInstr (T.ThreeAddressCode T.Add (Just x) (Just y) (Just z)) = do
     a <- finalOp x
     b <- finalOp y
     c <- finalOp z
-    tell ("\tadd "++a++',':' ':b++',':' ':c++"\n")
+    if not $ isConst y then tell ("\tadd "++a++',':' ':b++',':' ':c++"\n")
+    else do
+      tell ("\tli $a3, "++b++"\n")
+      tell ("\tadd "++a++", $a3, "++c++"\n")
 -- lógicas y aritméticas
 finalInstr (T.ThreeAddressCode T.Mult (Just x) (Just y) (Just z)) = do
     a <- finalOp x

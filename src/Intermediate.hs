@@ -264,13 +264,17 @@ genCodeInstr (Asig e1 e2) = do
     let f (_,Composite s _) = elem s ["Cluster", "Quasar", "Nebula"]
         f (_, Record _ _ _) = True
         f _ = False
-    lvalue <- getOperand e1
-    rvalue <- getOperand e2
     if f e1 then do
         a1 <- getAddress $ fst e1
         a2 <- getAddress $ fst e2
-        genCodeCopy (snd e1) a1 a2
-    else tell [T.ThreeAddressCode T.Assign (Just lvalue) (Just rvalue) Nothing]
+        if shallowable $ fst e2 then do
+          shallowCopy (snd e1) a1 a2
+        else do 
+          genCodeCopy (snd e1) a1 a2
+    else do 
+      lvalue <- getOperand e1
+      rvalue <- getOperand e2
+      tell [T.ThreeAddressCode T.Assign (Just lvalue) (Just rvalue) Nothing]
 -- Return y Yield
 genCodeInstr (Return e1@(_,ti)) = do
     let isSimple (Simple _) = True
@@ -290,6 +294,15 @@ genCodeInstr (Yield e1) = do
 --
 genCodeInstr (Declar _ _) = return ()
 --genCodeInstr _ = return ()
+
+shallowable :: Expr -> Bool
+shallowable (StrLit _) = True
+shallowable (CharLit _) = True
+shallowable (ArrLit _) = True
+shallowable (ArrInit _ _) = True
+shallowable (ListLit _) = True
+shallowable (DictLit _) = True
+shallowable _ = False
 
 genCodeEq :: Type -> (Operand, Operand) -> Operand -> Operand  -> InterMonad ()
 genCodeEq (Composite "Cluster" tipo) (btrue, bfalse) a1 a2 = do
@@ -348,6 +361,23 @@ genCodeEq (Composite "Quasar" tipo) (btrue, bfalse) a1 a2 = do
           T.ThreeAddressCode T.NewLabel Nothing (Just pepito) Nothing,
           T.ThreeAddressCode T.Eq (Just contador) (Just size) (Just btrue)]
     genCodeEq tipo (btrue2, bfalse) t1 t2
+
+shallowCopy :: Type -> Operand -> Operand -> InterMonad ()
+shallowCopy ti a1 a2 = do
+    t1 <- newTemp
+    t2 <- newTemp
+    t3 <- newTemp
+    tell [T.ThreeAddressCode T.Assign (Just t1) (Just a1) Nothing,
+          T.ThreeAddressCode T.Assign (Just t2) (Just a2) Nothing]
+    let f :: Integer -> InterMonad ()
+        f acum = if acum <= 0 then return ()
+                 else do
+                    tell [T.ThreeAddressCode T.Deref (Just t3) (Just t2) Nothing,
+                          T.ThreeAddressCode T.Set (Just t1) (Just $ constInt 0) (Just t3),
+                          T.ThreeAddressCode T.Add (Just t1) (Just t1) (Just $ constInt 4),
+                          T.ThreeAddressCode T.Add (Just t2) (Just t2) (Just $ constInt 4)]
+                    f (acum-4)
+    f (anchura ti)
 
 genCodeCopy :: Type -> Operand -> Operand -> InterMonad ()
 genCodeCopy (Simple _) a1 a2 = do
@@ -557,15 +587,17 @@ genCodeExp (Bigbang t1) = do
     o <- newTemp
     return [T.ThreeAddressCode T.New (Just o) (Just $ constInt $ anchura t1) Nothing]
 -- RIP
-genCodeExp (ArrInit tam tipo) = do
+genCodeExp (ArrInit tam ti) = do
     n <- getOperand tam
-    array <- newTemp
+    nn <- newTemp
     dv <- newTemp
+    array <- newTemp
     t1 <- newTemp
-    return [T.ThreeAddressCode T.Mult (Just t1) (Just n) (Just $ constInt $ anchura tipo),
-            T.ThreeAddressCode T.New (Just array) (Just t1) Nothing,
-            T.ThreeAddressCode T.Add (Just t1) (Just $ constInt $ anchura (Simple "Planet")) (Just pointerSize),
-            T.ThreeAddressCode T.New (Just dv) (Just t1) Nothing,
+    return [T.ThreeAddressCode T.Assign (Just nn) (Just n) Nothing,
+            T.ThreeAddressCode T.Mult (Just nn) (Just nn) (Just $ constInt $ anchura $ ti),
+            T.ThreeAddressCode T.New (Just array) (Just $ nn) Nothing,
+            T.ThreeAddressCode T.New (Just dv) (Just $ constInt $ anchura $ Composite "Cluster" ti) Nothing,
+            T.ThreeAddressCode T.Assign (Just t1) (Just dv) Nothing,
             T.ThreeAddressCode T.Set (Just dv) (Just $ constInt $ 0) (Just array),
             T.ThreeAddressCode T.Add (Just dv) (Just dv) (Just pointerSize),
             T.ThreeAddressCode T.Set (Just dv) (Just $ constInt $ 0) (Just n)]
@@ -696,10 +728,12 @@ getAddress (Access (e, ti) (Index (n, ta))) = do
     a <- getAddress e
     if fti == "Cluster" then do
         i <- getOperand (n, ta)
+        ii <- newTemp
         t0 <- newTemp
         t1 <- newTemp
         tell [T.ThreeAddressCode T.Deref (Just t0) (Just a) Nothing,
-              T.ThreeAddressCode T.Mult (Just t1) (Just i) (Just $ constInt $ anchura te),
+              T.ThreeAddressCode T.Assign (Just ii) (Just i) Nothing,
+              T.ThreeAddressCode T.Mult (Just t1) (Just ii) (Just $ constInt $ anchura te),
               T.ThreeAddressCode T.Add (Just t0) (Just t0) (Just t1)]
         return t0
     else if fti == "Quasar" then do
