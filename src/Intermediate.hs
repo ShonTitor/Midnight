@@ -601,6 +601,33 @@ genCodeExp (ArrInit tam ti) = do
             T.ThreeAddressCode T.Set (Just dv) (Just $ constInt $ 0) (Just array),
             T.ThreeAddressCode T.Add (Just dv) (Just dv) (Just pointerSize),
             T.ThreeAddressCode T.Set (Just dv) (Just $ constInt $ 0) (Just n)]
+genCodeExp (StrLit s) = genCodeExp(ArrLit ss)
+    where ss = Prelude.map (\c -> (CharLit c, Simple "star")) s
+genCodeExp (ArrLit es) = do
+    let eltipo = tip es
+        tip [] = IDK
+        tip ((_,ti):_) = ti
+        isSimple (Simple _) = True
+        isSimple _ = False
+    init <- genCodeExp (ArrInit (IntLit (length es), Simple "planet") eltipo)
+    tell init
+    dir <- lastTemp
+    temp <- newTemp
+    tell [T.ThreeAddressCode T.Deref (Just temp) (Just dir) Nothing]
+    let f :: Integer -> [Exp] -> InterMonad ()
+        f 0 _ = return ()
+        f _ [] = return ()
+        f acum (x:xs) = do
+          if isSimple eltipo then do
+            op <- getOperand x
+            tell [T.ThreeAddressCode T.Set (Just temp) (Just $ constInt 0) (Just op)]
+            if acum == anchura eltipo then return ()
+            else tell [T.ThreeAddressCode T.Add (Just temp) (Just temp) (Just $ constInt $ anchura eltipo)]
+          else error "implementar pls"
+          f (acum-1) xs
+    f (toInteger $ (length es)+1) es
+    dirr <- newTemp
+    return [T.ThreeAddressCode T.Assign (Just dirr) (Just dir) Nothing]
 
 genCodeExp op = do
     _ <- newTemp
