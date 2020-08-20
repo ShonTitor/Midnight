@@ -365,8 +365,8 @@ getOffset' (SymEntry _ (Entry _ _ _ o)) = o
 getOffset' (Temp _ o _) = o
 getOffset' a = error ("sin offset "++(show a))
 
-getReg :: Operand -> FinalMonad Int
-getReg op = do
+getReg :: Operand -> Bool -> FinalMonad Int
+getReg op islval = do
     (m, seen, offmap, currentfun) <- get
     let var = toVar' op
         color = M.lookup var m
@@ -379,22 +379,31 @@ getReg op = do
             else fromJust $ color
         off = show $ getOffset op
         opv = fromJust $ toVar op
-    if isTemp op || isBase op || S.member opv seen then return ()
+    if isBase op || S.member opv seen then return ()
     else do
       put (m, S.insert opv (S.filter (\o -> (fromJust $ M.lookup o m) /= (fromJust $ color)) seen), offmap, currentfun)
-      --tell ("\tlw $"++(show n)++", "++off++"($fp)\n")
+      if islval then return ()
+      else do 
+        tell "\t# DESPAIR\n"
+        tell ("\tlw $"++(show n)++", "++off++"($fp)\n")
     return n
 
-finalOp :: Operand -> FinalMonad String
-finalOp op = do
+finalOp' :: Operand -> Bool -> FinalMonad String
+finalOp' op islval = do
   let lab = labelize op
   if hasReg op then do
-      o <- getReg op
+      o <- getReg op islval
       if o == 0 then error "aquí se manejarían los spills... si los manejáramos"
       else return $ '$':(show o)
   else if lab == "vac" || lab == "new" then return "$0"
   else if lab == "full" then return "1"
   else return lab
+
+finalOp :: Operand -> FinalMonad String
+finalOp op = finalOp' op False
+
+finalLval :: Operand -> FinalMonad String
+finalLval op = finalOp' op True
 
 finalDestination :: InterCode -> Tablon -> M.Map String Integer -> IO String
 finalDestination code tab offsets = do
@@ -459,63 +468,64 @@ finalInstr (T.ThreeAddressCode T.Param Nothing (Just p) Nothing) = do
     f pp ancho
 -- asignación
 finalInstr (T.ThreeAddressCode T.Assign (Just x) (Just y) _) = do
+    b <- finalOp y
+    a <- finalLval x
     if hasReg x then do
-        a <- finalOp x
         if hasReg y then do
-            b <- finalOp y
             if a == b then tell "# "
             else return ()
             tell $ "\tmove "++a++(',':' ':b)++"\n"
+        else if (labelize y) == "vac" || (labelize y) == "new" then tell $ "\tli "++a++(',':' ':'0':"\n")
         else if (labelize y) == "full" then tell $ "\tli "++a++(',':' ':'1':"\n")
         else if isConst y then tell $ "\tli "++a++(',':' ':(show y)++"\n")
         else tell $ "\tla "++a++(',':' ':(show y)++"\n")
     else error "asignación inválida"
 finalInstr (T.ThreeAddressCode T.Add (Just x) (Just y) (Just z)) = do
-    a <- finalOp x
     b <- finalOp y
     c <- finalOp z
+    a <- finalLval x
     if not $ isConst y then tell ("\tadd "++a++',':' ':b++',':' ':c++"\n")
     else do
       tell ("\tli $a3, "++b++"\n")
       tell ("\tadd "++a++", $a3, "++c++"\n")
 -- lógicas y aritméticas
 finalInstr (T.ThreeAddressCode T.Mult (Just x) (Just y) (Just z)) = do
-    a <- finalOp x
     b <- finalOp y
     c <- finalOp z
+    a <- finalLval x
     tell ("\tmul "++a++',':' ':b++',':' ':c++"\n")
 finalInstr (T.ThreeAddressCode T.Sub (Just x) (Just y) (Just z)) = do
-    a <- finalOp x
     b <- finalOp y
     c <- finalOp z
+    a <- finalLval x
     tell ("\tsub "++a++',':' ':b++',':' ':c++"\n")
 finalInstr (T.ThreeAddressCode T.Div (Just x) (Just y) (Just z)) = do
-    a <- finalOp x
     b <- finalOp y
     c <- finalOp z
+    a <- finalLval x
     tell ("\tdiv "++a++',':' ':b++',':' ':c++"\n")
 finalInstr (T.ThreeAddressCode T.Mod (Just x) (Just y) (Just z)) = do
-    a <- finalOp x
     b <- finalOp y
     c <- finalOp z
+    a <- finalLval x
     tell ("\trem "++a++',':' ':b++',':' ':c++"\n")
 finalInstr (T.ThreeAddressCode T.Minus (Just x) (Just y) Nothing) = do
-    a <- finalOp x
     b <- finalOp y
+    a <- finalLval x
     tell ("\tneg "++a++',':' ':b++"\n")
 finalInstr (T.ThreeAddressCode T.Not (Just x) (Just y) Nothing) = do
-    a <- finalOp x
     b <- finalOp y
+    a <- finalLval x
     tell ("\tnot "++a++',':' ':b++"\n")
 finalInstr (T.ThreeAddressCode T.And (Just x) (Just y) (Just z)) = do
-    a <- finalOp x
     b <- finalOp y
     c <- finalOp z
+    a <- finalLval x
     tell ("\tand "++a++',':' ':b++',':' ':c++"\n")
 finalInstr (T.ThreeAddressCode T.Or (Just x) (Just y) (Just z)) = do
-    a <- finalOp x
     b <- finalOp y
     c <- finalOp z
+    a <- finalLval x
     if isConst z then tell ("\tori "++a++',':' ':b++',':' ':c++"\n")
     else tell ("\tor "++a++',':' ':b++',':' ':c++"\n")
 -- branches
@@ -567,37 +577,37 @@ finalInstr (T.ThreeAddressCode T.Print Nothing (Just e) Nothing) = do
         tell "\tsyscall\n"
     else tell ("\t# print no implementado: "++(show e)++"\n")
 finalInstr (T.ThreeAddressCode T.Get (Just x) (Just y) (Just _)) = do
-    a <- finalOp x
     b <- finalOp y
+    a <- finalLval x
     if isConst y then tell ("\tlw "++a++", "++b++"\n")
     else tell ("\tlw "++a++", ("++b++")\n")
-finalInstr (T.ThreeAddressCode T.Set (Just x) (Just i) (Just z)) = do
-    a <- finalOp x
+finalInstr (T.ThreeAddressCode T.Set (Just x) (Just _) (Just z)) = do
     b <- finalOp z
+    a <- finalLval x
     if isConst z then do 
       tell ("\tli $a3, "++b++"\n")
       tell ("\tsw $a3, ("++a++")\n")
     else tell ("\tsw "++b++", ("++a++")\n")
 -- no thank you (T.ThreeAddressCode T.Ref (Just x) (Just y) Nothing)
 finalInstr (T.ThreeAddressCode T.Deref (Just x) (Just y) _) = do
-    a <- finalOp x
     b <- finalOp y
+    a <- finalLval x
     if isConst y then tell ("\tlw "++a++", "++b++"\n")
     else tell ("\tlw "++a++", ("++b++")\n")
 finalInstr (T.ThreeAddressCode T.New (Just x) (Just size) _) = do
-    a <- finalOp x
     b <- finalOp size
+    a <- finalLval x
     if isConst size then tell ("\tli $v0, 9\n\tli $a0, "++b++"\n\tsyscall\n\tmove "++a++", $v0\n")
     else tell ("\tli $v0, 9\n\tmove $a0, "++b++"\n\tsyscall\n\tmove "++a++", $v0\n")
 finalInstr (T.ThreeAddressCode T.Exit _ _ _) = tell "\tli $v0, 10\n\tsyscall\n"
 finalInstr (T.ThreeAddressCode T.Abort _ _ _) = tell "\tli $v0, 10\n\tsyscall\n"
 finalInstr (T.ThreeAddressCode T.Read Nothing (Just e) Nothing) = do
-    a <- finalOp e
+    a <- finalLval e
     tell ("\tli $v0, 9\n\tli $a0, 1024\n\tsyscall\n\tmove $a0, $v0\n\tli $a1, 1024\n\tli $v0, 8\n\tsyscall\n\tmove "++a++", $v0\n")
 finalInstr (T.ThreeAddressCode T.Call (Just t) (Just l) (Just n)) = do
-    ret <- finalOp t
     f <- finalOp l
     ps <- finalOp n
+    ret <- finalLval t
     unsee
     tell ("\tsub $fp, $sp, "++ps++"\n")
     if hasReg l then tell ("\tjalr "++f++"\n")
@@ -605,6 +615,8 @@ finalInstr (T.ThreeAddressCode T.Call (Just t) (Just l) (Just n)) = do
     --tell ("\tsub $sp, $sp, "++ps++"\n")
     tell ("\tlw "++ret++", -4($sp) \n")
     tell ("\tlw "++ret++", ("++ret++") \n")
+    (m, seen, offmap, currentfun) <- get
+    put (m, S.insert (fromJust $ toVar t) seen, offmap, currentfun)
     tell ("\tlw $ra, -8($sp) \n")
     tell ("\tlw $fp, -12($sp) \n")
     tell ("\tsub $sp, $sp, 12\n")
