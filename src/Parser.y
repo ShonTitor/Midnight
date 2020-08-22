@@ -728,7 +728,7 @@ Exp :: { Exp }
         else printError m n ("Error de tipo: esa vaina no tiene longitud "++(show t))
 
         checkCierre $4 "(" $2
-        return (Scale $3, Err)  }
+        return (Scale $3, Simple "planet")  }
     | Exp '.' pop '(' Args PQC    
       { % do
         checkCierre $6 "(" $4

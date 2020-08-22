@@ -1,5 +1,13 @@
 Space
 
-print(scale("jirafa"))
+Constellation s = "jirafa";
+planet n = scale(s);
+print(n);
+print('\n');
+orbit i around range(n) {
+	print(s[i]);	
+}
+print('\n');
+print(s)
 
 EndofSpace

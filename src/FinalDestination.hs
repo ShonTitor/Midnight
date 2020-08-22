@@ -353,7 +353,7 @@ labelize a = show a
 getType :: Operand -> Type
 getType (T.Id (SymEntry _ (Entry t _ _ _))) = t
 getType (T.Constant (_,t)) = t
-getType (T.Id (Temp _ _ t)) = Simple "planet" --t
+getType (T.Id (Temp _ _ t)) = t
 
 getOffset :: Operand -> Integer
 getOffset (T.Id (SymEntry _ (Entry _ _ _ o))) = o
@@ -379,7 +379,7 @@ getReg op islval = do
             else fromJust $ color
         off = show $ getOffset op
         opv = fromJust $ toVar op
-    if isBase op || S.member opv seen then return ()
+    if isTemp op || isBase op || S.member opv seen then return ()
     else do
       put (m, S.insert opv (S.filter (\o -> (fromJust $ M.lookup o m) /= (fromJust $ color)) seen), offmap, currentfun)
       if islval then return ()
@@ -572,10 +572,12 @@ finalInstr (T.ThreeAddressCode T.Print Nothing (Just e) Nothing) = do
         else tell ("\tmove $a0, "++ee++"\n")
         tell "\tli $v0, 1\n"
         tell "\tsyscall\n"
+    else if t == Simple "star" then do
+        if isConst e then tell ("\tli $a0, "++ee++"\n")
+        else tell ("\tmove $a0, "++ee++"\n")
         tell "\tli $v0, 11\n"
-        tell "\tli $a0, 10\n"
         tell "\tsyscall\n"
-    else tell ("\t# print no implementado: "++(show e)++"\n")
+    else tell ("\t# print no implementado: "++(show t)++"\n")
 finalInstr (T.ThreeAddressCode T.Get (Just x) (Just y) (Just _)) = do
     b <- finalOp y
     a <- finalLval x
@@ -607,16 +609,14 @@ finalInstr (T.ThreeAddressCode T.Read Nothing (Just e) Nothing) = do
 finalInstr (T.ThreeAddressCode T.Call (Just t) (Just l) (Just n)) = do
     f <- finalOp l
     ps <- finalOp n
-    ret <- finalLval t
     unsee
     tell ("\tsub $fp, $sp, "++ps++"\n")
     if hasReg l then tell ("\tjalr "++f++"\n")
     else tell ("\tjal "++f++"\n")
     --tell ("\tsub $sp, $sp, "++ps++"\n")
+    ret <- finalLval t
     tell ("\tlw "++ret++", -4($sp) \n")
     tell ("\tlw "++ret++", ("++ret++") \n")
-    (m, seen, offmap, currentfun) <- get
-    put (m, S.insert (fromJust $ toVar t) seen, offmap, currentfun)
     tell ("\tlw $ra, -8($sp) \n")
     tell ("\tlw $fp, -12($sp) \n")
     tell ("\tsub $sp, $sp, 12\n")

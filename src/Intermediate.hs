@@ -64,6 +64,11 @@ constInt n = T.Constant (show n, Simple "planet")
 pointerSize :: Operand
 pointerSize = constInt $ anchura (Composite "~" IDK)
 
+setType :: Operand -> Type -> Operand
+setType (T.Id (SymEntry q (Entry _ a b c))) t = (T.Id (SymEntry q (Entry t a b c)))
+setType (T.Constant (a,_)) t = (T.Constant (a,t))
+setType (T.Id (Temp a b _)) t = (T.Id (Temp a b t))
+
 popLoop :: InterMonad ()
 popLoop = do
     (n, m, _:s1, _:s2, off) <- get
@@ -577,8 +582,12 @@ genCodeExp (Funcall f a) = do
     return $ (T.ThreeAddressCode T.Param Nothing Nothing Nothing):(params ++ [T.ThreeAddressCode T.Call (Just t) (Just fun) (Just $ constInt $ emp)])
     -- Print y Read
 genCodeExp (Print (e1:_)) = do
-    o <- getOperand e1
-    return [T.ThreeAddressCode T.Print Nothing (Just o) Nothing]
+    let isSimple (Simple _) = True
+        isSimple _ = False
+    o <- if isSimple $ snd e1 then getOperand e1 else getAddress $ fst e1
+    pr <- genCodePrint o (snd e1)
+    return pr 
+    --[T.ThreeAddressCode T.Print Nothing (Just $ setType o ti) Nothing]
 genCodeExp (Read) = do
     o <- newTemp
     return [T.ThreeAddressCode T.Read Nothing (Just o) Nothing]
@@ -609,8 +618,8 @@ genCodeExp (ArrLit es) = do
         tip ((_,ti):_) = ti
         isSimple (Simple _) = True
         isSimple _ = False
-    init <- genCodeExp (ArrInit (IntLit (length es), Simple "planet") eltipo)
-    tell init
+    ini <- genCodeExp (ArrInit (IntLit (length es), Simple "planet") eltipo)
+    tell ini
     dir <- lastTemp
     temp <- newTemp
     tell [T.ThreeAddressCode T.Deref (Just temp) (Just dir) Nothing]
@@ -621,7 +630,7 @@ genCodeExp (ArrLit es) = do
           if isSimple eltipo then do
             op <- getOperand x
             tell [T.ThreeAddressCode T.Set (Just temp) (Just $ constInt 0) (Just op)]
-            if acum == anchura eltipo then return ()
+            if acum == 1 then return ()
             else tell [T.ThreeAddressCode T.Add (Just temp) (Just temp) (Just $ constInt $ anchura eltipo)]
           else error "implementar pls"
           f (acum-1) xs
@@ -633,6 +642,34 @@ genCodeExp op = do
     _ <- newTemp
     --lift $ putStrLn "Esto falta jaja salu2"
     return []
+
+
+genCodePrint :: Operand -> Type -> InterMonad InterCode
+genCodePrint op ti@(Simple _) = do
+    return [T.ThreeAddressCode T.Print Nothing (Just $ setType op ti) Nothing]
+genCodePrint op (Composite "Cluster" ti) = do
+    let isSimple (Simple _) = True
+        isSimple _ = False
+    point <- newTemp
+    siz <- newTemp
+    tell [T.ThreeAddressCode T.Deref (Just point) (Just op) Nothing, 
+          T.ThreeAddressCode T.Add (Just siz) (Just op) (Just pointerSize),
+          T.ThreeAddressCode T.Deref (Just siz) (Just siz) Nothing]
+    contador <- newTemp
+    temp <- newTemp
+    lab <- newLabel
+    chao <- newLabel
+    recu <- genCodePrint temp ti
+    return $ [T.ThreeAddressCode T.Assign (Just contador) (Just $ constInt 0) Nothing,
+              T.ThreeAddressCode T.NewLabel Nothing (Just lab) Nothing,
+              T.ThreeAddressCode T.Eq (Just contador)  (Just siz) (Just chao),
+              T.ThreeAddressCode T.Assign (Just temp) (Just point) Nothing]
+              ++ (if isSimple ti then [T.ThreeAddressCode T.Deref (Just temp) (Just temp) Nothing] else []) ++ recu ++
+             [T.ThreeAddressCode T.Add (Just contador) (Just contador) (Just $ constInt 1),
+              T.ThreeAddressCode T.Add (Just point) (Just point) (Just $ pointerSize),
+              T.ThreeAddressCode T.GoTo Nothing Nothing (Just lab),
+              T.ThreeAddressCode T.NewLabel Nothing (Just chao) Nothing]
+genCodePrint _ _ = error "print no implementado"
 
 copyParam :: Exp -> InterMonad InterInstr
 copyParam e@(_,ti) = do
