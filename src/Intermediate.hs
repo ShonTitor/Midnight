@@ -599,9 +599,9 @@ genCodeExp (Bigbang t1) = do
 genCodeExp (ArrInit tam ti) = do
     n <- getOperand tam
     nn <- newTemp
-    dv <- newTemp
     array <- newTemp
     t1 <- newTemp
+    dv <- newTemp
     return [T.ThreeAddressCode T.Assign (Just nn) (Just n) Nothing,
             T.ThreeAddressCode T.Mult (Just nn) (Just nn) (Just $ constInt $ anchura $ ti),
             T.ThreeAddressCode T.New (Just array) (Just $ nn) Nothing,
