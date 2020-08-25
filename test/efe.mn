@@ -1,0 +1,14 @@
+Space
+
+Comet f(planet n, planet m) -> vacuum {
+	planet k = (n+m)//2;
+    print(k+1);
+    return
+}
+
+planet x = 42;
+print(x);
+f(x,x);
+print(x)
+
+EndofSpace
