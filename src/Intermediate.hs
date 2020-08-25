@@ -647,7 +647,7 @@ genCodeExp op = do
 genCodePrint :: Operand -> Type -> InterMonad InterCode
 genCodePrint op ti@(Simple _) = do
     return [T.ThreeAddressCode T.Print Nothing (Just $ setType op ti) Nothing]
-genCodePrint op (Composite "Cluster" ti) = do
+genCodePrint op (Composite "Cluster" ti@(Simple "star")) = do
     let isSimple (Simple _) = True
         isSimple _ = False
     point <- newTemp
@@ -669,6 +669,32 @@ genCodePrint op (Composite "Cluster" ti) = do
               T.ThreeAddressCode T.Add (Just point) (Just point) (Just $ pointerSize),
               T.ThreeAddressCode T.GoTo Nothing Nothing (Just lab),
               T.ThreeAddressCode T.NewLabel Nothing (Just chao) Nothing]
+genCodePrint op (Composite "Cluster" ti) = do
+    let isSimple (Simple _) = True
+        isSimple _ = False
+    point <- newTemp
+    siz <- newTemp
+    tell [T.ThreeAddressCode T.Deref (Just point) (Just op) Nothing, 
+          T.ThreeAddressCode T.Add (Just siz) (Just op) (Just pointerSize),
+          T.ThreeAddressCode T.Deref (Just siz) (Just siz) Nothing]
+    contador <- newTemp
+    temp <- newTemp
+    lab <- newLabel
+    chao <- newLabel
+    recu <- genCodePrint temp ti
+    return $ [T.ThreeAddressCode T.Assign (Just contador) (Just $ constInt 0) Nothing,
+              T.ThreeAddressCode T.Print Nothing (Just $ T.Constant ("'{'", Simple "star")) Nothing,
+              T.ThreeAddressCode T.Eq (Just contador)  (Just siz) (Just chao),
+              T.ThreeAddressCode T.NewLabel Nothing (Just lab) Nothing,
+              T.ThreeAddressCode T.Assign (Just temp) (Just point) Nothing]
+              ++ (if isSimple ti then [T.ThreeAddressCode T.Deref (Just temp) (Just temp) Nothing] else []) ++ recu ++
+             [T.ThreeAddressCode T.Add (Just contador) (Just contador) (Just $ constInt 1),
+              T.ThreeAddressCode T.Add (Just point) (Just point) (Just $ pointerSize),
+              T.ThreeAddressCode T.Eq (Just contador)  (Just siz) (Just chao),
+              T.ThreeAddressCode T.Print Nothing (Just $ T.Constant ("','", Simple "star")) Nothing,
+              T.ThreeAddressCode T.GoTo Nothing Nothing (Just lab),
+              T.ThreeAddressCode T.NewLabel Nothing (Just chao) Nothing,
+              T.ThreeAddressCode T.Print Nothing (Just $ T.Constant ("'}'", Simple "star")) Nothing]
 genCodePrint _ _ = error "print no implementado"
 
 copyParam :: Exp -> InterMonad InterInstr
