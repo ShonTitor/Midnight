@@ -260,7 +260,10 @@ genCodeInstr (Asig (e1@(Access _ _),t) e2) = do
     if f t then do
         a1 <- getAddress e1
         a2 <- getAddress $ fst e2
-        genCodeCopy t a1 a2
+        if shallowable $ fst e2 then do
+          shallowCopy t a1 a2
+        else do 
+          genCodeCopy t a1 a2
     else do
         a <- getAddress e1
         b <- getOperand e2
@@ -674,22 +677,22 @@ genCodePrint op (Composite "Cluster" ti) = do
         isSimple _ = False
     point <- newTemp
     siz <- newTemp
-    tell [T.ThreeAddressCode T.Deref (Just point) (Just op) Nothing, 
-          T.ThreeAddressCode T.Add (Just siz) (Just op) (Just pointerSize),
-          T.ThreeAddressCode T.Deref (Just siz) (Just siz) Nothing]
     contador <- newTemp
     temp <- newTemp
     lab <- newLabel
     chao <- newLabel
     recu <- genCodePrint temp ti
-    return $ [T.ThreeAddressCode T.Assign (Just contador) (Just $ constInt 0) Nothing,
+    return $ [T.ThreeAddressCode T.Deref (Just point) (Just op) Nothing, 
+              T.ThreeAddressCode T.Add (Just siz) (Just op) (Just pointerSize),
+              T.ThreeAddressCode T.Deref (Just siz) (Just siz) Nothing,
+              T.ThreeAddressCode T.Assign (Just contador) (Just $ constInt 0) Nothing,
               T.ThreeAddressCode T.Print Nothing (Just $ T.Constant ("'{'", Simple "star")) Nothing,
               T.ThreeAddressCode T.Eq (Just contador)  (Just siz) (Just chao),
               T.ThreeAddressCode T.NewLabel Nothing (Just lab) Nothing,
               T.ThreeAddressCode T.Assign (Just temp) (Just point) Nothing]
               ++ (if isSimple ti then [T.ThreeAddressCode T.Deref (Just temp) (Just temp) Nothing] else []) ++ recu ++
              [T.ThreeAddressCode T.Add (Just contador) (Just contador) (Just $ constInt 1),
-              T.ThreeAddressCode T.Add (Just point) (Just point) (Just $ pointerSize),
+              T.ThreeAddressCode T.Add (Just point) (Just point) (Just $ constInt $ anchura ti),
               T.ThreeAddressCode T.Eq (Just contador)  (Just siz) (Just chao),
               T.ThreeAddressCode T.Print Nothing (Just $ T.Constant ("','", Simple "star")) Nothing,
               T.ThreeAddressCode T.GoTo Nothing Nothing (Just lab),
