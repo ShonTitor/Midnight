@@ -1,0 +1,39 @@
+Space
+
+Comet fact(planet n) -> planet {
+	if (n <= 1) {
+		print(1);
+		print('\n');
+		return 1
+	}
+	else {
+		planet r = fact(n-1)*n;
+		print(r);
+		print('\n');
+		return r
+	}
+}
+
+Comet fib(planet n) -> planet {
+	if (n <= 1) {
+		return 1
+	}
+	else {
+		planet r1 = fib(n-1);
+		planet r2 = fib(n-2);
+		planet r = r1+r2;
+		return r
+	}
+}
+
+(planet -> planet) Comet g;
+if (read()[0] == '0') {
+	g = fact
+}
+else {
+	g = fib
+}
+planet r = g(6);
+print(r)
+
+EndofSpace

@@ -1,0 +1,9 @@
+Space
+
+[[planet]Cluster]Cluster A = Cluster (3) [planet]Cluster;
+A[0] = {1,2,3};
+A[1] = {4,5,6};
+A[2] = {7,8,9};
+print(A)
+
+EndofSpace
