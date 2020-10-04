@@ -335,7 +335,7 @@ getColors code tab = M.fromList [ x | x <- colored++spills ]
                  spills = pairs $ zip (drop 18 colors) (repeat 0)
                  pairs a = [ (v,n) | (s,n) <- a, v <- S.toList s ]
 
-type FinalMonad a = RWST () String (M.Map VarType Int, S.Set VarType, M.Map String Integer, String) IO a
+type FinalMonad a = RWST () String (M.Map VarType Int, S.Set VarType, M.Map String Integer, String, Integer) IO a
 
 hasReg :: Operand -> Bool
 hasReg (T.Id Base) = True
@@ -367,7 +367,7 @@ getOffset' a = error ("sin offset "++(show a))
 
 getReg :: Operand -> Bool -> FinalMonad Int
 getReg op islval = do
-    (m, seen, offmap, currentfun) <- get
+    (m, seen, offmap, currentfun, rlabels) <- get
     let var = toVar' op
         color = M.lookup var m
         isBase (T.Id Base) = True
@@ -381,7 +381,7 @@ getReg op islval = do
         opv = fromJust $ toVar op
     if isTemp op || isBase op || S.member opv seen then return ()
     else do
-      put (m, S.insert opv (S.filter (\o -> (fromJust $ M.lookup o m) /= (fromJust $ color)) seen), offmap, currentfun)
+      put (m, S.insert opv (S.filter (\o -> (fromJust $ M.lookup o m) /= (fromJust $ color)) seen), offmap, currentfun, rlabels)
       if islval then return ()
       else do 
         tell "\t# DESPAIR\n"
@@ -407,7 +407,7 @@ finalLval op = finalOp' op True
 
 finalDestination :: InterCode -> Tablon -> M.Map String Integer -> IO String
 finalDestination code tab offsets = do
-  (_, _, text) <- runRWST (finalCode code) () (getColors code tab, S.empty, offsets, "")
+  (_, _, text) <- runRWST (finalCode code) () (getColors code tab, S.empty, offsets, "", 0)
   return text
 
 finalCode :: InterCode -> FinalMonad ()
@@ -423,16 +423,22 @@ unsee = do
               v <- finalOp (T.Id op)
               tell ("\t# "++(show op)++" "++(show $ getOffset' op)++"\n")
               tell ("\tsw "++v++", "++(show $ getOffset' op)++"($fp)\n")
-  (a,unseen,off,currentfun) <- get
+  (a,unseen,off,currentfun,rlabels) <- get
   tell "\t# PANIC\n"
   _ <- mapM f (S.toList unseen)
   tell "\t# END PANIC\n"
-  put (a, S.empty, off, currentfun)
+  put (a, S.empty, off, currentfun,rlabels)
 
 unsee' :: FinalMonad ()
 unsee' = do
-  (a,_,off,currentfun) <- get
-  put (a,S.empty,off,currentfun)
+  (a,_,off,currentfun,rlabels) <- get
+  put (a,S.empty,off,currentfun,rlabels)
+
+newLabel' :: FinalMonad String
+newLabel' = do
+  (a,s,off,currentfun,rlabels) <- get
+  put (a,s,off,currentfun,rlabels+1)
+  return ("_r"++(show rlabels))
 
 finalInstr :: InterInstr -> FinalMonad ()
 finalInstr (T.ThreeAddressCode T.NewLabel _ (Just label) _) = do
@@ -443,8 +449,8 @@ finalInstr (T.ThreeAddressCode T.NewLabel _ (Just label) _) = do
   tell $ lab++":\n"
   if subr lab then do 
     unsee'
-    (a,b,offmap,_) <- get
-    put (a,b,offmap,lab)
+    (a,b,offmap,_,rlabels) <- get
+    put (a,b,offmap,lab,rlabels)
     if lab == "main" then do tell "\tmove $fp, $sp\n" else return ()
     tell ("\tadd $sp, $fp, "++(show $ fromJust $ M.lookup lab offmap)++"\n")
   else return ()
@@ -605,7 +611,40 @@ finalInstr (T.ThreeAddressCode T.Exit _ _ _) = tell "\tli $v0, 10\n\tsyscall\n"
 finalInstr (T.ThreeAddressCode T.Abort _ _ _) = tell "\tli $v0, 10\n\tsyscall\n"
 finalInstr (T.ThreeAddressCode T.Read Nothing (Just e) Nothing) = do
     a <- finalLval e
-    tell ("\tli $v0, 9\n\tli $a0, 1024\n\tsyscall\n\tmove $a0, $v0\n\tli $a1, 1024\n\tli $v0, 8\n\tsyscall\n\tmove "++a++", $v0\n")
+    tell "\tli $v0, 9\n"
+    tell "\tli $a0, 1024\n"
+    tell "\tsyscall\n"
+    tell "\tmove $a0, $v0\n"
+    tell "\tli $a1, 1024\n"
+    tell "\tli $v0, 8\n"
+    tell "\tsyscall\n"
+    tell "\tmove $v1, $a0\n" -- lo leido
+    tell "\tli $v0, 9\n"
+    tell "\tli $a0, 4096\n"
+    tell "\tsyscall\n"
+    tell "\tli $a3, 0\n" -- contador para longitud
+    tell "\tmove $a0, $v0\n" -- buffer para el contenido de la string
+    l1 <- newLabel'
+    l2 <- newLabel'
+    tell (l1++":")
+    tell "\tlb $a1, ($v1)\n"
+    tell ("\tbeq $a1, 10, "++l2++"\n")
+    tell "\tsw $a1, ($a0)\n"
+    tell "\taddi $v1, $v1, 1\n"
+    tell "\taddi $a0, $a0, 4\n"
+    tell "\taddi $a3, $a3, 1\n"
+    tell ("\tb "++l1++"\n")
+    tell (l2++":")
+    tell "\tmove $v1, $v0\n" -- respaldo direccion del contenido
+    -- reservando memoria para el dope vector
+    tell "\tli $v0, 9\n"
+    tell "\tli $a0, 8\n"
+    tell "\tsyscall\n"
+    tell "\tsw $v1, ($v0)\n" -- escribiendo en el dope vector
+    tell "\tsw $a3, 4($v0)\n" -- escribiendo longitud en el dope vector
+    tell ("\tmove "++a++", $v0\n")
+
+
 finalInstr (T.ThreeAddressCode T.Call (Just t) (Just l) (Just n)) = do
     f <- finalOp l
     ps <- finalOp n
@@ -622,8 +661,8 @@ finalInstr (T.ThreeAddressCode T.Call (Just t) (Just l) (Just n)) = do
     tell ("\tsub $sp, $sp, 12\n")
 finalInstr (T.ThreeAddressCode T.Return Nothing (Just t) Nothing) = do
     ret <- finalOp t
-    (a,b,offmap,currentfun) <- get
-    put (a,b,offmap,currentfun)
+    (a,b,offmap,currentfun,rlabels) <- get
+    put (a,b,offmap,currentfun,rlabels)
     --lift $ putStrLn (currentfun++(show offmap))
     tell ("\tsub $sp, $sp, "++(show $ fromJust $ M.lookup currentfun offmap)++"\n")
     tell "\t# RETURN\n"

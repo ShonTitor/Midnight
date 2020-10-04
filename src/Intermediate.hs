@@ -593,7 +593,7 @@ genCodeExp (Print (e1:_)) = do
     --[T.ThreeAddressCode T.Print Nothing (Just $ setType o ti) Nothing]
 genCodeExp (Read) = do
     o <- newTemp
-    return [T.ThreeAddressCode T.Read Nothing (Just o) Nothing]
+    return [T.ThreeAddressCode T.Read Nothing (Just $ setType o (Composite "Cluster" (Simple "star"))) Nothing]
     --Malloc
 genCodeExp (Bigbang t1) = do
     o <- newTemp
