@@ -1,0 +1,15 @@
+Space
+
+Comet print_r(~[planet]Cluster A) -> vacuum  {
+	orbit i around range(scale(~A)) {
+		print(~A[i]);
+		print('\n')
+	}
+	return
+}
+
+~[planet]Cluster A = bigbang([planet]Cluster);
+~A = {3,2,1};
+print_r(A)
+
+EndofSpace
