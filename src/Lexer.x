@@ -36,6 +36,7 @@ tokens :-
   pop           {\pos _ -> TkPop pos}
   add           {\pos _ -> TkAdd pos}
   bigbang       {\pos _ -> TkBigbang pos}
+  terraform     {\pos _ -> TkTerraform pos}
   if            {\pos _ -> TkIf pos}
   elseif        {\pos _ -> TkElseif pos}
   else          {\pos _ -> TkElse pos}
@@ -124,6 +125,7 @@ data Token =
   TkPop       AlexPosn |
   TkAdd       AlexPosn |
   TkBigbang   AlexPosn |
+  TkTerraform   AlexPosn |
   TkIf        AlexPosn |
   TkElseif    AlexPosn |
   TkElse      AlexPosn |
@@ -207,6 +209,7 @@ getPos (TkRange      p) = p
 getPos (TkPop        p) = p
 getPos (TkAdd        p) = p
 getPos (TkBigbang    p) = p
+getPos (TkTerraform  p) = p
 getPos (TkIf         p) = p
 getPos (TkElseif     p) = p
 getPos (TkElse       p) = p

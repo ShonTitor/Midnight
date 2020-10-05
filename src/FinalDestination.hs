@@ -643,8 +643,6 @@ finalInstr (T.ThreeAddressCode T.Read Nothing (Just e) Nothing) = do
     tell "\tsw $v1, ($v0)\n" -- escribiendo en el dope vector
     tell "\tsw $a3, 4($v0)\n" -- escribiendo longitud en el dope vector
     tell ("\tmove "++a++", $v0\n")
-
-
 finalInstr (T.ThreeAddressCode T.Call (Just t) (Just l) (Just n)) = do
     f <- finalOp l
     ps <- finalOp n
@@ -668,4 +666,27 @@ finalInstr (T.ThreeAddressCode T.Return Nothing (Just t) Nothing) = do
     tell "\t# RETURN\n"
     tell ("\tsw "++ret++", -4($fp) \n")
     tell "\tjr $ra\n"
+finalInstr (T.ThreeAddressCode (T.Cast "str" "int") (Just t) (Just op) _) = do
+    a <- finalOp t
+    b <- finalOp op
+    l1 <- newLabel'
+    l2 <- newLabel'
+    tell ("\tlw $v1, 4("++b++")\n")
+    tell ("\tbeqz $v1, "++l2++"\n")
+    tell ("\tlw $v0, ("++b++")\n")
+    tell "\tli $a3, 0\n"
+    tell "\tli $a0, 1\n"
+    tell "\tsll $a1, $v1, 2\n"
+    tell "\tadd $v0, $v0, $a1\n"
+    tell (l1++":")
+    tell "\taddi $v1, $v1, -1\n"
+    tell "\taddi $v0, $v0, -4\n"
+    tell "\tlw $a2, ($v0)\n"
+    tell "\taddi $a2, $a2, -48\n"
+    tell "\tmul $a2, $a2, $a0\n"
+    tell "\tadd $a3, $a3, $a2\n"
+    tell "\tmul $a0, $a0, 10\n"
+    tell ("\tbnez $v1, "++l1++"\n")
+    tell (l2++":")
+    tell ("\tmove "++a++", $a3\n")
 finalInstr i = tell ("\t# No implementado: "++(show i)++"\n")

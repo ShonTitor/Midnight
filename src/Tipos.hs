@@ -127,6 +127,7 @@ data Expr
       | Read
       | Bigbang Type
       | Scale Exp
+      | Terraform Exp
       | Pop Exp [Exp]
       | Add Exp [Exp]
 

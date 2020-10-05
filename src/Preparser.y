@@ -40,6 +40,7 @@ import qualified Data.Map as Map
       pop             { TkPop       $$ }
       add             { TkAdd       $$ }
       bigbang         { TkBigbang   $$ }
+      terraform       { TkTerraform $$ }
       if              { TkIf        $$ }
       elseif          { TkElseif    $$ }
       else            { TkElse      $$ }
@@ -289,6 +290,7 @@ Exp : LValue                      { () }
     | print '(' Args PQC          { () }
     | read '(' PQC                { () }
     | bigbang '(' Type PQC        { () }
+    | terraform '(' Exp PQC       { () }
     | scale '(' Exp PQC           { () }
     | Exp '.' pop '(' Args PQC    { () }
     | Exp '.' add '(' Args PQC    { () }

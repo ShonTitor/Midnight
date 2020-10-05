@@ -27,13 +27,15 @@ Comet fib(planet n) -> planet {
 }
 
 (planet -> planet) Comet g;
+print("0 = factorial\n _ = fibonacci\n");
 if (read()[0] == '0') {
 	g = fact
 }
 else {
 	g = fib
 }
-planet r = g(6);
+print("Introduzca numerito: ");
+planet r = g(terraform(read()));
 print(r)
 
 EndofSpace

@@ -41,6 +41,7 @@ import qualified Data.Map as Map
       pop             { TkPop       $$ }
       add             { TkAdd       $$ }
       bigbang         { TkBigbang   $$ }
+      terraform       { TkTerraform $$ }
       if              { TkIf        $$ }
       elseif          { TkElseif    $$ }
       else            { TkElse      $$ }
@@ -716,6 +717,18 @@ Exp :: { Exp }
       { % do
         checkCierre $4 "(" $2
         return (Bigbang $3, Composite "~" $3) }
+    | terraform '(' Exp PQC           
+      { % do
+        let f (Composite "Cluster" (Simple "star") ) = True
+            f Err = True
+            f _ = False
+            t = snd $3
+            AlexPn _ m n = $2
+        if f (snd $3) then return ()
+        else printError m n ("Error de tipo: se esperaba Constellation "++(show t))
+
+        checkCierre $4 "(" $2
+        return (Terraform $3, Simple "planet")  }
     | scale '(' Exp PQC           
       { % do
         let f (Composite "~" _ ) = False

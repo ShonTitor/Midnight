@@ -598,6 +598,10 @@ genCodeExp (Read) = do
 genCodeExp (Bigbang t1) = do
     o <- newTemp
     return [T.ThreeAddressCode T.New (Just o) (Just $ constInt $ anchura t1) Nothing]
+genCodeExp (Terraform val) = do
+    op <- getOperand val
+    t <- newTemp
+    return [T.ThreeAddressCode (T.Cast "str" "int") (Just t) (Just op) Nothing]
 -- RIP
 genCodeExp (ArrInit tam ti) = do
     n <- getOperand tam

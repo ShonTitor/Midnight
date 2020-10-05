@@ -1,0 +1,5 @@
+Space
+
+print(terraform(read()));
+
+EndofSpace
