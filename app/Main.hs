@@ -12,9 +12,9 @@ main = do
   (s:_) <- getArgs
   (code,tab,offsets) <- vaca s
   putStrLn $ showCode code
-  putStrLn "\n"
+  --putStrLn "\n"
   text <- finalDestination code tab offsets
-  putStrLn text
+  --putStrLn text
   writeFile ("./"++s++".s") text
   --putStrLn $ showTablon tab
   --putStrLn "jaja salu2"

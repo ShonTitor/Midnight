@@ -104,9 +104,9 @@ import qualified Data.Map as Map
 %left '+' '-'
 %left '*' '/' '//' '%'
 %right '^'
-%left '~'
 %left ',' ';' '.'
 %left '[' '(' '{' ']' ')' '}'
+%left '~'
 %left NEG
 %%
 

@@ -596,8 +596,18 @@ genCodeExp (Read) = do
     return [T.ThreeAddressCode T.Read Nothing (Just $ setType o (Composite "Cluster" (Simple "star"))) Nothing]
     --Malloc
 genCodeExp (Bigbang t1) = do
-    o <- newTemp
-    return [T.ThreeAddressCode T.New (Just o) (Just $ constInt $ anchura t1) Nothing]
+    let isC (Composite _ _) = True
+        isC _ = False
+    if isC t1 then do
+        o <- newTemp
+        p <- newTemp
+        return [T.ThreeAddressCode T.New (Just o) (Just $ constInt $ anchura t1) Nothing,
+                T.ThreeAddressCode T.New (Just p) (Just $ constInt $ anchura (Composite "~" IDK)) Nothing,
+                T.ThreeAddressCode T.Set (Just p) (Just $ constInt 0) (Just o)
+                ]
+    else do 
+        o <- newTemp
+        return [T.ThreeAddressCode T.New (Just o) (Just $ constInt $ anchura t1) Nothing]
 genCodeExp (Terraform val) = do
     op <- getOperand val
     t <- newTemp
@@ -707,6 +717,7 @@ genCodePrint _ _ = error "print no implementado"
 copyParam :: Exp -> InterMonad InterInstr
 copyParam e@(_,ti) = do
     let isSimple (Simple _) = True
+        isSimple (Composite "~" _) = True
         isSimple _ = False
     t <- newTemp
     a <- getOperand e
