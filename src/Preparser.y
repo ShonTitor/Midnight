@@ -273,7 +273,7 @@ TComp : '[' Type CQC cluster      { Composite (fst $4) $2 }
 LValue : id                        { () }
        | Exp '.' id               { () }
        | Exp '[' Index            { () }
-
+       | '~' Exp                     { () }
 
 
 Index :     Exp CQC               { () }
@@ -285,7 +285,6 @@ Slice :     Exp '..' Exp CQC      { () }
 Exp : LValue                      { () }
     | '(' Exp PQC                 { () }
     | Exp  '[' Slice              { () }
-    | '~' Exp                     { () }
     | Exp '(' Args PQC            { () }
     | print '(' Args PQC          { () }
     | read '(' PQC                { () }

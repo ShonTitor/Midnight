@@ -15,6 +15,6 @@ main = do
   putStrLn "\n"
   text <- finalDestination code tab offsets
   putStrLn text
-  writeFile "test/programas/programa1.s" text
+  writeFile ("./"++s++".s") text
   --putStrLn $ showTablon tab
   --putStrLn "jaja salu2"
