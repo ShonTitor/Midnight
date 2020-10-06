@@ -4,6 +4,18 @@ Space
 A[0] = {1,2,3};
 A[1] = {4,5,6};
 A[2] = {7,8,9};
-print(A)
+
+orbit i around range(scale(A)) {
+	orbit j around range(scale(A[i])) {
+		planet aa = A[i][j];
+		if (aa == 5) {
+			print(i);
+			print(' ');
+			print(j);
+			print('\n');
+			break 2;
+		}
+	}
+}
 
 EndofSpace

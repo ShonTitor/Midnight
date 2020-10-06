@@ -234,7 +234,9 @@ genCodeInstr (Break b) = do
         f _ _ [l] = do
             tell [T.ThreeAddressCode T.GoTo Nothing Nothing (Just l)]
         f n acum (l:ls) = do
-            tell [T.ThreeAddressCode T.Eq (Just n) (Just $ constInt acum) (Just l)]
+            t <- newTemp
+            tell [T.ThreeAddressCode T.Assign (Just t) (Just n) Nothing,
+                  T.ThreeAddressCode T.Eq (Just t) (Just $ constInt acum) (Just l)]
             f n (acum+1) ls
     n <- getOperand b
     labels <- lookLoop
