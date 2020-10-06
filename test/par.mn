@@ -1,0 +1,31 @@
+Space
+
+Comet par(planet n) -> planet {
+	if (n == 0) {
+		return 1
+	}
+	elseif (n == 1){
+		return 0
+	} else {
+	    planet r = impar(n-1);
+		return r
+	}
+}
+
+Comet impar(planet n) -> planet {
+	if (n == 0) {
+		return 0
+	}
+	elseif (n == 1){
+		return 1
+	} else {
+	    planet r = par(n-1);
+		return r
+	}
+}
+
+(planet -> planet) Comet g = par;
+planet r = g(6);
+print(r)
+
+EndofSpace
