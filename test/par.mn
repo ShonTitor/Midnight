@@ -24,8 +24,13 @@ Comet impar(planet n) -> planet {
 	}
 }
 
+print("Introduzca numerito: ");
 (planet -> planet) Comet g = par;
-planet r = g(6);
-print(r)
+planet r = g(terraform(read()));
+if (r == 0) {
+		print("Es impar.")
+	} else {
+		print("Es par.")
+	}
 
 EndofSpace
