@@ -1,0 +1,19 @@
+Space
+
+Comet raiz(cloud n) -> cloud {
+	planet iteraciones = 15;
+	cloud x = n;
+	cloud y = 1.0;
+
+	orbit i around range(iteraciones) {
+      	x = (x+y)/2;
+      	y = n/x
+		}
+	return x
+}
+
+(cloud -> cloud) Comet g = raiz;
+cloud r = g(6);
+print(r)
+
+EndofSpace
